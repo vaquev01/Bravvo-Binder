@@ -40,7 +40,9 @@ function App() {
     // State
     const [activeSection, setActiveSection] = useState('dashboard'); // 'dashboard' or 'vaults' or 'logs'
     const [activeId, setActiveId] = useState('D2'); // D1-D5 or S1-S5
+    // Prompt UI State
     const [selectedPrompt, setSelectedPrompt] = useState(null);
+    const [promptTab, setPromptTab] = useState('ai'); // 'ai' or 'human'
     const [selectedItem, setSelectedItem] = useState(null);
     const [copied, setCopied] = useState(false);
     const [promptHistory, setPromptHistory] = useState([]);
@@ -130,23 +132,25 @@ function App() {
 
     // Handlers
     const handleGeneratePrompt = useCallback((item) => {
-        // Only D2 items generate prompts in this version
-        const prompt = generatePrompt(item, appData.vaults);
-        setSelectedPrompt(prompt);
+        // Now returns object { aiPrompt, humanGuide }
+        const promptData = generatePrompt(item, appData.vaults);
+        setSelectedPrompt(promptData);
+        setPromptTab('ai'); // Reset to AI tab
         setSelectedItem(item);
         setPromptHistory(prev => [
-            { id: Date.now(), item: item.initiative, timestamp: new Date().toLocaleTimeString(), prompt },
+            { id: Date.now(), item: item.initiative, timestamp: new Date().toLocaleTimeString(), prompt: promptData },
             ...prev.slice(0, 9)
         ]);
     }, [appData.vaults]);
 
     const handleCopy = useCallback(async () => {
         if (selectedPrompt) {
-            await navigator.clipboard.writeText(selectedPrompt);
+            const textToCopy = promptTab === 'ai' ? selectedPrompt.aiPrompt : selectedPrompt.humanGuide;
+            await navigator.clipboard.writeText(textToCopy);
             setCopied(true);
             setTimeout(() => setCopied(false), 2000);
         }
-    }, [selectedPrompt]);
+    }, [selectedPrompt, promptTab]);
 
     const handleOnboardingComplete = (newClientData) => {
         // --- 1. VAULT GENERATION (SOURCE OF TRUTH) ---
@@ -337,7 +341,7 @@ function App() {
                 />
             )}
 
-            {/* GLOBAL PROMPT OVERLAY */}
+            {/* GLOBAL PROMPT OVERLAY - IDF ENGINE v1 */}
             {selectedPrompt && (
                 <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-fadeIn">
                     <div className="bg-[#111] border border-white/10 rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
@@ -345,30 +349,56 @@ function App() {
                         <div className="h-14 border-b border-white/10 bg-[#0a0a0a] flex items-center justify-between px-6">
                             <div className="flex items-center gap-2">
                                 <Wand2 className="text-purple-500" size={18} />
-                                <span className="font-bold text-gray-200">Bravvo AI Studio</span>
+                                <span className="font-bold text-gray-200">Bravvo OS - IDF Engine v1</span>
                             </div>
                             <button onClick={() => setSelectedPrompt(null)} className="p-2 hover:bg-white/10 rounded-full transition-colors">
                                 <PlusCircle className="rotate-45 text-gray-400" size={20} />
                             </button>
                         </div>
 
+                        {/* Tabs */}
+                        <div className="flex border-b border-white/5 bg-[#080808]">
+                            <button
+                                onClick={() => setPromptTab('ai')}
+                                className={`flex-1 h-12 text-xs font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-2 ${promptTab === 'ai'
+                                        ? 'bg-[#111] text-purple-400 border-b-2 border-purple-500'
+                                        : 'text-gray-500 hover:text-gray-300 hover:bg-white/5'
+                                    }`}
+                            >
+                                <Terminal size={14} />
+                                AI PROMPT (MIDJOURNEY)
+                            </button>
+                            <button
+                                onClick={() => setPromptTab('human')}
+                                className={`flex-1 h-12 text-xs font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-2 ${promptTab === 'human'
+                                        ? 'bg-[#111] text-orange-400 border-b-2 border-orange-500'
+                                        : 'text-gray-500 hover:text-gray-300 hover:bg-white/5'
+                                    }`}
+                            >
+                                <Users size={14} />
+                                HUMAN GUIDE (EDITOR)
+                            </button>
+                        </div>
+
                         {/* Editor Area */}
-                        <div className="flex-1 overflow-auto p-6 bg-[#050505] font-mono text-sm text-gray-300">
-                            <div className="whitespace-pre-wrap">{selectedPrompt}</div>
+                        <div className="flex-1 overflow-auto p-6 bg-[#050505] font-mono text-sm text-gray-300 relative group">
+                            <div className="whitespace-pre-wrap leading-relaxed">
+                                {promptTab === 'ai' ? selectedPrompt.aiPrompt : selectedPrompt.humanGuide}
+                            </div>
                         </div>
 
                         {/* Footer Actions */}
                         <div className="h-16 border-t border-white/10 bg-[#0a0a0a] flex items-center justify-between px-6">
                             <div className="flex items-center gap-2 text-xs text-gray-500">
-                                <Terminal size={12} />
-                                <span>Contexto: {appData.vaults.S1.fields.archetype} + {appData.vaults.S2.products.length} Produtos</span>
+                                <span className={`w-2 h-2 rounded-full ${promptTab === 'ai' ? 'bg-purple-500' : 'bg-orange-500'}`}></span>
+                                <span>{promptTab === 'ai' ? 'Modo: Gerador Instrucional (9-Block)' : 'Modo: Guia Operacional Humano'}</span>
                             </div>
                             <button
                                 onClick={handleCopy}
                                 className={`flex items-center gap-2 px-6 py-2 rounded-full font-bold transition-all ${copied ? 'bg-green-500 text-black' : 'bg-white text-black hover:scale-105'}`}
                             >
                                 {copied ? <Check size={16} /> : <Copy size={16} />}
-                                {copied ? 'Copiado!' : 'Copiar Prompt'}
+                                {copied ? 'COPIADO' : 'COPIAR'}
                             </button>
                         </div>
                     </div>
