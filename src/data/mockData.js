@@ -1,111 +1,78 @@
+
+// Helper for dynamic dates
+const getRelativeDate = (offsetDays) => {
+    const date = new Date();
+    date.setDate(date.getDate() + offsetDays);
+    return date.toISOString().split('T')[0];
+};
+
+const TODAY = getRelativeDate(0);
+const TOMORROW = getRelativeDate(1);
+const DAY_AFTER = getRelativeDate(2);
+const NEXT_WEEK = getRelativeDate(7);
+
 export const CARACA_BAR_DATA = {
     clientName: "Caraca Bar",
     vaults: {
         S1: {
-            name: "Brand Vault",
-            description: "Identidade Verbal e Estratégica",
+            id: 'S1', label: 'Brand Vault', icon: 'Target', source: 'V1',
             fields: {
-                promise: "O melhor lugar para começar ou terminar sua noite com energia.",
-                enemy: "O tédio e a mesmice das baladas genéricas.",
-                tension: "Quero sair mas tenho medo de ser ruim/caro/chato.",
-                tone: ["Energético", "Descolado", "Acolhedor"],
-                archetype: "O Rebelde Criativo",
-                icp: "Jovens adultos 25-35 que querem diversão sem perrengue",
-                personas: [
-                    { name: "Lucas", age: 28, job: "Dev", needs: "Happy hour com cerveja artesanal" },
-                    { name: "Marina", age: 32, job: "Mkt", needs: "Drinks para Instagram e música para dançar" }
-                ],
-                policies: [
-                    "Nunca usar gírias de 'tiozão'",
-                    "Sempre responder críticas com bom humor",
-                    "Proibido postar foto de bebida quente"
-                ]
+                promise: "O melhor Happy Hour da cidade",
+                enemy: "Tédio e Comida Ruim",
+                tone: ["Divertido", "Jovem", "Direto"],
+                archetype: "O Cara Comum"
             }
         },
         S2: {
-            name: "Commerce Vault",
-            description: "Lógica Comercial e Produtos",
-            items: [
-                { id: "P1", name: "Gin Tônica Clássica", type: "Bebida", price: 29.90, cost: 8.00, margin: "High", role: "Conversion", visual: "premium", description: "O clássico infalível." },
-                { id: "P2", name: "Combo Smash Burger", type: "Comida", price: 45.00, cost: 25.00, margin: "Medium", role: "Attraction", visual: "appetizing", description: "Matador de fome." },
-                { id: "P3", name: "Balde Cerveja Artesanal", type: "Bebida", price: 80.00, cost: 50.00, margin: "Low", role: "Retention", visual: "celebration", description: "Para dividir com a galera." },
-                { id: "P4", name: "Entrada VIP Antecipada", type: "Serviço", price: 15.00, cost: 0.00, margin: "Super High", role: "Liquidity", visual: "exclusive", description: "Fura fila e garante lugar." }
+            id: 'S2', label: 'Commerce Vault', icon: 'ShoppingBag', source: 'V2',
+            products: [
+                { id: "P1", name: "Gin Tônica Clássica", role: "Hero", margin: "High", price: 29.90 },
+                { id: "P2", name: "Burger Artesanal", role: "Upsell", margin: "Medium", price: 42.00 }
             ],
-            discounts: [
-                { name: "Happy Hour 50%", rules: "18h às 20h, Terça a Quinta" },
-                { name: "Aniversariante", rules: "Ganha Gin se trouxer 5 amigos" }
-            ]
+            strategy: {
+                format: "Unitário",
+                seasonality: "Evergreen"
+            }
         },
         S3: {
-            name: "Funnel Vault",
-            description: "Jornada e Conversão",
+            id: 'S3', label: 'Funnel Vault', icon: 'GitBranch', source: 'V3',
             steps: [
-                { id: "T1", name: "Descoberta (Topo)", event: "page_view", kpi: "Alcance", goal: "10k/mês" },
-                { id: "T2", name: "Decisão (Meio)", event: "button_click", kpi: "CTR", goal: "2%" },
-                { id: "T3", name: "Conversão (Fundo)", event: "form_submit", kpi: "Taxa Reserva", goal: "15%" }
+                { step: "Atenção", kpi: "CPM", goal: "R$ 15,00" },
+                { step: "Interesse", kpi: "CTR", goal: "1.5%" },
+                { step: "Desejo", kpi: "Click Whatsapp", goal: "Link Bio" }
             ],
-            ctas: [
-                { id: "CTA1", text: "Reservar Mesa Agora", type: "Conversion", link: "wa.me/caraca?text=reserva" },
-                { id: "CTA2", text: "Ver Cardápio Completo", type: "Decision", link: "/cardapio" },
-                { id: "CTA3", text: "Entrar na Lista VIP", type: "Retention", link: "/lista-vip" }
-            ]
+            traffic: {
+                primarySource: "Misto"
+            }
         },
         S4: {
-            name: "Ops Vault",
-            description: "Matriz de Responsabilidades",
-            team: [
-                { role: "Social Media", name: "Ana", responsibilities: ["Criar Posts", "Responder DM", "Agendar"], approver: "Pedro" },
-                { role: "Traffic Manager", name: "Lucas", responsibilities: ["Otimizar Ads", "Relatórios"], approver: "Pedro" },
-                { role: "Designer", name: "Julia", responsibilities: ["Criar Peças", "Editar Vídeos"], approver: "Ana" },
-                { role: "Owner", name: "Pedro", responsibilities: ["Aprovar Orçamento", "Definir Oferta"], approver: "-" }
+            id: 'S4', label: 'Ops Vault', icon: 'Settings', source: 'V4',
+            matrix: [
+                { role: "Aprovador Final", who: "João (Dono)" },
+                { role: "Estrategista", who: "Bravvo AI" },
+                { role: "Time", who: "Enxuta" }
             ],
-            slas: [
-                { task: "Resposta DM", time: "2 horas úteis", owner: "Ana" },
-                { task: "Criação de Arte", time: "24 horas", owner: "Julia" },
-                { task: "Relatório Semanal", time: "Segunda 10h", owner: "Lucas" }
-            ],
-            capacity: {
-                postsPerWeek: 6,
-                videosPerWeek: 2,
-                storiesPerDay: 5
+            slas: {
+                approval: "24h",
+                production: "48h"
             }
         },
         S5: {
-            name: "Design Vault",
-            description: "Identidade Visual e Regras",
-            palette: {
-                primary: "#FF4500", // Orange Red
-                secondary: "#1E1E1E", // Dark Grey
-                background: "#000000", // Black
-                accent: "#00FF7F", // Spring Green (Digital feeling)
-                text: "#FFFFFF"
-            },
-            typography: {
-                h1: { font: "Montserrat Black", style: "Uppercase", usage: "Manchetes e Ofertas" },
-                h2: { font: "Montserrat Bold", style: "Normal", usage: "Subtítulos" },
-                p: { font: "Roboto", style: "Regular", usage: "Textos longos" }
-            },
-            rules: {
-                mood: "Urban Industrial Nightlife",
-                weight: "Bold & Dense",
-                lighting: "Neon & Shadows",
-                forbidden: [
-                    "Cor Azul (vibe corporativa)",
-                    "Fotos de banco de imagem com sorrisos falsos",
-                    "Mockups 3D irrealistas",
-                    "Fundo branco chapado"
-                ],
-                mandatory: [
-                    "Granulação suave nas fotos",
-                    "Logo sempre no canto superior direito",
-                    "Alto contraste em textos"
-                ]
-            },
+            id: 'S5', label: 'Design Vault', icon: 'Palette', source: 'V1',
+            palette: { primary: "#FF5733", secondary: "#1A1A1A", accent: "#F39C12" },
+            rules: { mood: "Vibrante" },
             formats: {
                 story: { ratio: "9:16", safeZone: "15%", overlay: "Gradient Bottom" },
                 feed: { ratio: "4:5", safeZone: "10%", overlay: "None" },
                 reel: { ratio: "9:16", pacing: "Fast Cuts", style: "Glitch Effect" }
             }
+        },
+        S6: {
+            id: 'S6', label: 'Learning Vault', icon: 'Brain', source: 'Governança',
+            learnings: [
+                { id: 1, type: "Insight", content: "Público engaja mais com vídeos curtos de bastidores.", confidence: "High" },
+                { id: 2, type: "Correction", content: "Evitar gírias muito regionais, não soa autêntico.", confidence: "Medium" }
+            ]
         }
     },
     dashboard: {
@@ -116,10 +83,10 @@ export const CARACA_BAR_DATA = {
             { id: 104, product: "Entrada VIP", type: "Serviço", price: 15.00, margin: "Max", status: "Planned", offer_strategy: "Cashflow" }
         ],
         D2: [
-            { id: 1, date: "2024-02-06", initiative: "Terça em Dobro", channel: "Instagram Story", format: "story", offerId: "P1", ctaId: "CTA1", responsible: "Ana", status: "scheduled", visual_output: "Story_Terca_V1.png" },
-            { id: 2, date: "2024-02-08", initiative: "Quinta Sem Perrengue", channel: "Instagram Feed", format: "feed", offerId: "P2", ctaId: "CTA2", responsible: "Ana", status: "scheduled", visual_output: "Feed_Quinta_V1.png" },
-            { id: 3, date: "2024-02-09", initiative: "Sexta Fire", channel: "Instagram Reel", format: "reel", offerId: "P3", ctaId: "CTA1", responsible: "Julia", status: "in_production", visual_output: "Pending" },
-            { id: 4, date: "2024-02-10", initiative: "Sábado VIP", channel: "WhatsApp Lista", format: "text", offerId: "P4", ctaId: "CTA3", responsible: "Lucas", status: "draft", visual_output: "Pending" }
+            { id: 1, date: TODAY, initiative: "Terça em Dobro", channel: "Instagram Story", format: "story", offerId: "P1", ctaId: "CTA1", responsible: "Ana", status: "scheduled", visual_output: "Story_Terca_V1.png" },
+            { id: 2, date: TOMORROW, initiative: "Quinta Sem Perrengue", channel: "Instagram Feed", format: "feed", offerId: "P2", ctaId: "CTA2", responsible: "Ana", status: "scheduled", visual_output: "Feed_Quinta_V1.png" },
+            { id: 3, date: DAY_AFTER, initiative: "Sexta Fire", channel: "Instagram Reel", format: "reel", offerId: "P3", ctaId: "CTA1", responsible: "Julia", status: "in_production", visual_output: "Pending" },
+            { id: 4, date: NEXT_WEEK, initiative: "Sábado VIP", channel: "WhatsApp Lista", format: "text", offerId: "P4", ctaId: "CTA3", responsible: "Lucas", status: "draft", visual_output: "Pending" }
         ],
         D3: [
             { id: 201, task: "Criar Posts da Semana", owner: "Ana", approver: "Pedro", sla: "Quarta 18h", status: "On Track" },

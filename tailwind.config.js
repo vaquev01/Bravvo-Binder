@@ -8,18 +8,19 @@ export default {
         extend: {
             colors: {
                 bravvo: {
-                    bg: "#0a0a0a",
-                    card: "#121212",
-                    border: "#2a2a2a",
-                    primary: "#FF5733", // Orange
-                    accent: "#00FF88", // Cyber Green
-                    text: "#F5F5F5",
-                    muted: "#888888"
+                    bg: "#050505", // Deepest Black
+                    card: "#0F0F0F",
+                    border: "#1F1F1F",
+                    primary: "#FF5733",
+                    accent: "#00FF88",
+                    text: "#EDEDED",
+                    muted: "#737373"
                 }
             },
             fontFamily: {
                 sans: ['Inter', 'sans-serif'],
-                display: ['Montserrat', 'sans-serif'],
+                display: ['Inter', 'sans-serif'],
+                mono: ['JetBrains Mono', 'monospace'],
             }
         },
     },

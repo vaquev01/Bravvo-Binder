@@ -1,9 +1,18 @@
 import React, { useState, useCallback } from 'react';
-import { CARACA_BAR_DATA } from './data/mockData';
+// import { CARACA_BAR_DATA } from './data/mockData'; // REMOVED: Now using Context
 import { generatePrompt, generateSimplePrompt } from './utils/promptGenerator';
 import { VisualVault } from './components/VisualVault';
 import { DashboardTable } from './components/DashboardTable';
-import { OnboardingWizard } from './components/Onboarding/OnboardingWizard';
+// import { OnboardingWizard } from './components/Onboarding/OnboardingWizard'; // REMOVED
+import { BinderLayout } from './components/Binder/BinderLayout';
+import { PageBrand } from './components/Pages/PageBrand';
+import { PageOffer } from './components/Pages/PageOffer';
+import { PageFunnel } from './components/Pages/PageFunnel';
+import { PageOps } from './components/Pages/PageOps';
+import { PageIdeas } from './components/Pages/PageIdeas';
+// NEW: Import One Page Dashboard
+import { OnePageDashboard } from './components/CommandCenter/OnePageDashboard';
+
 import {
     LayoutDashboard,
     Database,
@@ -25,6 +34,8 @@ import {
     PlusCircle
 } from 'lucide-react';
 
+import { useVaults } from './contexts/VaultContext';
+
 function App() {
     // State
     const [activeSection, setActiveSection] = useState('dashboard'); // 'dashboard' or 'vaults' or 'logs'
@@ -33,10 +44,89 @@ function App() {
     const [selectedItem, setSelectedItem] = useState(null);
     const [copied, setCopied] = useState(false);
     const [promptHistory, setPromptHistory] = useState([]);
-    const [showWizard, setShowWizard] = useState(false);
 
-    // Application Data (Starts with Mock, updates with Wizard)
-    const [appData, setAppData] = useState(CARACA_BAR_DATA);
+    // --- BINDER STATE ---
+    // Start at OS (One Page Dashboard) as requested by user ("painel de gestao quero que seja inicial")
+    const [binderTab, setBinderTab] = useState('OS'); // V1, V2, V3, V4, OS
+    const [completedTabs, setCompletedTabs] = useState(['V1', 'V2', 'V3', 'V4', 'V5']); // Assume config is ready or optional for now
+
+    // Shared Form State (Lifted from Wizard)
+    const [formData, setFormData] = useState({
+        // --- V1: Brand Vault ---
+        clientName: "",
+        niche: "gastronomia",
+        tagline: "",
+        promise: "",
+        enemy: "",
+        brandValues: [],
+        audienceAge: "25-34",
+        audienceGender: "todos",
+        audienceClass: "bc",
+        audiencePain: "",
+        archetype: "O Cara Comum",
+        tone: "casual",
+        mood: "moderno",
+        primaryColor: "#F97316",
+        secondaryColor: "#1E293B",
+        accentColor: "#10B981",
+        bio: "",
+
+        // --- V2: Commerce Vault ---
+        products: [],
+        currentTicket: "",
+        targetTicket: "",
+        currentRevenue: "",
+        upsellStrategy: "none",
+        saleFormat: "presencial",
+        baitProduct: "",
+        baitPrice: "",
+
+        // --- V3: Funnel Vault ---
+        channels: [],
+        conversionLink: "",
+        instagramHandle: "",
+        websiteUrl: "",
+        primaryCTA: "whatsapp",
+        secondaryCTA: "saibamais",
+        ctaText: "",
+        monthlyGoal: "",
+        trafficType: "Misto",
+        utmCampaign: "",
+        currentConversion: "",
+        targetConversion: "",
+        cpl: "",
+
+        // --- V4: Ops Vault ---
+        approverName: "",
+        teamStructure: "Enxuta",
+        slaHours: 24,
+        contentOwner: "",
+        trafficOwner: "",
+        supportOwner: "",
+        emergencyContact: "",
+        postingFrequency: "3x",
+        bestDays: [],
+        bestTimes: [],
+        startDate: "",
+        cycleDuration: "30",
+        // V4 Additions: Stakeholders & Competitors
+        stakeholders: [],  // [{id, name, role, contact, contactType, canApprove}]
+        competitors: [],   // [{id, name, handle, notes, link}]
+
+        // --- V5: Ideas & References Vault ---
+        ideas: [],         // [{id, title, description, url, tags, createdAt}]
+        references: [],    // [{id, title, url, type, notes, createdAt}]
+        notepad: "",       // Free-form notepad
+
+        // --- Governance History ---
+        governanceHistory: [],  // [{id, date, kpiSnapshot, tasksSummary, postsApproved, notes}]
+
+        // --- Theme Customization ---
+        customThemeEnabled: false
+    });
+
+    // Application Data (Consumed from Context)
+    const { appData, setAppData } = useVaults();
 
     // Handlers
     const handleGeneratePrompt = useCallback((item) => {
@@ -66,10 +156,10 @@ function App() {
             ...appData.vaults.S1,
             fields: {
                 ...appData.vaults.S1.fields,
-                promise: newClientData.promise, // From R1
-                enemy: newClientData.enemy,     // From R1
+                promise: newClientData.promise, // From V1
+                enemy: newClientData.enemy,     // From V1
                 tone: newClientData.tone.split(','),
-                archetype: newClientData.mood === 'Sério' ? 'O Governante' : 'O Criador'
+                archetype: newClientData.archetype // From V1 (Enhanced)
             }
         };
 
@@ -79,7 +169,11 @@ function App() {
             products: [
                 { id: "P_NEW_1", name: newClientData.heroProduct, role: "Hero", margin: newClientData.heroMargin, price: parseFloat(newClientData.heroPrice) },
                 { id: "P_NEW_2", name: "Produto Complementar", role: "Upsell", margin: "High", price: parseFloat(newClientData.heroPrice) * 0.2 }
-            ]
+            ],
+            strategy: {
+                format: newClientData.offerFormat,
+                seasonality: "Evergreen" // Default for now
+            }
         };
 
         // S3: Funnel Vault
@@ -88,20 +182,24 @@ function App() {
             steps: [
                 { step: "Atenção", kpi: "CPM", goal: "R$ 10,00" },
                 { step: "Interesse", kpi: "CTR", goal: "2%" },
-                { step: "Desejo", kpi: "Click Whatsapp", goal: newClientData.conversionLink } // From R3
-            ]
+                { step: "Desejo", kpi: "Click Whatsapp", goal: newClientData.conversionLink } // From V3
+            ],
+            traffic: {
+                primarySource: newClientData.trafficType
+            }
         };
 
         // S4: Ops Vault
         const newS4 = {
             ...appData.vaults.S4,
             matrix: [
-                { role: "Aprovador Final", who: newClientData.approverName }, // From R4
-                { role: "Estrategista", who: "Bravvo Agent" }
+                { role: "Aprovador Final", who: newClientData.approverName }, // From V4
+                { role: "Estrategista", who: "Bravvo Agent" },
+                { role: "Time", who: newClientData.teamStructure }
             ],
             slas: {
                 ...appData.vaults.S4.slas,
-                approval: `${newClientData.slaHours}h` // From R4
+                approval: `${newClientData.slaHours}h` // From V4
             }
         };
 
@@ -110,7 +208,7 @@ function App() {
             ...appData.vaults.S5,
             palette: {
                 ...appData.vaults.S5.palette,
-                primary: newClientData.primaryColor // From R1
+                primary: newClientData.primaryColor // From V1
             },
             rules: {
                 ...appData.vaults.S5.rules,
@@ -185,284 +283,98 @@ function App() {
                 D5: appData.dashboard.D5  // Keep existing template for KPIs
             }
         });
-
-        setShowWizard(false);
-        setActiveSection('dashboard');
-        setActiveId('D2');
     };
 
-    // Navigation Config
-    const dashboards = [
-        { id: 'D1', label: 'Ofertas & Economia', icon: ShoppingBag },
-        { id: 'D2', label: 'Comunicação (Plano)', icon: LayoutDashboard },
-        { id: 'D3', label: 'Matriz Responsáveis', icon: Users },
-        { id: 'D4', label: 'Tarefas em Bloco', icon: Layers },
-        { id: 'D5', label: 'KPIs & Aprendizado', icon: BarChart3 }
-    ];
+    // --- BINDER LOGIC ---
+    const advanceTab = (current, next) => {
+        if (!completedTabs.includes(current)) {
+            setCompletedTabs([...completedTabs, current]);
+        }
+        setBinderTab(next);
+        window.scrollTo(0, 0);
+    };
 
-    const vaults = [
-        { id: 'S1', label: 'Brand Vault', icon: Target },
-        { id: 'S2', label: 'Commerce Vault', icon: ShoppingBag },
-        { id: 'S3', label: 'Funnel Vault', icon: GitBranch },
-        { id: 'S4', label: 'Ops Vault', icon: Settings },
-        { id: 'S5', label: 'Design Vault', icon: Palette }
-    ];
+    // Renamed Handlers from R to V
+    const handleV1Next = () => advanceTab('V1', 'V2');
+    const handleV2Next = () => advanceTab('V2', 'V3');
+    const handleV3Next = () => advanceTab('V3', 'V4');
+    const handleV4Complete = () => {
+        handleOnboardingComplete(formData);
+        advanceTab('V4', 'OS');
+    };
 
     return (
-        <div className="flex h-screen bg-bravvo-bg text-bravvo-text font-sans overflow-hidden">
+        <BinderLayout activeTab={binderTab} setActiveTab={setBinderTab} completedTabs={completedTabs}>
 
-            {showWizard && (
-                <OnboardingWizard
-                    onComplete={handleOnboardingComplete}
-                    onCancel={() => setShowWizard(false)}
+            {binderTab === 'V1' && (
+                <PageBrand formData={formData} setFormData={setFormData} onNext={handleV1Next} />
+            )}
+
+            {binderTab === 'V2' && (
+                <PageOffer formData={formData} setFormData={setFormData} onNext={handleV2Next} />
+            )}
+
+            {binderTab === 'V3' && (
+                <PageFunnel formData={formData} setFormData={setFormData} onNext={handleV3Next} />
+            )}
+
+            {binderTab === 'V4' && (
+                <PageOps formData={formData} setFormData={setFormData} onComplete={handleV4Complete} />
+            )}
+
+            {binderTab === 'V5' && (
+                <PageIdeas formData={formData} setFormData={setFormData} onComplete={() => setBinderTab('OS')} />
+            )}
+
+            {binderTab === 'OS' && (
+                <OnePageDashboard
+                    appData={appData}
+                    setAppData={setAppData}
+                    setActiveTab={setBinderTab}
+                    onGeneratePrompt={handleGeneratePrompt}
+                    formData={formData}
+                    setFormData={setFormData}
                 />
             )}
 
-            {/* Sidebar */}
-            <aside className="w-64 border-r border-bravvo-border bg-bravvo-card flex flex-col">
-                <div className="p-6 border-b border-bravvo-border">
-                    <h1 className="text-2xl font-display font-black tracking-tighter">
-                        <span className="text-bravvo-primary">BRAVVO</span>
-                        <span className="text-white">OS</span>
-                    </h1>
-                    <p className="text-xs text-bravvo-muted mt-1">v3.8 • Integrity Lock</p>
-                </div>
-
-                <div className="p-4">
-                    <button
-                        onClick={() => setShowWizard(true)}
-                        className="w-full bg-white/5 hover:bg-white/10 text-white border border-white/10 p-3 rounded-lg flex items-center justify-center gap-2 transition-all group"
-                    >
-                        <PlusCircle size={18} className="text-bravvo-primary group-hover:scale-110 transition-transform" />
-                        <span className="font-bold text-sm">Novo Cliente</span>
-                    </button>
-                </div>
-
-                <nav className="flex-1 p-4 space-y-6 overflow-y-auto">
-                    {/* Dashboards Section */}
-                    <div>
-                        <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest px-4 mb-2">Dashboards</h3>
-                        <div className="space-y-1">
-                            {dashboards.map(d => (
-                                <SidebarItem
-                                    key={d.id}
-                                    icon={d.icon}
-                                    label={d.label}
-                                    active={activeSection === 'dashboard' && activeId === d.id}
-                                    onClick={() => { setActiveSection('dashboard'); setActiveId(d.id); }}
-                                />
-                            ))}
-                        </div>
-                    </div>
-
-                    {/* Vaults Section */}
-                    <div>
-                        <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest px-4 mb-2">Sources (Vaults)</h3>
-                        <div className="space-y-1">
-                            {vaults.map(v => (
-                                <SidebarItem
-                                    key={v.id}
-                                    icon={v.icon}
-                                    label={v.label}
-                                    active={activeSection === 'vaults' && activeId === v.id}
-                                    onClick={() => { setActiveSection('vaults'); setActiveId(v.id); }}
-                                />
-                            ))}
-                        </div>
-                    </div>
-
-                    {/* Logs Section */}
-                    <div>
-                        <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest px-4 mb-2">System</h3>
-                        <SidebarItem
-                            icon={Terminal}
-                            label="Prompt Logs"
-                            active={activeSection === 'logs'}
-                            onClick={() => setActiveSection('logs')}
-                            badge={promptHistory.length}
-                        />
-                    </div>
-                </nav>
-
-                <div className="p-4 border-t border-bravvo-border">
-                    <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-bravvo-primary flex items-center justify-center text-black font-bold text-sm">
-                            {appData.clientName.charAt(0)}
-                        </div>
-                        <div>
-                            <p className="text-sm font-medium">{appData.clientName}</p>
-                            <p className="text-xs text-bravvo-accent flex items-center gap-1">
-                                <span className="w-2 h-2 bg-bravvo-accent rounded-full animate-pulse"></span>
-                                Online
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </aside>
-
-            {/* Main Content */}
-            <main className="flex-1 overflow-auto p-8 relative">
-                <div className="max-w-6xl mx-auto pb-24">
-                    {/* Header */}
-                    <header className="mb-8 flex justify-between items-end">
-                        <div>
-                            <div className="flex items-center gap-2 text-bravvo-muted text-sm mb-1">
-                                {activeSection === 'dashboard' ? <LayoutDashboard size={14} /> :
-                                    activeSection === 'vaults' ? <Database size={14} /> : <Terminal size={14} />}
-                                <span className="uppercase tracking-wide">{activeSection}</span>
+            {/* GLOBAL PROMPT OVERLAY */}
+            {selectedPrompt && (
+                <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-fadeIn">
+                    <div className="bg-[#111] border border-white/10 rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
+                        {/* Header */}
+                        <div className="h-14 border-b border-white/10 bg-[#0a0a0a] flex items-center justify-between px-6">
+                            <div className="flex items-center gap-2">
+                                <Wand2 className="text-purple-500" size={18} />
+                                <span className="font-bold text-gray-200">Bravvo AI Studio</span>
                             </div>
-                            <h2 className="text-3xl font-bold text-white">
-                                {activeSection === 'logs' ? 'Prompt Logs' :
-                                    activeSection === 'dashboard' ? dashboards.find(d => d.id === activeId)?.label :
-                                        vaults.find(v => v.id === activeId)?.label}
-                            </h2>
-                            <p className="text-gray-400 mt-1">
-                                {activeSection === 'dashboard' ? `Gerenciamento Operacional • ${activeId}` :
-                                    activeSection === 'vaults' ? `Fonte de Verdade • ${activeId}` :
-                                        'Histórico de geração de AI Prompts'}
-                            </p>
-                        </div>
-                        {activeSection === 'dashboard' && activeId === 'D2' && (
-                            <div className="text-xs text-gray-500 bg-white/5 px-3 py-2 rounded border border-white/5">
-                                💡 Clique em uma linha para gerar o Prompt
-                            </div>
-                        )}
-                        {selectedPrompt && (
-                            <button
-                                onClick={() => { setSelectedPrompt(null); setSelectedItem(null); }}
-                                className="text-sm px-4 py-2 border border-dashed border-bravvo-muted hover:bg-white/5 rounded transition-colors"
-                            >
-                                Fechar Console
+                            <button onClick={() => setSelectedPrompt(null)} className="p-2 hover:bg-white/10 rounded-full transition-colors">
+                                <PlusCircle className="rotate-45 text-gray-400" size={20} />
                             </button>
-                        )}
-                    </header>
+                        </div>
 
-                    {/* Content Views */}
-                    <div className="min-h-[400px]">
-                        {activeSection === 'dashboard' && (
-                            <DashboardTable
-                                id={activeId}
-                                data={appData.dashboard[activeId]}
-                                onRowClick={activeId === 'D2' ? handleGeneratePrompt : undefined}
-                            />
-                        )}
+                        {/* Editor Area */}
+                        <div className="flex-1 overflow-auto p-6 bg-[#050505] font-mono text-sm text-gray-300">
+                            <div className="whitespace-pre-wrap">{selectedPrompt}</div>
+                        </div>
 
-                        {activeSection === 'vaults' && (
-                            <VisualVault
-                                id={activeId}
-                                data={appData.vaults[activeId]}
-                            />
-                        )}
-
-                        {activeSection === 'logs' && (
-                            <LogsView history={promptHistory} />
-                        )}
-                    </div>
-                </div>
-
-                {/* Prompt Terminal Overlay */}
-                {selectedPrompt && (
-                    <div className="absolute bottom-0 left-0 right-0 h-[60vh] bg-black/95 backdrop-blur-xl border-t-2 border-bravvo-primary p-8 shadow-2xl overflow-auto transition-all duration-300 z-50">
-                        <div className="max-w-4xl mx-auto font-mono">
-                            <div className="flex items-center justify-between mb-4">
-                                <div className="flex items-center gap-2 text-bravvo-primary">
-                                    <Terminal size={20} />
-                                    <span className="font-bold">PROMPT GENERATOR OUTPUT</span>
-                                    {selectedItem && (
-                                        <div className="flex gap-2 ml-4">
-                                            <span className="text-xs bg-white/10 text-white px-2 py-1 rounded">
-                                                {selectedItem.initiative}
-                                            </span>
-                                            <span className="text-xs bg-bravvo-primary/20 text-bravvo-primary px-2 py-1 rounded">
-                                                {selectedItem.format.toUpperCase()}
-                                            </span>
-                                        </div>
-                                    )}
-                                </div>
+                        {/* Footer Actions */}
+                        <div className="h-16 border-t border-white/10 bg-[#0a0a0a] flex items-center justify-between px-6">
+                            <div className="flex items-center gap-2 text-xs text-gray-500">
+                                <Terminal size={12} />
+                                <span>Contexto: {appData.vaults.S1.fields.archetype} + {appData.vaults.S2.products.length} Produtos</span>
                             </div>
-
-                            <div className="whitespace-pre-wrap text-sm leading-relaxed text-gray-300 border-l-2 border-bravvo-accent pl-4 mb-6 max-h-[35vh] overflow-auto custom-scrollbar">
-                                {selectedPrompt}
-                            </div>
-
-                            <div className="flex gap-4 sticky bottom-0 bg-black/90 pt-4 border-t border-gray-800">
-                                <button
-                                    onClick={handleCopy}
-                                    className="bg-bravvo-primary text-black font-bold px-6 py-2 rounded hover:bg-orange-600 transition-colors flex items-center gap-2"
-                                >
-                                    {copied ? <Check size={18} /> : <Copy size={18} />}
-                                    {copied ? 'Copiado!' : 'Copiar Prompt'}
-                                </button>
-                                <button
-                                    onClick={() => {
-                                        const simple = generateSimplePrompt(selectedItem, appData.vaults);
-                                        navigator.clipboard.writeText(simple);
-                                        alert('Prompt simplificado copiado!');
-                                    }}
-                                    className="border border-bravvo-primary text-bravvo-primary px-6 py-2 rounded hover:bg-bravvo-primary/10 transition-colors"
-                                >
-                                    Copiar Versão Curta
-                                </button>
-                            </div>
+                            <button
+                                onClick={handleCopy}
+                                className={`flex items-center gap-2 px-6 py-2 rounded-full font-bold transition-all ${copied ? 'bg-green-500 text-black' : 'bg-white text-black hover:scale-105'}`}
+                            >
+                                {copied ? <Check size={16} /> : <Copy size={16} />}
+                                {copied ? 'Copiado!' : 'Copiar Prompt'}
+                            </button>
                         </div>
                     </div>
-                )}
-            </main>
-        </div>
-    );
-}
-
-// Sub-components
-function SidebarItem({ icon: Icon, label, active, onClick, badge }) {
-    return (
-        <button
-            onClick={onClick}
-            className={`w-full flex items-center justify-between px-4 py-2 rounded-lg transition-colors text-sm ${active
-                ? 'bg-bravvo-primary text-black font-bold'
-                : 'text-gray-400 hover:text-white hover:bg-white/5'
-                }`}
-        >
-            <div className="flex items-center gap-3">
-                <Icon size={16} />
-                <span>{label}</span>
-            </div>
-            {badge > 0 && (
-                <span className={`text-xs px-2 py-0.5 rounded-full ${active ? 'bg-black/20' : 'bg-bravvo-primary/20 text-bravvo-primary'}`}>
-                    {badge}
-                </span>
-            )}
-        </button>
-    );
-}
-
-function LogsView({ history }) {
-    if (history.length === 0) {
-        return (
-            <div className="glass-panel p-12 rounded-xl text-center border border-dashed border-gray-800">
-                <AlertCircle className="mx-auto text-gray-600 mb-4" size={48} />
-                <p className="text-gray-500">Nenhum prompt gerado ainda.</p>
-                <p className="text-sm text-gray-600 mt-2">Vá para o Dashboard D2 e clique em uma iniciativa.</p>
-            </div>
-        );
-    }
-
-    return (
-        <div className="space-y-4">
-            {history.map((log) => (
-                <div key={log.id} className="glass-panel p-4 rounded-xl border border-bravvo-border hover:border-bravvo-primary/30 transition-colors">
-                    <div className="flex items-center justify-between mb-2">
-                        <span className="font-bold text-white">{log.item}</span>
-                        <span className="text-xs text-gray-500 flex items-center gap-1">
-                            <Clock size={12} />
-                            {log.timestamp}
-                        </span>
-                    </div>
-                    <pre className="text-xs text-gray-400 overflow-auto max-h-24 bg-black/30 p-3 rounded font-mono">
-                        {log.prompt.substring(0, 300)}...
-                    </pre>
                 </div>
-            ))}
-        </div>
+            )}
+        </BinderLayout>
     );
 }
 
