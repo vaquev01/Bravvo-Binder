@@ -19,6 +19,10 @@ export function OnboardingWizard({ onComplete, onCancel }) {
     const [step, setStep] = useState(1);
     const [loadingText, setLoadingText] = useState("");
 
+    useEffect(() => {
+        console.log("Current Step:", step);
+    }, [step]);
+
     // Form Data State covering ALL Vaults
     const [formData, setFormData] = useState({
         // R1: Brand (S1/S5)
@@ -69,6 +73,14 @@ export function OnboardingWizard({ onComplete, onCancel }) {
 
     const handleNext = (e) => {
         e.preventDefault();
+
+        // Basic validation checking required fields for current step
+        const form = document.getElementById('wizard-form');
+        if (form && !form.checkValidity()) {
+            form.reportValidity();
+            return;
+        }
+
         setStep(prev => prev + 1);
     };
 

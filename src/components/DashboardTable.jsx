@@ -4,7 +4,10 @@ import {
     AlertCircle,
     CheckCircle2,
     Clock,
-    MoreHorizontal
+    MoreHorizontal,
+    Beer,
+    Utensils,
+    Sparkles
 } from 'lucide-react';
 
 export function DashboardTable({ id, data, onRowClick }) {
@@ -86,7 +89,14 @@ export function DashboardTable({ id, data, onRowClick }) {
                         {data.map(row => (
                             <Tr key={row.id}>
                                 <Td className="font-bold text-white">{row.product}</Td>
-                                <Td>{row.type}</Td>
+                                <Td>
+                                    <div className="flex items-center gap-2">
+                                        {row.type === 'Bebida' && <Beer size={14} className="text-yellow-500" />}
+                                        {row.type === 'Comida' && <Utensils size={14} className="text-orange-500" />}
+                                        {row.type === 'Serviço' && <Sparkles size={14} className="text-purple-500" />}
+                                        <span>{row.type}</span>
+                                    </div>
+                                </Td>
                                 <Td className="font-mono text-bravvo-primary">R$ {row.price.toFixed(2)}</Td>
                                 <Td><Badge>{row.margin}</Badge></Td>
                                 <Td>{row.offer_strategy}</Td>

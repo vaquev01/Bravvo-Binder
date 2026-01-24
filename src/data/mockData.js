@@ -26,10 +26,10 @@ export const CARACA_BAR_DATA = {
             name: "Commerce Vault",
             description: "Lógica Comercial e Produtos",
             items: [
-                { id: "P1", name: "Gin Tônica Clássica", price: 29.90, cost: 8.00, margin: "High", role: "Conversion", visual: "premium", description: "O clássico infalível." },
-                { id: "P2", name: "Combo Smash Burger", price: 45.00, cost: 25.00, margin: "Medium", role: "Attraction", visual: "appetizing", description: "Matador de fome." },
-                { id: "P3", name: "Balde Cerveja Artesanal", price: 80.00, cost: 50.00, margin: "Low", role: "Retention", visual: "celebration", description: "Para dividir com a galera." },
-                { id: "P4", name: "Entrada VIP Antecipada", price: 15.00, cost: 0.00, margin: "Super High", role: "Liquidity", visual: "exclusive", description: "Fura fila e garante lugar." }
+                { id: "P1", name: "Gin Tônica Clássica", type: "Bebida", price: 29.90, cost: 8.00, margin: "High", role: "Conversion", visual: "premium", description: "O clássico infalível." },
+                { id: "P2", name: "Combo Smash Burger", type: "Comida", price: 45.00, cost: 25.00, margin: "Medium", role: "Attraction", visual: "appetizing", description: "Matador de fome." },
+                { id: "P3", name: "Balde Cerveja Artesanal", type: "Bebida", price: 80.00, cost: 50.00, margin: "Low", role: "Retention", visual: "celebration", description: "Para dividir com a galera." },
+                { id: "P4", name: "Entrada VIP Antecipada", type: "Serviço", price: 15.00, cost: 0.00, margin: "Super High", role: "Liquidity", visual: "exclusive", description: "Fura fila e garante lugar." }
             ],
             discounts: [
                 { name: "Happy Hour 50%", rules: "18h às 20h, Terça a Quinta" },

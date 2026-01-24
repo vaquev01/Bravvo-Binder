@@ -9,7 +9,10 @@ import {
     Clock,
     AlertTriangle,
     CheckCircle,
-    Palette
+    Palette,
+    Beer,
+    Utensils,
+    Sparkles
 } from 'lucide-react';
 
 export function VisualVault({ id, data }) {
@@ -86,7 +89,12 @@ export function VisualVault({ id, data }) {
                                         'bg-red-500/10 text-red-400 border-red-500/20'
                                     }`}>{item.margin} Margin</span>
                             </div>
-                            <h3 className="font-bold text-lg mb-1">{item.name}</h3>
+                            <div className="flex items-center gap-2 mb-1">
+                                {item.type === 'Bebida' && <Beer size={16} className="text-yellow-500" />}
+                                {item.type === 'Comida' && <Utensils size={16} className="text-orange-500" />}
+                                {item.type === 'Serviço' && <Sparkles size={16} className="text-purple-500" />}
+                                <h3 className="font-bold text-lg">{item.name}</h3>
+                            </div>
                             <p className="text-xs text-gray-400 mb-4">{item.description || item.role || 'Sem descrição'}</p>
                             <div className="flex justify-between items-end">
                                 <div>
