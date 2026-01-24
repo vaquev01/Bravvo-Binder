@@ -674,11 +674,11 @@ export function OnePageDashboard({
             id: Date.now(),
             date: new Date().toISOString(),
             kpiSnapshot: {
-                revenue: { ...kpis.revenue, comment: meetingComments.revenue },
-                traffic: { ...kpis.traffic, comment: meetingComments.traffic },
-                sales: { ...kpis.sales, comment: meetingComments.sales }
+                revenue: { ...kpis.revenue, comment: meetingState.comments.revenue },
+                traffic: { ...kpis.traffic, comment: meetingState.comments.traffic },
+                sales: { ...kpis.sales, comment: meetingState.comments.sales }
             },
-            notes: meetingComments.general,
+            notes: meetingState.comments.general,
             tasksSummary: `${appData.dashboard.D2.filter(t => t.status === 'done').length} conclusas, ${appData.dashboard.D2.filter(t => t.status === 'scheduled').length} agendadas`,
             postsApproved: appData.dashboard.D2.filter(t => t.status === 'scheduled' || t.status === 'done').map(t => t.initiative)
         };
@@ -694,8 +694,10 @@ export function OnePageDashboard({
 
         setTimeout(() => {
             setCycleProcessing(false);
-            setGovernanceMode(false);
-            setMeetingComments({ general: '', revenue: '', traffic: '', sales: '' }); // Reset comments
+            setMeetingState({ // Reset meeting state completely
+                active: false,
+                comments: { general: '', revenue: '', traffic: '', sales: '' }
+            });
             alert("✅ REUNIÃO SALVA! Histórico de governança atualizado.");
         }, 1500);
     };
