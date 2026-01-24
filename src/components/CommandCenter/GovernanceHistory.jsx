@@ -77,8 +77,8 @@ ${entry.notes || 'Sem notas'}
                                 <div key={entry.id} className="relative pl-12 pb-6">
                                     {/* Timeline Dot */}
                                     <div className={`absolute left-3 w-5 h-5 rounded-full border-2 ${index === 0
-                                            ? 'bg-purple-500 border-purple-400'
-                                            : 'bg-[#0A0A0A] border-white/20'
+                                        ? 'bg-purple-500 border-purple-400'
+                                        : 'bg-[#0A0A0A] border-white/20'
                                         }`}>
                                         {index === 0 && <div className="absolute inset-0 bg-purple-500 rounded-full animate-ping opacity-20"></div>}
                                     </div>
@@ -136,27 +136,42 @@ ${entry.notes || 'Sem notas'}
                                                         <p className="text-lg font-bold text-white">
                                                             R$ {(entry.kpiSnapshot?.revenue?.value || 0).toLocaleString()}
                                                         </p>
-                                                        <p className="text-[10px] text-gray-500">
+                                                        <p className="text-[10px] text-gray-500 mb-2">
                                                             Meta: R$ {(entry.kpiSnapshot?.revenue?.goal || 0).toLocaleString()}
                                                         </p>
+                                                        {entry.kpiSnapshot?.revenue?.comment && (
+                                                            <div className="pt-2 border-t border-green-500/20 mt-2">
+                                                                <p className="text-[10px] text-gray-400 italic">"{entry.kpiSnapshot.revenue.comment}"</p>
+                                                            </div>
+                                                        )}
                                                     </div>
                                                     <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-3">
                                                         <p className="text-[10px] text-blue-400 uppercase tracking-wide mb-1">Vendas</p>
                                                         <p className="text-lg font-bold text-white">
                                                             {entry.kpiSnapshot?.sales?.value || 0}
                                                         </p>
-                                                        <p className="text-[10px] text-gray-500">
+                                                        <p className="text-[10px] text-gray-500 mb-2">
                                                             Meta: {entry.kpiSnapshot?.sales?.goal || 0}
                                                         </p>
+                                                        {entry.kpiSnapshot?.sales?.comment && (
+                                                            <div className="pt-2 border-t border-blue-500/20 mt-2">
+                                                                <p className="text-[10px] text-gray-400 italic">"{entry.kpiSnapshot.sales.comment}"</p>
+                                                            </div>
+                                                        )}
                                                     </div>
                                                     <div className="bg-orange-500/10 border border-orange-500/20 rounded-lg p-3">
                                                         <p className="text-[10px] text-orange-400 uppercase tracking-wide mb-1">CPM</p>
                                                         <p className="text-lg font-bold text-white">
                                                             R$ {entry.kpiSnapshot?.traffic?.value || 0}
                                                         </p>
-                                                        <p className="text-[10px] text-gray-500">
+                                                        <p className="text-[10px] text-gray-500 mb-2">
                                                             Meta: R$ {entry.kpiSnapshot?.traffic?.goal || 0}
                                                         </p>
+                                                        {entry.kpiSnapshot?.traffic?.comment && (
+                                                            <div className="pt-2 border-t border-orange-500/20 mt-2">
+                                                                <p className="text-[10px] text-gray-400 italic">"{entry.kpiSnapshot.traffic.comment}"</p>
+                                                            </div>
+                                                        )}
                                                     </div>
                                                 </div>
 
@@ -187,8 +202,8 @@ ${entry.notes || 'Sem notas'}
                                                 {/* Notes */}
                                                 {entry.notes && (
                                                     <div>
-                                                        <p className="text-[10px] text-gray-500 uppercase tracking-wide mb-2">Notas</p>
-                                                        <p className="text-sm text-gray-400 italic">{entry.notes}</p>
+                                                        <p className="text-[10px] text-gray-500 uppercase tracking-wide mb-2">Estratégia Geral / Plano de Ação</p>
+                                                        <p className="text-sm text-gray-300 italic bg-white/5 p-3 rounded-lg border border-white/5">{entry.notes}</p>
                                                     </div>
                                                 )}
 

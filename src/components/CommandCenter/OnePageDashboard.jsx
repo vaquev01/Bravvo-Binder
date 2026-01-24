@@ -570,6 +570,13 @@ export function OnePageDashboard({ appData, setAppData, setActiveTab, onGenerate
         ad: { icon: '💰', label: 'Ad' },
     };
 
+    const [meetingComments, setMeetingComments] = useState({
+        general: '',
+        revenue: '',
+        traffic: '',
+        sales: ''
+    });
+
     // Date Filter Logic
     const getFilteredData = () => {
         const today = new Date();
@@ -640,13 +647,38 @@ export function OnePageDashboard({ appData, setAppData, setActiveTab, onGenerate
         handleStatusChange(itemId, 'done');
     };
 
-    const handleProcessCycle = () => {
+    const handleSaveMeeting = () => {
         setCycleProcessing(true);
+
+        // 1. Create Snapshot
+        const snapshot = {
+            id: Date.now(),
+            date: new Date().toISOString(),
+            kpiSnapshot: {
+                revenue: { ...kpis.revenue, comment: meetingComments.revenue },
+                traffic: { ...kpis.traffic, comment: meetingComments.traffic },
+                sales: { ...kpis.sales, comment: meetingComments.sales }
+            },
+            notes: meetingComments.general,
+            tasksSummary: `${appData.dashboard.D2.filter(t => t.status === 'done').length} conclusas, ${appData.dashboard.D2.filter(t => t.status === 'scheduled').length} agendadas`,
+            postsApproved: appData.dashboard.D2.filter(t => t.status === 'scheduled' || t.status === 'done').map(t => t.initiative)
+        };
+
+        // 2. Update History
+        const updatedHistory = [snapshot, ...(formData?.governanceHistory || [])];
+        const updatedFormData = { ...formData, governanceHistory: updatedHistory };
+
+        // Save to parent state
+        if (setFormData) {
+            setFormData(updatedFormData);
+        }
+
         setTimeout(() => {
             setCycleProcessing(false);
             setGovernanceMode(false);
-            alert("🤖 CORTEZ AI: Ciclo processado! S6 atualizado.");
-        }, 2000);
+            setMeetingComments({ general: '', revenue: '', traffic: '', sales: '' }); // Reset comments
+            alert("✅ REUNIÃO SALVA! Histórico de governança atualizado.");
+        }, 1500);
     };
 
     // Calculate Progress
@@ -725,17 +757,24 @@ export function OnePageDashboard({ appData, setAppData, setActiveTab, onGenerate
                         NOVA
                     </button>
 
-                    {/* Governance Mode */}
-                    <button
-                        onClick={() => setGovernanceMode(!governanceMode)}
-                        className={`h-8 px-4 rounded-lg text-xs font-bold border transition-all flex items-center gap-2
-                            ${governanceMode
-                                ? 'bg-purple-500/10 text-purple-400 border-purple-500/50 hover:bg-purple-500/20'
-                                : 'bg-white/5 text-gray-400 border-white/10 hover:bg-white/10'}`}
-                    >
-                        {governanceMode ? <CheckCircle2 size={14} /> : <Terminal size={14} />}
-                        {governanceMode ? 'PROCESSAR' : 'REUNIÃO'}
-                    </button>
+                    {/* Governance Mode / Save Meeting */}
+                    {governanceMode ? (
+                        <button
+                            onClick={handleSaveMeeting}
+                            className="h-8 px-4 rounded-lg text-xs font-bold border transition-all flex items-center gap-2 bg-purple-500 text-white border-purple-500 hover:bg-purple-600 shadow-[0_0_15px_rgba(168,85,247,0.5)] animate-pulse"
+                        >
+                            <CheckCircle2 size={14} />
+                            CONCLUIR REUNIÃO
+                        </button>
+                    ) : (
+                        <button
+                            onClick={() => setGovernanceMode(true)}
+                            className="h-8 px-4 rounded-lg text-xs font-bold border transition-all flex items-center gap-2 bg-white/5 text-gray-400 border-white/10 hover:bg-white/10"
+                        >
+                            <Terminal size={14} />
+                            REUNIÃO
+                        </button>
+                    )}
                 </div>
             </div>
 
@@ -773,6 +812,15 @@ export function OnePageDashboard({ appData, setAppData, setActiveTab, onGenerate
                                     className="text-[10px] text-gray-500 font-mono"
                                 />
                             </div>
+                            {governanceMode && (
+                                <textarea
+                                    className="mt-3 w-full bg-[#111] border border-white/10 rounded p-2 text-xs text-gray-300 focus:border-purple-500 focus:outline-none resize-none"
+                                    placeholder="Comentário sobre faturamento..."
+                                    rows={2}
+                                    value={meetingComments.revenue}
+                                    onChange={(e) => setMeetingComments({ ...meetingComments, revenue: e.target.value })}
+                                />
+                            )}
                         </div>
                     </div>
 
@@ -802,6 +850,15 @@ export function OnePageDashboard({ appData, setAppData, setActiveTab, onGenerate
                                     className="text-[10px] text-gray-500 font-mono"
                                 />
                             </div>
+                            {governanceMode && (
+                                <textarea
+                                    className="mt-3 w-full bg-[#111] border border-white/10 rounded p-2 text-xs text-gray-300 focus:border-purple-500 focus:outline-none resize-none"
+                                    placeholder="Comentário sobre tráfego..."
+                                    rows={2}
+                                    value={meetingComments.traffic}
+                                    onChange={(e) => setMeetingComments({ ...meetingComments, traffic: e.target.value })}
+                                />
+                            )}
                         </div>
                     </div>
 
@@ -832,6 +889,15 @@ export function OnePageDashboard({ appData, setAppData, setActiveTab, onGenerate
                                     className="text-[10px] text-gray-500 font-mono"
                                 />
                             </div>
+                            {governanceMode && (
+                                <textarea
+                                    className="mt-3 w-full bg-[#111] border border-white/10 rounded p-2 text-xs text-gray-300 focus:border-purple-500 focus:outline-none resize-none"
+                                    placeholder="Comentário sobre vendas..."
+                                    rows={2}
+                                    value={meetingComments.sales}
+                                    onChange={(e) => setMeetingComments({ ...meetingComments, sales: e.target.value })}
+                                />
+                            )}
                         </div>
                     </div>
 
@@ -849,6 +915,22 @@ export function OnePageDashboard({ appData, setAppData, setActiveTab, onGenerate
                         </p>
                     </div>
                 </div>
+
+                {/* GENERAL STRATEGY NOTE (Visible only in Governance Mode) */}
+                {governanceMode && (
+                    <div className="p-6 border-b border-white/5 bg-[#080808]">
+                        <label className="text-xs font-bold text-purple-400 uppercase tracking-widest mb-2 block">
+                            Notas Gerais da Estratégia / Plano de Ação
+                        </label>
+                        <textarea
+                            className="w-full bg-[#111] border border-white/10 rounded-lg p-3 text-sm text-gray-200 focus:border-purple-500 focus:outline-none resize-none"
+                            placeholder="Escreva aqui as observações gerais, mudanças de rota ou decisões tomadas nesta reunião..."
+                            rows={3}
+                            value={meetingComments.general}
+                            onChange={(e) => setMeetingComments({ ...meetingComments, general: e.target.value })}
+                        />
+                    </div>
+                )}
 
                 {/* SECTION 2: TACTICAL CALENDAR - EXPANDED */}
                 <div className="min-h-[500px] bg-[#050505]">
