@@ -535,9 +535,17 @@ function QuickAddModal({ open, onClose, onAdd }) {
 }
 
 // Main Dashboard Component
-export function OnePageDashboard({ appData, setAppData, setActiveTab, onGeneratePrompt, formData, setFormData }) {
+export function OnePageDashboard({
+    appData,
+    setAppData,
+    setActiveTab,
+    onGeneratePrompt,
+    formData,
+    setFormData,
+    meetingState,
+    setMeetingState
+}) {
     // UI State
-    const [governanceMode, setGovernanceMode] = useState(false);
     const [cycleProcessing, setCycleProcessing] = useState(false);
     const [dateFilter, setDateFilter] = useState('week');
     const [showQuickAdd, setShowQuickAdd] = useState(false);
@@ -551,6 +559,24 @@ export function OnePageDashboard({ appData, setAppData, setActiveTab, onGenerate
         traffic: { value: 12, goal: 15 },
         sales: { value: 154, goal: 120 },
     });
+
+    // Helper functions for updating meeting state
+    const updateComment = (field, value) => {
+        setMeetingState(prev => ({
+            ...prev,
+            comments: {
+                ...prev.comments,
+                [field]: value
+            }
+        }));
+    };
+
+    const toggleGovernanceMode = () => {
+        setMeetingState(prev => ({
+            ...prev,
+            active: !prev.active
+        }));
+    };
 
     // Status Options
     const statusOptions = [
@@ -569,13 +595,6 @@ export function OnePageDashboard({ appData, setAppData, setActiveTab, onGenerate
         carousel: { icon: '🎠', label: 'Carrossel' },
         ad: { icon: '💰', label: 'Ad' },
     };
-
-    const [meetingComments, setMeetingComments] = useState({
-        general: '',
-        revenue: '',
-        traffic: '',
-        sales: ''
-    });
 
     // Date Filter Logic
     const getFilteredData = () => {
@@ -691,9 +710,9 @@ export function OnePageDashboard({ appData, setAppData, setActiveTab, onGenerate
             {/* HEADER */}
             <div className="sticky top-0 z-50 h-14 border-b border-white/5 bg-[#050505]/95 backdrop-blur-md flex items-center justify-between px-6">
                 <div className="flex items-center gap-4">
-                    <div className={`w-2.5 h-2.5 rounded-full transition-all duration-500 ${governanceMode ? 'bg-purple-500 shadow-[0_0_12px_#A855F7]' : 'bg-green-500 shadow-[0_0_12px_#22c55e]'}`}></div>
+                    <div className={`w-2.5 h-2.5 rounded-full transition-all duration-500 ${meetingState.active ? 'bg-purple-500 shadow-[0_0_12px_#A855F7]' : 'bg-green-500 shadow-[0_0_12px_#22c55e]'}`}></div>
                     <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">
-                        {governanceMode ? <span className="text-purple-400">Governance Mode</span> : `BRAVVO OS • ${appData.clientName}`}
+                        {meetingState.active ? <span className="text-purple-400">Governance Mode</span> : `BRAVVO OS • ${appData.clientName}`}
                     </span>
                 </div>
 
@@ -758,7 +777,7 @@ export function OnePageDashboard({ appData, setAppData, setActiveTab, onGenerate
                     </button>
 
                     {/* Governance Mode / Save Meeting */}
-                    {governanceMode ? (
+                    {meetingState.active ? (
                         <button
                             onClick={handleSaveMeeting}
                             className="h-8 px-4 rounded-lg text-xs font-bold border transition-all flex items-center gap-2 bg-purple-500 text-white border-purple-500 hover:bg-purple-600 shadow-[0_0_15px_rgba(168,85,247,0.5)] animate-pulse"
@@ -768,7 +787,7 @@ export function OnePageDashboard({ appData, setAppData, setActiveTab, onGenerate
                         </button>
                     ) : (
                         <button
-                            onClick={() => setGovernanceMode(true)}
+                            onClick={toggleGovernanceMode}
                             className="h-8 px-4 rounded-lg text-xs font-bold border transition-all flex items-center gap-2 bg-white/5 text-gray-400 border-white/10 hover:bg-white/10"
                         >
                             <Terminal size={14} />
@@ -812,13 +831,13 @@ export function OnePageDashboard({ appData, setAppData, setActiveTab, onGenerate
                                     className="text-[10px] text-gray-500 font-mono"
                                 />
                             </div>
-                            {governanceMode && (
+                            {meetingState.active && (
                                 <textarea
                                     className="mt-3 w-full bg-[#111] border border-white/10 rounded p-2 text-xs text-gray-300 focus:border-purple-500 focus:outline-none resize-none"
                                     placeholder="Comentário sobre faturamento..."
                                     rows={2}
-                                    value={meetingComments.revenue}
-                                    onChange={(e) => setMeetingComments({ ...meetingComments, revenue: e.target.value })}
+                                    value={meetingState.comments.revenue}
+                                    onChange={(e) => updateComment('revenue', e.target.value)}
                                 />
                             )}
                         </div>
@@ -850,13 +869,13 @@ export function OnePageDashboard({ appData, setAppData, setActiveTab, onGenerate
                                     className="text-[10px] text-gray-500 font-mono"
                                 />
                             </div>
-                            {governanceMode && (
+                            {meetingState.active && (
                                 <textarea
                                     className="mt-3 w-full bg-[#111] border border-white/10 rounded p-2 text-xs text-gray-300 focus:border-purple-500 focus:outline-none resize-none"
                                     placeholder="Comentário sobre tráfego..."
                                     rows={2}
-                                    value={meetingComments.traffic}
-                                    onChange={(e) => setMeetingComments({ ...meetingComments, traffic: e.target.value })}
+                                    value={meetingState.comments.traffic}
+                                    onChange={(e) => updateComment('traffic', e.target.value)}
                                 />
                             )}
                         </div>
@@ -889,13 +908,13 @@ export function OnePageDashboard({ appData, setAppData, setActiveTab, onGenerate
                                     className="text-[10px] text-gray-500 font-mono"
                                 />
                             </div>
-                            {governanceMode && (
+                            {meetingState.active && (
                                 <textarea
                                     className="mt-3 w-full bg-[#111] border border-white/10 rounded p-2 text-xs text-gray-300 focus:border-purple-500 focus:outline-none resize-none"
                                     placeholder="Comentário sobre vendas..."
                                     rows={2}
-                                    value={meetingComments.sales}
-                                    onChange={(e) => setMeetingComments({ ...meetingComments, sales: e.target.value })}
+                                    value={meetingState.comments.sales}
+                                    onChange={(e) => updateComment('sales', e.target.value)}
                                 />
                             )}
                         </div>
@@ -917,7 +936,7 @@ export function OnePageDashboard({ appData, setAppData, setActiveTab, onGenerate
                 </div>
 
                 {/* GENERAL STRATEGY NOTE (Visible only in Governance Mode) */}
-                {governanceMode && (
+                {meetingState.active && (
                     <div className="p-6 border-b border-white/5 bg-[#080808]">
                         <label className="text-xs font-bold text-purple-400 uppercase tracking-widest mb-2 block">
                             Notas Gerais da Estratégia / Plano de Ação
@@ -926,8 +945,8 @@ export function OnePageDashboard({ appData, setAppData, setActiveTab, onGenerate
                             className="w-full bg-[#111] border border-white/10 rounded-lg p-3 text-sm text-gray-200 focus:border-purple-500 focus:outline-none resize-none"
                             placeholder="Escreva aqui as observações gerais, mudanças de rota ou decisões tomadas nesta reunião..."
                             rows={3}
-                            value={meetingComments.general}
-                            onChange={(e) => setMeetingComments({ ...meetingComments, general: e.target.value })}
+                            value={meetingState.comments.general}
+                            onChange={(e) => updateComment('general', e.target.value)}
                         />
                     </div>
                 )}

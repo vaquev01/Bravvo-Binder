@@ -47,6 +47,17 @@ function App() {
     const [copied, setCopied] = useState(false);
     const [promptHistory, setPromptHistory] = useState([]);
 
+    // --- GOVERNANCE / MEETING STATE (Lifted for Persistence) ---
+    const [meetingState, setMeetingState] = useState({
+        active: false,
+        comments: {
+            general: '',
+            revenue: '',
+            traffic: '',
+            sales: ''
+        }
+    });
+
     // --- BINDER STATE ---
     // Start at OS (One Page Dashboard) as requested by user ("painel de gestao quero que seja inicial")
     const [binderTab, setBinderTab] = useState('OS'); // V1, V2, V3, V4, OS
@@ -338,6 +349,8 @@ function App() {
                     onGeneratePrompt={handleGeneratePrompt}
                     formData={formData}
                     setFormData={setFormData}
+                    meetingState={meetingState}
+                    setMeetingState={setMeetingState}
                 />
             )}
 
@@ -361,8 +374,8 @@ function App() {
                             <button
                                 onClick={() => setPromptTab('ai')}
                                 className={`flex-1 h-12 text-xs font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-2 ${promptTab === 'ai'
-                                        ? 'bg-[#111] text-purple-400 border-b-2 border-purple-500'
-                                        : 'text-gray-500 hover:text-gray-300 hover:bg-white/5'
+                                    ? 'bg-[#111] text-purple-400 border-b-2 border-purple-500'
+                                    : 'text-gray-500 hover:text-gray-300 hover:bg-white/5'
                                     }`}
                             >
                                 <Terminal size={14} />
@@ -371,8 +384,8 @@ function App() {
                             <button
                                 onClick={() => setPromptTab('human')}
                                 className={`flex-1 h-12 text-xs font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-2 ${promptTab === 'human'
-                                        ? 'bg-[#111] text-orange-400 border-b-2 border-orange-500'
-                                        : 'text-gray-500 hover:text-gray-300 hover:bg-white/5'
+                                    ? 'bg-[#111] text-orange-400 border-b-2 border-orange-500'
+                                    : 'text-gray-500 hover:text-gray-300 hover:bg-white/5'
                                     }`}
                             >
                                 <Users size={14} />
