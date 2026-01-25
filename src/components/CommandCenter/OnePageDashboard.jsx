@@ -16,10 +16,286 @@ import {
 import { GovernanceHistory } from './GovernanceHistory';
 import { useToast } from '../../contexts/ToastContext';
 
-// ... (InlineEdit and StatusDropdown components remain unchanged)
+// Inline Editable Component
+function InlineEdit({ value, onSave, type = 'text', prefix = '', suffix = '', className = '' }) {
+    const [editing, setEditing] = useState(false);
+    const [tempValue, setTempValue] = useState(value);
+    const inputRef = useRef(null);
 
-// Detailed Edit Modal (Kept mostly same but restyled)
-// ... (DetailEditModal and QuickAddModal remain unchanged)
+    useEffect(() => {
+        if (editing && inputRef.current) {
+            inputRef.current.focus();
+            inputRef.current.select();
+        }
+    }, [editing]);
+
+    const handleSave = () => {
+        onSave(tempValue);
+        setEditing(false);
+    };
+
+    const handleKeyDown = (e) => {
+        if (e.key === 'Enter') handleSave();
+        if (e.key === 'Escape') {
+            setTempValue(value);
+            setEditing(false);
+        }
+    };
+
+    if (editing) {
+        return (
+            <div className="flex items-center gap-1">
+                {prefix && <span className="text-gray-500 text-xs">{prefix}</span>}
+                <input
+                    ref={inputRef}
+                    type={type}
+                    value={tempValue}
+                    onChange={(e) => setTempValue(e.target.value)}
+                    onBlur={handleSave}
+                    onKeyDown={handleKeyDown}
+                    className={`bg-black/50 border border-purple-500/50 rounded px-1 min-w-[60px] text-white focus:outline-none ${className}`}
+                />
+                {suffix && <span className="text-gray-500 text-xs">{suffix}</span>}
+            </div>
+        );
+    }
+
+    return (
+        <span
+            onClick={() => setEditing(true)}
+            className={`cursor-pointer hover:bg-white/10 px-1 rounded transition-colors group relative ${className}`}
+            title="Clique para editar"
+        >
+            {prefix}{value}{suffix}
+        </span>
+    );
+}
+
+// Status Dropdown Component
+function StatusDropdown({ value, onChange, options }) {
+    const [open, setOpen] = useState(false);
+    const dropdownRef = useRef(null);
+
+    useEffect(() => {
+        const handleClickOutside = (e) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+                setOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    const statusColors = {
+        scheduled: 'bg-green-500',
+        draft: 'bg-gray-500',
+        in_production: 'bg-yellow-500',
+        done: 'bg-blue-500',
+        cancelled: 'bg-red-500',
+    };
+
+    return (
+        <div ref={dropdownRef} className="relative">
+            <button
+                onClick={() => setOpen(!open)}
+                className="flex items-center gap-2 px-2 py-1 rounded hover:bg-white/5 transition-colors"
+            >
+                <div className={`w-1.5 h-1.5 rounded-full ${statusColors[value] || 'bg-gray-500'}`} />
+                <span className="text-[10px] font-bold uppercase tracking-wider text-gray-300">
+                    {value.replace('_', ' ')}
+                </span>
+            </button>
+
+            {open && (
+                <div className="absolute top-full left-0 mt-1 bg-[#111] border border-white/10 rounded-lg shadow-xl z-50 min-w-[140px] py-1 overflow-hidden">
+                    {options.map(opt => (
+                        <button
+                            key={opt.value}
+                            onClick={() => { onChange(opt.value); setOpen(false); }}
+                            className="w-full text-left px-3 py-2 text-[10px] font-bold uppercase tracking-wider hover:bg-white/10 flex items-center gap-2 text-gray-400 hover:text-white transition-colors"
+                        >
+                            <span className={`w-1.5 h-1.5 rounded-full ${opt.color.replace('bg-', 'bg-')}`}></span>
+                            {opt.label}
+                        </button>
+                    ))}
+                </div>
+            )}
+        </div>
+    );
+}
+
+// Detailed Edit Modal
+function DetailEditModal({ open, onClose, item, onSave }) {
+    const { t } = useLanguage();
+    const [form, setForm] = useState(item || {});
+
+    useEffect(() => {
+        if (item) setForm(item);
+    }, [item]);
+
+    if (!open || !item) return null;
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        onSave(form);
+        onClose();
+    };
+
+    return (
+        <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+            <div className="bg-[#0A0A0A] border border-white/10 rounded-lg w-full max-w-2xl animate-fadeIn flex flex-col max-h-[90vh] shadow-2xl">
+                <div className="flex justify-between items-center p-4 border-b border-white/10 bg-[#0A0A0A]">
+                    <div>
+                        <h3 className="text-sm font-bold text-white uppercase tracking-widest">{t('os.detail_edit.title')}</h3>
+                        <p className="text-[10px] text-gray-500 font-mono">ID: {item.id}</p>
+                    </div>
+                    <button onClick={onClose} className="text-gray-500 hover:text-white p-2">
+                        <X size={16} />
+                    </button>
+                </div>
+
+                <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-6">
+                    <div className="space-y-4">
+                        <div>
+                            <label className="text-label">{t('os.detail_edit.title_label')}</label>
+                            <input
+                                required
+                                className="premium-input bg-[#111]"
+                                value={form.initiative || ''}
+                                onChange={e => setForm({ ...form, initiative: e.target.value })}
+                            />
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <label className="text-label">{t('os.detail_edit.date_label')}</label>
+                                <input
+                                    type="date"
+                                    className="premium-input bg-[#111]"
+                                    value={form.date || ''}
+                                    onChange={e => setForm({ ...form, date: e.target.value })}
+                                />
+                            </div>
+                            <div>
+                                <label className="text-label">{t('os.detail_edit.channel_label')}</label>
+                                <select
+                                    className="premium-input bg-[#111]"
+                                    value={form.channel || 'Instagram Feed'}
+                                    onChange={e => setForm({ ...form, channel: e.target.value })}
+                                >
+                                    <option value="Instagram Feed">Instagram Feed</option>
+                                    <option value="Instagram Reels">Instagram Reels</option>
+                                    <option value="Instagram Stories">Instagram Stories</option>
+                                    <option value="TikTok">TikTok</option>
+                                    <option value="WhatsApp Status">WhatsApp Status</option>
+                                    <option value="Google Ads">Google Ads</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div>
+                            <label className="text-label">{t('os.detail_edit.copy_label')}</label>
+                            <textarea
+                                className="premium-input bg-[#111] min-h-[100px]"
+                                placeholder={t('os.detail_edit.copy_placeholder')}
+                                value={form.caption || ''}
+                                onChange={e => setForm({ ...form, caption: e.target.value })}
+                            />
+                        </div>
+                    </div>
+                </form>
+
+                <div className="p-4 border-t border-white/10 bg-[#0A0A0A] flex justify-end gap-2">
+                    <button onClick={onClose} className="btn-ghost">{t('common.cancel')}</button>
+                    <button onClick={handleSubmit} className="btn-primary">{t('os.detail_edit.save')}</button>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+// Quick Add Modal
+function QuickAddModal({ open, onClose, onAdd }) {
+    const { t } = useLanguage();
+    const [form, setForm] = useState({
+        initiative: '',
+        channel: 'Instagram Feed',
+        format: 'post',
+        date: new Date().toISOString().split('T')[0],
+        responsible: '',
+    });
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        onAdd({
+            id: `NEW-${Date.now()}`,
+            ...form,
+            status: 'draft',
+            offerId: 'hero',
+            ctaId: 'whatsapp',
+        });
+        onClose();
+        setForm({
+            initiative: '',
+            channel: 'Instagram Feed',
+            format: 'post',
+            date: new Date().toISOString().split('T')[0],
+            responsible: '',
+        });
+    };
+
+    if (!open) return null;
+
+    return (
+        <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+            <div className="bg-[#0A0A0A] border border-white/10 rounded-lg w-full max-w-lg p-6 shadow-2xl">
+                <div className="flex justify-between items-center mb-6">
+                    <h3 className="text-sm font-bold text-white uppercase tracking-widest">{t('os.quick_add.title')}</h3>
+                    <button onClick={onClose} className="text-gray-500 hover:text-white"><X size={16} /></button>
+                </div>
+
+                <form onSubmit={handleSubmit} className="space-y-4">
+                    <div>
+                        <label className="text-label">{t('os.quick_add.title_label')}</label>
+                        <input
+                            required
+                            className="premium-input"
+                            value={form.initiative}
+                            onChange={e => setForm({ ...form, initiative: e.target.value })}
+                            placeholder={t('os.quick_add.placeholder')}
+                        />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <label className="text-label">{t('os.quick_add.date_label')}</label>
+                            <input
+                                type="date"
+                                className="premium-input"
+                                value={form.date}
+                                onChange={e => setForm({ ...form, date: e.target.value })}
+                            />
+                        </div>
+                        <div>
+                            <label className="text-label">{t('os.quick_add.channel_label')}</label>
+                            <select
+                                className="premium-input"
+                                value={form.channel}
+                                onChange={e => setForm({ ...form, channel: e.target.value })}
+                            >
+                                <option>Instagram Feed</option>
+                                <option>Instagram Reels</option>
+                                <option>TikTok</option>
+                                <option>WhatsApp</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div className="pt-4 flex justify-end gap-2">
+                        <button type="button" onClick={onClose} className="btn-ghost">{t('common.cancel')}</button>
+                        <button type="submit" className="btn-primary">{t('os.quick_add.create_button')}</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    );
+}
 
 export function OnePageDashboard({
     appData,

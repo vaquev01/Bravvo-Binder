@@ -29,7 +29,6 @@ export const CARACA_BAR_DATA = {
                 audienceGender: "todos",
                 audienceClass: "bc",
                 mood: "colorido",
-                tone: "divertido",
                 primaryColor: "#FF5733",
                 secondaryColor: "#1A1A1A",
                 accentColor: "#F39C12",
