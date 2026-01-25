@@ -292,27 +292,27 @@ export function LandingPage({ onLogin }) {
                     <div>
                         <h4 className="font-bold text-white mb-6">{t('landing.footer.platform')}</h4>
                         <ul className="space-y-4 text-gray-500">
-                            <li className="hover:text-white cursor-pointer">Command Center</li>
-                            <li className="hover:text-white cursor-pointer">Intelligence</li>
-                            <li className="hover:text-white cursor-pointer">Governance</li>
+                            <li className="hover:text-white cursor-pointer transition-colors">Command Center</li>
+                            <li className="hover:text-white cursor-pointer transition-colors">Intelligence</li>
+                            <li className="hover:text-white cursor-pointer transition-colors">Governance</li>
                         </ul>
                     </div>
 
                     <div>
                         <h4 className="font-bold text-white mb-6">{t('landing.footer.company')}</h4>
                         <ul className="space-y-4 text-gray-500">
-                            <li className="hover:text-white cursor-pointer">Manifesto</li>
-                            <li className="hover:text-white cursor-pointer">Careers</li>
-                            <li className="hover:text-white cursor-pointer">Legal</li>
+                            <li className="hover:text-white cursor-pointer transition-colors">Manifesto</li>
+                            <li className="hover:text-white cursor-pointer transition-colors">Careers</li>
+                            <li className="hover:text-white cursor-pointer transition-colors">Legal</li>
                         </ul>
                     </div>
 
                     <div>
                         <h4 className="font-bold text-white mb-6">{t('landing.footer.social')}</h4>
                         <ul className="space-y-4 text-gray-500">
-                            <li className="hover:text-white cursor-pointer">Twitter / X</li>
-                            <li className="hover:text-white cursor-pointer">LinkedIn</li>
-                            <li className="hover:text-white cursor-pointer">GitHub</li>
+                            <li><a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">Twitter / X</a></li>
+                            <li><a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">LinkedIn</a></li>
+                            <li><a href="https://github.com" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">GitHub</a></li>
                         </ul>
                     </div>
 
