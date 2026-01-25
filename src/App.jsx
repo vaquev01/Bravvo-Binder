@@ -90,74 +90,74 @@ function ClientWorkspaceContent({ onBackToAgency, isAgencyView: _isAgencyView })
     const [formData, setFormData] = useLocalStorage('bravvo_form_data', {
         // --- V1: Brand Vault ---
         clientName: appData.clientName || "",
-        niche: appData.vaults.S1.fields.niche || "gastronomia",
-        tagline: appData.vaults.S1.fields.tagline || "",
-        promise: appData.vaults.S1.fields.promise || "",
-        enemy: appData.vaults.S1.fields.enemy || "",
-        brandValues: appData.vaults.S1.fields.brandValues || [],
-        audienceAge: appData.vaults.S1.fields.audienceAge || "25-34",
-        audienceGender: appData.vaults.S1.fields.audienceGender || "todos",
-        audienceClass: appData.vaults.S1.fields.audienceClass || "bc",
-        audiencePain: appData.vaults.S1.fields.audiencePain || "",
-        archetype: appData.vaults.S1.fields.archetype || "O Cara Comum",
-        tone: appData.vaults.S1.fields.tone || "casual",
-        mood: appData.vaults.S5.rules.mood || "moderno",
-        primaryColor: appData.vaults.S5.palette.primary || "#F97316",
-        secondaryColor: appData.vaults.S5.palette.secondary || "#1E293B",
-        accentColor: appData.vaults.S5.palette.accent || "#10B981",
-        bio: appData.vaults.S1.fields.bio || "",
+        niche: appData?.vaults?.S1?.fields?.niche || "gastronomia",
+        tagline: appData?.vaults?.S1?.fields?.tagline || "",
+        promise: appData?.vaults?.S1?.fields?.promise || "",
+        enemy: appData?.vaults?.S1?.fields?.enemy || "",
+        brandValues: appData?.vaults?.S1?.fields?.brandValues || [],
+        audienceAge: appData?.vaults?.S1?.fields?.audienceAge || "25-34",
+        audienceGender: appData?.vaults?.S1?.fields?.audienceGender || "todos",
+        audienceClass: appData?.vaults?.S1?.fields?.audienceClass || "bc",
+        audiencePain: appData?.vaults?.S1?.fields?.audiencePain || "",
+        archetype: appData?.vaults?.S1?.fields?.archetype || "O Cara Comum",
+        tone: appData?.vaults?.S1?.fields?.tone || "casual",
+        mood: appData?.vaults?.S5?.rules?.mood || "moderno",
+        primaryColor: appData?.vaults?.S5?.palette?.primary || "#F97316",
+        secondaryColor: appData?.vaults?.S5?.palette?.secondary || "#1E293B",
+        accentColor: appData?.vaults?.S5?.palette?.accent || "#10B981",
+        bio: appData?.vaults?.S1?.fields?.bio || "",
 
         // --- V2: Commerce Vault ---
-        products: appData.vaults.S2.products || [],
-        currentTicket: appData.vaults.S2.metrics?.currentTicket || "",
-        targetTicket: appData.vaults.S2.metrics?.targetTicket || "",
-        currentRevenue: appData.vaults.S2.metrics?.currentRevenue || "",
-        upsellStrategy: appData.vaults.S2.strategy?.upsell || "none",
-        saleFormat: appData.vaults.S2.strategy?.format || "presencial",
-        baitProduct: appData.vaults.S2.bait?.product || "",
-        baitPrice: appData.vaults.S2.bait?.price || "",
+        products: appData?.vaults?.S2?.products || [],
+        currentTicket: appData?.vaults?.S2?.metrics?.currentTicket || "",
+        targetTicket: appData?.vaults?.S2?.metrics?.targetTicket || "",
+        currentRevenue: appData?.vaults?.S2?.metrics?.currentRevenue || "",
+        upsellStrategy: appData?.vaults?.S2?.strategy?.upsell || "none",
+        saleFormat: appData?.vaults?.S2?.strategy?.format || "presencial",
+        baitProduct: appData?.vaults?.S2?.bait?.product || "",
+        baitPrice: appData?.vaults?.S2?.bait?.price || "",
 
         // --- V3: Funnel Vault ---
-        channels: appData.vaults.S3.channels || [],
-        conversionLink: appData.vaults.S3.steps.find(s => s.step === 'Desejo')?.goal || "",
-        instagramHandle: appData.vaults.S3.social.instagram || "",
-        websiteUrl: appData.vaults.S3.social.website || "",
-        primaryCTA: appData.vaults.S3.cta.primary || "whatsapp",
-        secondaryCTA: appData.vaults.S3.cta.secondary || "saibamais",
-        ctaText: appData.vaults.S3.cta.text || "",
-        monthlyGoal: appData.vaults.S3.metrics.monthlyGoal || "",
-        trafficType: appData.vaults.S3.traffic.primarySource || "Misto",
-        utmCampaign: appData.vaults.S3.traffic.utmCampaign || "",
-        currentConversion: appData.vaults.S3.metrics.currentConversion || "",
-        targetConversion: appData.vaults.S3.metrics.targetConversion || "",
-        cpl: appData.vaults.S3.metrics.cpl || "",
+        channels: appData?.vaults?.S3?.channels || [],
+        conversionLink: appData?.vaults?.S3?.steps?.find(s => s.step === 'Desejo')?.goal || "",
+        instagramHandle: appData?.vaults?.S3?.social?.instagram || "",
+        websiteUrl: appData?.vaults?.S3?.social?.website || "",
+        primaryCTA: appData?.vaults?.S3?.cta?.primary || "whatsapp",
+        secondaryCTA: appData?.vaults?.S3?.cta?.secondary || "saibamais",
+        ctaText: appData?.vaults?.S3?.cta?.text || "",
+        monthlyGoal: appData?.vaults?.S3?.metrics?.monthlyGoal || "",
+        trafficType: appData?.vaults?.S3?.traffic?.primarySource || "Misto",
+        utmCampaign: appData?.vaults?.S3?.traffic?.utmCampaign || "",
+        currentConversion: appData?.vaults?.S3?.metrics?.currentConversion || "",
+        targetConversion: appData?.vaults?.S3?.metrics?.targetConversion || "",
+        cpl: appData?.vaults?.S3?.metrics?.cpl || "",
 
         // --- V4: Ops Vault ---
-        approverName: appData.vaults.S4.matrix.find(m => m.role === 'Aprovador Final')?.who || "",
-        teamStructure: appData.vaults.S4.matrix.find(m => m.role === 'Time')?.who || "Enxuta",
-        slaHours: parseInt(appData.vaults.S4.slas.approval) || 24,
-        contentOwner: appData.vaults.S4.owners.content || "",
-        trafficOwner: appData.vaults.S4.owners.traffic || "",
-        supportOwner: appData.vaults.S4.owners.support || "",
-        emergencyContact: appData.vaults.S4.contacts.emergency || "",
-        postingFrequency: appData.vaults.S4.schedule.frequency || "3x",
-        bestDays: appData.vaults.S4.schedule.bestDays || [],
-        bestTimes: appData.vaults.S4.schedule.bestTimes || [],
-        startDate: appData.vaults.S4.schedule.startDate || "",
-        cycleDuration: appData.vaults.S4.schedule.cycleDuration || "30",
-        stakeholders: appData.vaults.S4.stakeholders || [],
-        competitors: appData.vaults.S4.competitors || [],
+        approverName: appData?.vaults?.S4?.matrix?.find(m => m.role === 'Aprovador Final')?.who || "",
+        teamStructure: appData?.vaults?.S4?.matrix?.find(m => m.role === 'Time')?.who || "Enxuta",
+        slaHours: parseInt(appData?.vaults?.S4?.slas?.approval) || 24,
+        contentOwner: appData?.vaults?.S4?.owners?.content || "",
+        trafficOwner: appData?.vaults?.S4?.owners?.traffic || "",
+        supportOwner: appData?.vaults?.S4?.owners?.support || "",
+        emergencyContact: appData?.vaults?.S4?.contacts?.emergency || "",
+        postingFrequency: appData?.vaults?.S4?.schedule?.frequency || "3x",
+        bestDays: appData?.vaults?.S4?.schedule?.bestDays || [],
+        bestTimes: appData?.vaults?.S4?.schedule?.bestTimes || [],
+        startDate: appData?.vaults?.S4?.schedule?.startDate || "",
+        cycleDuration: appData?.vaults?.S4?.schedule?.cycleDuration || "30",
+        stakeholders: appData?.vaults?.S4?.stakeholders || [],
+        competitors: appData?.vaults?.S4?.competitors || [],
 
         // --- V5: Ideas & References Vault ---
-        ideas: appData.vaults.S5.ideas || [],
-        references: appData.vaults.S5.references || [],
-        notepad: appData.vaults.S5.notepad || "",
+        ideas: appData?.vaults?.S5?.ideas || [],
+        references: appData?.vaults?.S5?.references || [],
+        notepad: appData?.vaults?.S5?.notepad || "",
 
         // --- Governance History ---
         governanceHistory: appData.governanceHistory || [],
 
         // --- V5: Brand Assets (NEW) ---
-        brandAssets: appData.vaults.S5.brandAssets || {
+        brandAssets: appData?.vaults?.S5?.brandAssets || {
             logos: [],
             textures: [],
             icons: [],
@@ -165,7 +165,7 @@ function ClientWorkspaceContent({ onBackToAgency, isAgencyView: _isAgencyView })
         },
 
         // --- V5: Brand Identity (NEW) ---
-        brandIdentity: appData.vaults.S5.brandIdentity || {
+        brandIdentity: appData?.vaults?.S5?.brandIdentity || {
             musicalStyle: "",
             visualVibes: [],
             keyElements: [],
@@ -211,9 +211,9 @@ function ClientWorkspaceContent({ onBackToAgency, isAgencyView: _isAgencyView })
 
         // S1: Brand Vault
         const newS1 = {
-            ...appData.vaults.S1,
+            ...(appData?.vaults?.S1 || {}),
             fields: {
-                ...appData.vaults.S1.fields,
+                ...(appData?.vaults?.S1?.fields || {}),
                 promise: newClientData.promise, // From V1
                 enemy: newClientData.enemy,     // From V1
                 tone: Array.isArray(newClientData.tone) ? newClientData.tone : (newClientData.tone || '').split(','),
@@ -226,7 +226,7 @@ function ClientWorkspaceContent({ onBackToAgency, isAgencyView: _isAgencyView })
         const heroProduct = inputProducts[0] || { name: "Produto Exemplo", price: 0, margin: "Medium" };
 
         const newS2 = {
-            ...appData.vaults.S2,
+            ...(appData?.vaults?.S2 || {}),
             products: inputProducts.length > 0 ? inputProducts : [
                 { id: "P_NEW_1", name: "Produto Inicial", role: "Hero", margin: "High", price: 100 },
             ],
@@ -238,7 +238,7 @@ function ClientWorkspaceContent({ onBackToAgency, isAgencyView: _isAgencyView })
 
         // S3: Funnel Vault
         const newS3 = {
-            ...appData.vaults.S3,
+            ...(appData?.vaults?.S3 || {}),
             steps: [
                 { step: "Atenção", kpi: "CPM", goal: "R$ 10,00" },
                 { step: "Interesse", kpi: "CTR", goal: "2%" },
@@ -251,27 +251,27 @@ function ClientWorkspaceContent({ onBackToAgency, isAgencyView: _isAgencyView })
 
         // S4: Ops Vault
         const newS4 = {
-            ...appData.vaults.S4,
+            ...(appData?.vaults?.S4 || {}),
             matrix: [
                 { role: "Aprovador Final", who: newClientData.approverName }, // From V4
                 { role: "Estrategista", who: "Bravvo Agent" },
                 { role: "Time", who: newClientData.teamStructure }
             ],
             slas: {
-                ...appData.vaults.S4.slas,
+                ...(appData?.vaults?.S4?.slas || {}),
                 approval: `${newClientData.slaHours}h` // From V4
             }
         };
 
         // S5: Design Vault
         const newS5 = {
-            ...appData.vaults.S5,
+            ...(appData?.vaults?.S5 || {}),
             palette: {
-                ...appData.vaults.S5.palette,
+                ...(appData?.vaults?.S5?.palette || {}),
                 primary: newClientData.primaryColor // From V1
             },
             rules: {
-                ...appData.vaults.S5.rules,
+                ...(appData?.vaults?.S5?.rules || {}),
                 mood: newClientData.mood
             }
         };

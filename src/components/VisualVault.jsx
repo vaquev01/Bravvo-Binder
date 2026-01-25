@@ -17,24 +17,27 @@ import {
 export function VisualVault({ id, data }) {
     // S1: Brand Vault
     if (id === 'S1') {
+        const fields = data?.fields || {};
+        const tone = Array.isArray(fields.tone) ? fields.tone : [];
+        const policies = Array.isArray(fields.policies) ? fields.policies : [];
         return (
             <div className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <Card title="Promessa de Marca" icon={Target} color="text-bravvo-primary">
-                        <p className="text-xl font-display font-bold leading-tight">"{data.fields.promise}"</p>
+                        <p className="text-xl font-display font-bold leading-tight">"{fields.promise || ''}"</p>
                     </Card>
                     <Card title="Inimigo Comum" icon={Shield} color="text-red-500">
-                        <p className="text-lg text-gray-300">"{data.fields.enemy}"</p>
+                        <p className="text-lg text-gray-300">"{fields.enemy || ''}"</p>
                     </Card>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <Card title="Tensão Cultural" icon={Zap} color="text-yellow-400">
-                        <p className="text-sm text-gray-400">{data.fields.tension}</p>
+                        <p className="text-sm text-gray-400">{fields.tension || ''}</p>
                     </Card>
                     <Card title="Tom de Voz" icon={Users} color="text-blue-400">
                         <div className="flex flex-wrap gap-2">
-                            {data.fields.tone.map(t => (
+                            {tone.map(t => (
                                 <span key={t} className="px-3 py-1 bg-blue-500/10 border border-blue-500/20 rounded-full text-sm text-blue-300">
                                     {t}
                                 </span>
@@ -42,14 +45,14 @@ export function VisualVault({ id, data }) {
                         </div>
                     </Card>
                     <Card title="Arquétipo" icon={Users} color="text-purple-400">
-                        <p className="text-lg font-bold text-purple-300">{data.fields.archetype}</p>
+                        <p className="text-lg font-bold text-purple-300">{fields.archetype || ''}</p>
                     </Card>
                 </div>
 
                 <div className="glass-panel p-6 rounded-xl border border-bravvo-border">
                     <h3 className="text-sm font-bold text-gray-500 uppercase tracking-widest mb-4">Policies (Regras de Ouro)</h3>
                     <ul className="space-y-2">
-                        {data.fields.policies.map((policy, i) => (
+                        {policies.map((policy, i) => (
                             <li key={i} className="flex items-start gap-2 text-gray-300">
                                 <span className="text-red-500 mt-1">✕</span>
                                 {policy}
@@ -114,13 +117,15 @@ export function VisualVault({ id, data }) {
 
     // S3: Funnel Vault
     if (id === 'S3') {
+        const steps = Array.isArray(data?.steps) ? data.steps : [];
+        const ctAs = Array.isArray(data?.ctas) ? data.ctas : [];
         return (
             <div className="space-y-8">
                 <div className="flex flex-col md:flex-row gap-4 relative">
                     {/* Connection Line */}
                     <div className="absolute top-1/2 left-0 right-0 h-1 bg-gradient-to-r from-blue-500/20 via-purple-500/20 to-green-500/20 -z-10 hidden md:block"></div>
 
-                    {data.steps.map((step) => (
+                    {steps.map((step) => (
                         <div key={step.id} className="flex-1 glass-panel p-6 rounded-xl border border-bravvo-border relative group">
                             <div className="absolute -top-3 left-6 px-2 bg-bravvo-card text-xs text-gray-500 border border-bravvo-border rounded">
                                 {step.id}
@@ -147,7 +152,7 @@ export function VisualVault({ id, data }) {
                 <div className="glass-panel p-6 rounded-xl border border-bravvo-border">
                     <h3 className="text-sm font-bold text-gray-500 uppercase tracking-widest mb-4">Biblioteca de CTAs (Calls to Action)</h3>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        {data.ctas.map(cta => (
+                        {ctAs.map(cta => (
                             <div key={cta.id} className="p-4 bg-white/5 rounded-lg border border-white/5 flex flex-col items-center text-center">
                                 <span className="text-xs text-gray-500 mb-2">{cta.type}</span>
                                 <button className="bg-bravvo-primary text-black font-bold px-4 py-2 rounded-lg w-full hover:bg-orange-500 transition-colors">
@@ -164,6 +169,8 @@ export function VisualVault({ id, data }) {
 
     // S4: Ops Vault
     if (id === 'S4') {
+        const team = Array.isArray(data?.team) ? data.team : [];
+        const slas = Array.isArray(data?.slas) ? data.slas : [];
         return (
             <div className="space-y-6">
                 <div className="glass-panel overflow-hidden rounded-xl border border-bravvo-border">
@@ -177,13 +184,13 @@ export function VisualVault({ id, data }) {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-800">
-                            {data.team.map((member, i) => (
+                            {team.map((member, i) => (
                                 <tr key={i} className="hover:bg-white/5">
                                     <td className="p-4 font-bold text-white">{member.role}</td>
                                     <td className="p-4 text-bravvo-primary">{member.name}</td>
                                     <td className="p-4 text-gray-400">
                                         <div className="flex flex-wrap gap-1">
-                                            {member.responsibilities.map(r => (
+                                            {(Array.isArray(member.responsibilities) ? member.responsibilities : []).map(r => (
                                                 <span key={r} className="px-2 py-0.5 bg-black/40 rounded text-xs">{r}</span>
                                             ))}
                                         </div>
@@ -196,7 +203,7 @@ export function VisualVault({ id, data }) {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    {data.slas.map((sla, i) => (
+                    {slas.map((sla, i) => (
                         <div key={i} className="p-4 rounded-lg bg-black/40 border border-gray-800 flex justify-between items-center">
                             <div>
                                 <p className="text-sm font-medium text-white">{sla.task}</p>
@@ -215,6 +222,11 @@ export function VisualVault({ id, data }) {
 
     // S5: Design Vault (The Masterpiece)
     if (id === 'S5') {
+        const palette = data?.palette || {};
+        const typography = data?.typography || {};
+        const rules = data?.rules || {};
+        const forbidden = Array.isArray(rules.forbidden) ? rules.forbidden : [];
+        const mandatory = Array.isArray(rules.mandatory) ? rules.mandatory : [];
         return (
             <div className="space-y-8">
                 {/* Palette */}
@@ -223,7 +235,7 @@ export function VisualVault({ id, data }) {
                         <Palette size={16} /> Paleta de Cores
                     </h3>
                     <div className="flex flex-wrap gap-4">
-                        {Object.entries(data.palette).map(([name, hex]) => (
+                        {Object.entries(palette).map(([name, hex]) => (
                             <div key={name} className="flex-1 min-w-[140px] group cursor-pointer">
                                 <div
                                     className="h-32 rounded-xl shadow-lg mb-2 border border-white/10 group-hover:scale-105 transition-transform relative overflow-hidden"
@@ -252,14 +264,14 @@ export function VisualVault({ id, data }) {
                                 <p className="text-4xl font-black text-white leading-tight">
                                     THE QUICK BROWN FOX
                                 </p>
-                                <p className="text-xs text-gray-500 mt-1 font-mono">{data.typography.h1.font}</p>
+                                <p className="text-xs text-gray-500 mt-1 font-mono">{typography?.h1?.font || ''}</p>
                             </div>
                             <div>
                                 <p className="text-xs text-bravvo-primary mb-1">Subhead (H2)</p>
                                 <p className="text-xl font-bold text-gray-300">
                                     Jumps over the lazy dog
                                 </p>
-                                <p className="text-xs text-gray-500 mt-1 font-mono">{data.typography.h2.font}</p>
+                                <p className="text-xs text-gray-500 mt-1 font-mono">{typography?.h2?.font || ''}</p>
                             </div>
                         </div>
                     </section>
@@ -268,7 +280,7 @@ export function VisualVault({ id, data }) {
                         <div className="flex justify-between items-center mb-6">
                             <h3 className="section-title">Design Mood</h3>
                             <span className="px-3 py-1 bg-white/10 rounded-full text-xs text-white border border-white/10">
-                                {data.rules.mood}
+                                {rules?.mood || ''}
                             </span>
                         </div>
 
@@ -278,7 +290,7 @@ export function VisualVault({ id, data }) {
                                     <AlertTriangle size={16} /> PROIBIDO (Forbidden List)
                                 </h4>
                                 <ul className="space-y-2">
-                                    {data.rules.forbidden.map(item => (
+                                    {forbidden.map(item => (
                                         <li key={item} className="flex items-start gap-2 text-red-200/80 text-sm">
                                             <span className="text-red-500/50">•</span> {item}
                                         </li>
@@ -291,7 +303,7 @@ export function VisualVault({ id, data }) {
                                     <CheckCircle size={16} /> OBRIGATÓRIO (Mandatory)
                                 </h4>
                                 <ul className="space-y-2">
-                                    {data.rules.mandatory.map(item => (
+                                    {mandatory.map(item => (
                                         <li key={item} className="flex items-start gap-2 text-green-200/80 text-sm">
                                             <span className="text-green-500/50">•</span> {item}
                                         </li>
