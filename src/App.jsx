@@ -500,10 +500,13 @@ function AppContent() {
     const [clientData, setClientData] = useState(null); // The actual data for the workspace
     const { addToast } = useToast();
 
-    // AUTO-LOGIN CHECK
+    // AUTO-LOGIN CHECK - Only if explicitly requested (not on first visit)
     useEffect(() => {
+        // Check if this is a direct landing page visit (no hash/query params)
+        const isDirectVisit = !window.location.hash && !window.location.search;
+        
         const savedSession = localStorage.getItem('bravvo_session');
-        if (savedSession) {
+        if (savedSession && !isDirectVisit) {
             try {
                 const session = JSON.parse(savedSession);
                 // Simple validation - in real app, better token check
