@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useLanguage } from '../../contexts/LanguageContext';
 import {
     LayoutGrid,
@@ -14,6 +14,7 @@ import { api } from '../../data/mockDB';
 
 export function AgencyDashboard({ onSelectClient, onLogout }) {
     const { t } = useLanguage();
+    const [activeTab, setActiveTab] = useState('overview');
     // Mock Agency Data (Agency A1 for demo)
     const agencyId = 'A1';
 
@@ -45,9 +46,18 @@ export function AgencyDashboard({ onSelectClient, onLogout }) {
 
                 <div className="flex items-center gap-6">
                     <div className="hidden md:flex items-center gap-1 bg-[var(--bg-surface)] p-1 rounded-lg border border-[var(--border-subtle)]">
-                        {[t('dashboard.nav.overview'), t('dashboard.nav.financials'), t('dashboard.nav.team'), t('dashboard.nav.audit')].map(tab => (
-                            <button key={tab} className={`px-4 py-1.5 text-[11px] font-bold uppercase tracking-wide rounded ${tab === t('dashboard.nav.overview') ? 'bg-white text-black shadow-sm' : 'text-gray-500 hover:text-white hover:bg-white/5'} transition-all`}>
-                                {tab}
+                        {[
+                            { id: 'overview', label: t('dashboard.nav.overview') },
+                            { id: 'financials', label: t('dashboard.nav.financials') },
+                            { id: 'team', label: t('dashboard.nav.team') },
+                            { id: 'audit', label: t('dashboard.nav.audit') }
+                        ].map(tab => (
+                            <button 
+                                key={tab.id} 
+                                onClick={() => setActiveTab(tab.id)}
+                                className={`px-4 py-1.5 text-[11px] font-bold uppercase tracking-wide rounded ${activeTab === tab.id ? 'bg-white text-black shadow-sm' : 'text-gray-500 hover:text-white hover:bg-white/5'} transition-all`}
+                            >
+                                {tab.label}
                             </button>
                         ))}
                     </div>
@@ -126,22 +136,23 @@ export function AgencyDashboard({ onSelectClient, onLogout }) {
                     </div>
                 </div>
 
-                {/* Clients Table / Grid */}
-                <div className="pt-4 animate-fadeIn" style={{ animationDelay: '0.1s' }}>
-                    <div className="flex justify-between items-center mb-6">
-                        <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                            <LayoutGrid size={14} className="text-gray-500" />
-                            Client Workspaces
-                        </h3>
-                        <div className="flex gap-2">
-                            <button className="btn-ghost">
-                                Filter
-                            </button>
-                            <button className="btn-primary">
-                                + New Workspace
-                            </button>
+                {/* Tab Content */}
+                {activeTab === 'overview' && (
+                    <div className="pt-4 animate-fadeIn" style={{ animationDelay: '0.1s' }}>
+                        <div className="flex justify-between items-center mb-6">
+                            <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                                <LayoutGrid size={14} className="text-gray-500" />
+                                {t('dashboard.agency.client_workspaces')}
+                            </h3>
+                            <div className="flex gap-2">
+                                <button className="btn-ghost">
+                                    {t('common.filter')}
+                                </button>
+                                <button className="btn-primary">
+                                    + {t('dashboard.agency.new_workspace')}
+                                </button>
+                            </div>
                         </div>
-                    </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-px bg-[var(--border-subtle)] border border-[var(--border-subtle)] rounded-lg overflow-hidden">
                         {clients.map((client) => (
@@ -164,11 +175,11 @@ export function AgencyDashboard({ onSelectClient, onLogout }) {
 
                                     <div className="grid grid-cols-2 gap-4 mt-6">
                                         <div>
-                                            <p className="text-label">Monthly Rev</p>
+                                            <p className="text-label">{t('dashboard.agency.monthly_rev')}</p>
                                             <p className="text-mono-data text-white">{(client.revenue || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p>
                                         </div>
                                         <div>
-                                            <p className="text-label">Head</p>
+                                            <p className="text-label">{t('dashboard.agency.head')}</p>
                                             <p className="text-mono-data text-white">{client.responsible}</p>
                                         </div>
                                     </div>
@@ -184,6 +195,40 @@ export function AgencyDashboard({ onSelectClient, onLogout }) {
                         ))}
                     </div>
                 </div>
+                )}
+
+                {/* Financials Tab */}
+                {activeTab === 'financials' && (
+                    <div className="pt-4 animate-fadeIn">
+                        <div className="bento-grid p-8 text-center">
+                            <TrendingUp size={48} className="text-gray-600 mx-auto mb-4" />
+                            <h3 className="text-xl font-bold text-white mb-2">{t('dashboard.nav.financials')}</h3>
+                            <p className="text-gray-500">{t('dashboard.agency.coming_soon')}</p>
+                        </div>
+                    </div>
+                )}
+
+                {/* Team Tab */}
+                {activeTab === 'team' && (
+                    <div className="pt-4 animate-fadeIn">
+                        <div className="bento-grid p-8 text-center">
+                            <Users size={48} className="text-gray-600 mx-auto mb-4" />
+                            <h3 className="text-xl font-bold text-white mb-2">{t('dashboard.nav.team')}</h3>
+                            <p className="text-gray-500">{t('dashboard.agency.coming_soon')}</p>
+                        </div>
+                    </div>
+                )}
+
+                {/* Audit Tab */}
+                {activeTab === 'audit' && (
+                    <div className="pt-4 animate-fadeIn">
+                        <div className="bento-grid p-8 text-center">
+                            <Activity size={48} className="text-gray-600 mx-auto mb-4" />
+                            <h3 className="text-xl font-bold text-white mb-2">{t('dashboard.nav.audit')}</h3>
+                            <p className="text-gray-500">{t('dashboard.agency.coming_soon')}</p>
+                        </div>
+                    </div>
+                )}
             </main>
         </div>
     );
