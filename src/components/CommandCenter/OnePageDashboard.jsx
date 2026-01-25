@@ -484,7 +484,7 @@ export function OnePageDashboard({
                         </div>
                         <InlineEdit
                             value={kpis.revenue.value}
-                            onSave={(v) => setKpis(prev => ({ ...prev, revenue: { ...prev.revenue, value: v } }))}
+                            onSave={(v) => handleKpiUpdate('revenue', v)}
                             className="text-2xl font-mono font-medium text-white tracking-tight"
                             prefix="R$ "
                         />
@@ -500,7 +500,7 @@ export function OnePageDashboard({
                         </div>
                         <InlineEdit
                             value={kpis.traffic.value}
-                            onSave={(v) => setKpis(prev => ({ ...prev, traffic: { ...prev.traffic, value: v } }))}
+                            onSave={(v) => handleKpiUpdate('traffic', v)}
                             className="text-2xl font-mono font-medium text-white tracking-tight"
                             prefix="R$ "
                         />
@@ -516,7 +516,7 @@ export function OnePageDashboard({
                         </div>
                         <InlineEdit
                             value={kpis.sales.value}
-                            onSave={(v) => setKpis(prev => ({ ...prev, sales: { ...prev.sales, value: v } }))}
+                            onSave={(v) => handleKpiUpdate('sales', v)}
                             className="text-2xl font-mono font-medium text-white tracking-tight"
                         />
                         <div className="mt-2 h-1 bg-white/5 rounded-full overflow-hidden">

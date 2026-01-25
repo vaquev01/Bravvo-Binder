@@ -133,6 +133,11 @@ export const CARACA_BAR_DATA = {
             { id: 404, metric: "Cadastros Lista VIP", current: 45, target: 100, status: "Critical", action: "Create New Offer" }
         ]
     },
+    kpis: {
+        revenue: { value: 32500, goal: 50000 },
+        traffic: { value: 12, goal: 15 },
+        sales: { value: 154, goal: 120 }
+    },
     promptHistory: []
 };
 
