@@ -62,7 +62,7 @@ function InlineEdit({ value, onSave, type = 'text', prefix = '', suffix = '', cl
         <span
             onClick={() => setEditing(true)}
             className={`cursor-pointer hover:bg-white/10 px-1 rounded transition-colors group relative ${className}`}
-            title="Click to edit"
+            title="Clique para editar"
         >
             {prefix}{value}{suffix}
         </span>
