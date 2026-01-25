@@ -7,18 +7,6 @@
 
 // --- CONSTANTS & MAPPINGS ---
 
-const AI_MODELS = {
-    image: {
-        midjourney: { name: 'Midjourney v6', params: '--v 6.1 --style raw --stylize 100 --q 2' },
-        dalle: { name: 'DALL-E 3', params: 'Natural, HD' },
-        flux: { name: 'Flux Pro', params: 'Ultra Realism' }
-    },
-    video: {
-        runway: { name: 'Runway Gen-3', params: 'Motion: 5, Smooth' },
-        kling: { name: 'Kling AI', params: 'Professional Mode' }
-    }
-};
-
 const FORMAT_SPECS = {
     post: { channel: 'Instagram Feed', aspect: '4:5', res: '1080x1350', safe: 'standard margins' },
     reel: { channel: 'Instagram Reel', aspect: '9:16', res: '1080x1920', safe: 'vertical UI safe zones' },

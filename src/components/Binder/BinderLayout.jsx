@@ -1,5 +1,5 @@
 import React from 'react';
-import { Target, ShoppingBag, GitBranch, Users, LayoutDashboard, CheckCircle2, Lock, Lightbulb, ArrowLeft } from 'lucide-react';
+import { Target, ShoppingBag, GitBranch, Users, LayoutDashboard, CheckCircle2, Lightbulb, ArrowLeft } from 'lucide-react';
 
 export function BinderLayout({ activeTab, setActiveTab, completedTabs, children, onBack }) {
     const tabs = [
@@ -21,7 +21,7 @@ export function BinderLayout({ activeTab, setActiveTab, completedTabs, children,
                     <span className="text-[9px] font-bold text-white/50">B</span>
                 </div>
 
-                {tabs.map((tab, index) => {
+                {tabs.map((tab) => {
                     const isActive = activeTab === tab.id;
                     const isCompleted = completedTabs.includes(tab.id);
                     // User requested to remove restrictions ("nao precisa proibir")

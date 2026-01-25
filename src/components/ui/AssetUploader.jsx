@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { Upload, X, Image, FileImage, Trash2, Tag } from 'lucide-react';
+import { Upload, X } from 'lucide-react';
 
 const ASSET_TYPES = {
     logos: { label: 'Logos', icon: '🎨', color: 'purple' },

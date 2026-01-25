@@ -1,12 +1,11 @@
 import React, { useState } from 'react';
-import { Clock, History, Calendar, TrendingUp, CheckCircle2, FileText, X, ChevronDown, ChevronUp, Copy, Check } from 'lucide-react';
+import { History, Calendar, X, ChevronDown, ChevronUp, Copy, Check } from 'lucide-react';
 
 export function GovernanceHistory({
     history = [],
-    onSaveSnapshot,
     open,
     onClose,
-    currentSnapshot
+    ..._unused
 }) {
     const [expandedId, setExpandedId] = useState(null);
     const [copiedId, setCopiedId] = useState(null);

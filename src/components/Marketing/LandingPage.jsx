@@ -1,19 +1,8 @@
 import React from 'react';
 import {
-    Layout,
-    Zap,
     Shield,
-    BarChart3,
     ArrowRight,
-    CheckCircle2,
-    Layers,
-    Users,
     BrainCircuit,
-    AlertTriangle,
-    Database,
-    Lock,
-    Globe,
-    Cpu,
     Command
 } from 'lucide-react';
 import { useLanguage } from '../../contexts/LanguageContext';

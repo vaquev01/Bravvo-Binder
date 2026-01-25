@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, Trash2, Users, Phone, Mail, Check, X } from 'lucide-react';
+import { Plus, Trash2, Users, Phone, Mail, Check } from 'lucide-react';
 
 export function StakeholderList({ stakeholders = [], onChange }) {
     const [showAddForm, setShowAddForm] = useState(false);

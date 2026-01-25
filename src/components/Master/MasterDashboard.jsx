@@ -1,6 +1,5 @@
 import React, { useState, useMemo } from 'react';
 import {
-    LayoutGrid,
     Users,
     Shield,
     LogOut,
@@ -9,7 +8,6 @@ import {
     ArrowRight,
     TrendingUp,
     AlertTriangle,
-    BarChart3
 } from 'lucide-react';
 import { api } from '../../data/mockDB';
 
@@ -179,7 +177,7 @@ export function MasterDashboard({ onSelectClient, onLogout }) {
     );
 }
 
-function DatabaseIcon({ count }) {
+function DatabaseIcon({ count: _count }) {
     return (
         <div className="flex items-center gap-1 text-blue-500">
             <Users size={14} />

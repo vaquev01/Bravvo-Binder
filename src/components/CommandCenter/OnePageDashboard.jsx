@@ -1,13 +1,16 @@
 import React, { useState, useRef, useEffect } from 'react';
 import {
-    Target, ShoppingBag, GitBranch, Users, LayoutDashboard, Clock, Terminal,
-    CheckCircle2, Calendar as CalendarIcon, BarChart3, Wand2, Edit3, Check, X,
-    Plus, Trash2, ChevronDown, MoreHorizontal, ArrowRight, Zap, TrendingUp,
-    Eye, Copy, Video, Image as ImageIcon, FileText, ExternalLink, Settings2,
-    History, Palette
+    ShoppingBag,
+    Terminal,
+    Calendar as CalendarIcon,
+    Edit3,
+    X,
+    Plus,
+    Zap,
+    TrendingUp,
+    History
 } from 'lucide-react';
 import { GovernanceHistory } from './GovernanceHistory';
-import { Accordion, AccordionGroup } from '../ui/Accordion';
 import { useToast } from '../../contexts/ToastContext';
 
 // Inline Editable Component
@@ -293,16 +296,14 @@ export function OnePageDashboard({
     appData,
     setAppData,
     setActiveTab,
-    onGeneratePrompt,
     formData,
-    setFormData,
     meetingState,
     setMeetingState
 }) {
     const { addToast } = useToast();
 
     // UI State
-    const [cycleProcessing, setCycleProcessing] = useState(false);
+    const [, setCycleProcessing] = useState(false);
     const [dateFilter, setDateFilter] = useState('week');
     const [showQuickAdd, setShowQuickAdd] = useState(false);
     const [editingItem, setEditingItem] = useState(null);
@@ -314,13 +315,6 @@ export function OnePageDashboard({
         traffic: { value: 12, goal: 15 },
         sales: { value: 154, goal: 120 },
     });
-
-    const updateComment = (field, value) => {
-        setMeetingState(prev => ({
-            ...prev,
-            comments: { ...prev.comments, [field]: value }
-        }));
-    };
 
     const toggleGovernanceMode = () => {
         const newActive = !meetingState.active;
@@ -395,12 +389,6 @@ export function OnePageDashboard({
             dashboard: { ...appData.dashboard, D2: [...(appData.dashboard.D2 || []), safeItem] }
         });
         addToast({ title: 'Item Created', type: 'success' });
-    };
-
-    const handleDeleteItem = (itemId) => {
-        if (!confirm('Cancel this initiative?')) return;
-        const updatedD2 = (appData.dashboard.D2 || []).filter(item => item.id !== itemId);
-        setAppData({ ...appData, dashboard: { ...appData.dashboard, D2: updatedD2 } });
     };
 
     const handleSaveMeeting = () => {

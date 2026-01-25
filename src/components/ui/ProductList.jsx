@@ -45,7 +45,7 @@ export function ProductList({ products = [], onChange, maxProducts = 5 }) {
     return (
         <div className="space-y-4">
             {/* Product Cards */}
-            {products.map((product, index) => (
+            {products.map((product) => (
                 <div
                     key={product.id}
                     className={`

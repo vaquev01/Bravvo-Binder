@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Users, ArrowRight, Clock, Shield, Sparkles, Calendar, UserCheck, Zap, Target } from 'lucide-react';
+import { Users, Shield, Sparkles, Calendar, UserCheck, Zap, Target } from 'lucide-react';
 import { StakeholderList } from '../ui/StakeholderList';
 import { CompetitorList } from '../ui/CompetitorList';
 

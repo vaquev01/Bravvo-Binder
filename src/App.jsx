@@ -1,8 +1,6 @@
 import React, { useState, useCallback, useEffect } from 'react';
 // import { CARACA_BAR_DATA } from './data/mockData'; // REMOVED: Now using Context
 import { generatePrompt } from './utils/promptGenerator';
-import { VisualVault } from './components/VisualVault';
-import { DashboardTable } from './components/DashboardTable';
 // import { OnboardingWizard } from './components/Onboarding/OnboardingWizard'; // REMOVED
 import { BinderLayout } from './components/Binder/BinderLayout';
 import { PageBrand } from './components/Pages/PageBrand';
@@ -18,23 +16,11 @@ import { useLocalStorage } from './hooks/useLocalStorage';
 import { ToastProvider, useToast } from './contexts/ToastContext';
 
 import {
-    LayoutDashboard,
-    Database,
     Terminal,
-    Layers,
     Wand2,
     Copy,
     Check,
-    Clock,
-    AlertCircle,
     Users,
-    Palette,
-    ShoppingBag,
-    GitBranch,
-    Settings,
-    BarChart3,
-    FileText,
-    Target,
     PlusCircle
 } from 'lucide-react';
 
@@ -64,18 +50,18 @@ function ClientWorkspace({ onBackToAgency, isAgencyView, initialData, onSave }) 
     );
 }
 
-function ClientWorkspaceContent({ onBackToAgency, isAgencyView }) {
+function ClientWorkspaceContent({ onBackToAgency, isAgencyView: _isAgencyView }) {
     const { addToast } = useToast();
 
     // State
-    const [activeSection, setActiveSection] = useState('dashboard'); // 'dashboard' or 'vaults' or 'logs'
-    const [activeId, setActiveId] = useState('D2'); // D1-D5 or S1-S5
+    const [_activeSection, _setActiveSection] = useState('dashboard'); // 'dashboard' or 'vaults' or 'logs'
+    const [_activeId, _setActiveId] = useState('D2'); // D1-D5 or S1-S5
     // Prompt UI State
     const [selectedPrompt, setSelectedPrompt] = useState(null);
     const [promptTab, setPromptTab] = useState('ai'); // 'ai' or 'human'
-    const [selectedItem, setSelectedItem] = useState(null);
+    const [_selectedItem, setSelectedItem] = useState(null);
     const [copied, setCopied] = useState(false);
-    const [promptHistory, setPromptHistory] = useState([]);
+    const [_promptHistory, setPromptHistory] = useState([]);
 
     // --- GOVERNANCE / MEETING STATE (Lifted for Persistence) ---
     const [meetingState, setMeetingState] = useLocalStorage('bravvo_meeting_state', {

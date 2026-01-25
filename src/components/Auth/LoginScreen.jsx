@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Shield, Briefcase, Zap, User, ArrowRight, LayoutGrid, Globe, Building2, Check, X, Star } from 'lucide-react';
+import { Briefcase, Zap, User, Check, X } from 'lucide-react';
 import { useLanguage } from '../../contexts/LanguageContext';
 
 function PricingModal({ open, onClose }) {
-    if (!open) return null;
     const { t } = useLanguage();
+
+    if (!open) return null;
 
     const plans = [
         {
@@ -129,7 +130,7 @@ function PricingModal({ open, onClose }) {
 export function LoginScreen({ onLogin }) {
     const { t } = useLanguage();
     const [showPricing, setShowPricing] = useState(false);
-    const [showAdmin, setShowAdmin] = useState(false);
+    const [, setShowAdmin] = useState(false);
 
     // Secret Key Combo to reveal Admin: Cmd+Shift+M
     useEffect(() => {

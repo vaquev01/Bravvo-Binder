@@ -1,10 +1,7 @@
 import React from 'react';
 import {
-    TrendingUp,
-    AlertCircle,
     CheckCircle2,
     Clock,
-    MoreHorizontal,
     Beer,
     Utensils,
     Sparkles

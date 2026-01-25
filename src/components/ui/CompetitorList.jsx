@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, Trash2, ExternalLink, Users, Instagram, Globe } from 'lucide-react';
+import { Plus, Trash2, Users, Instagram, Globe } from 'lucide-react';
 
 export function CompetitorList({ competitors = [], onChange }) {
     const [showAddForm, setShowAddForm] = useState(false);

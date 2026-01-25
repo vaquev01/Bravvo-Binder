@@ -1,17 +1,13 @@
-import React, { useState, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import {
     LayoutGrid,
     Users,
-    DollarSign,
-    AlertCircle,
     ArrowRight,
-    ExternalLink,
     Activity,
     Search,
     LogOut,
     Command,
     TrendingUp,
-    Clock
 } from 'lucide-react';
 import { api } from '../../data/mockDB';
 
@@ -146,7 +142,7 @@ export function AgencyDashboard({ onSelectClient, onLogout }) {
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-px bg-[var(--border-subtle)] border border-[var(--border-subtle)] rounded-lg overflow-hidden">
-                        {clients.map((client, i) => (
+                        {clients.map((client) => (
                             <div key={client.id} className="bg-[var(--bg-surface)] hover:bg-[#151515] p-6 transition-all group flex flex-col justify-between h-48 relative">
                                 <div>
                                     <div className="flex justify-between items-start mb-4">

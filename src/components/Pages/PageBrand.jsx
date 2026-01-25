@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import {
     Target, ArrowRight, Palette, Users, Sparkles, Upload, Image,
-    Music, Tag, AlertTriangle, Camera, Type, X, Plus
+    Music, Tag, X, Plus
 } from 'lucide-react';
 import { TagInput } from '../ui/TagInput';
 import { RadioCards } from '../ui/RadioCards';
@@ -56,7 +56,6 @@ const MUSICAL_SUGGESTIONS = [
 export function PageBrand({ formData, setFormData, onNext }) {
     const [activeAssetTab, setActiveAssetTab] = useState('logos');
     const [newKeyElement, setNewKeyElement] = useState('');
-    const [newProhibited, setNewProhibited] = useState('');
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -109,20 +108,6 @@ export function PageBrand({ formData, setFormData, onNext }) {
     const removeKeyElement = (element) => {
         const current = formData.brandIdentity?.keyElements || [];
         updateBrandIdentity('keyElements', current.filter(e => e !== element));
-    };
-
-    // Add prohibited element
-    const addProhibited = () => {
-        if (!newProhibited.trim()) return;
-        const current = formData.brandIdentity?.prohibitedElements || [];
-        updateBrandIdentity('prohibitedElements', [...current, newProhibited.trim()]);
-        setNewProhibited('');
-    };
-
-    // Remove prohibited element
-    const removeProhibited = (element) => {
-        const current = formData.brandIdentity?.prohibitedElements || [];
-        updateBrandIdentity('prohibitedElements', current.filter(e => e !== element));
     };
 
     const handleRandomMood = () => {

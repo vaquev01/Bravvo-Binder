@@ -5,7 +5,6 @@ import {
     Zap,
     Users,
     ShoppingBag,
-    TrendingUp,
     Clock,
     AlertTriangle,
     CheckCircle,
@@ -121,7 +120,7 @@ export function VisualVault({ id, data }) {
                     {/* Connection Line */}
                     <div className="absolute top-1/2 left-0 right-0 h-1 bg-gradient-to-r from-blue-500/20 via-purple-500/20 to-green-500/20 -z-10 hidden md:block"></div>
 
-                    {data.steps.map((step, i) => (
+                    {data.steps.map((step) => (
                         <div key={step.id} className="flex-1 glass-panel p-6 rounded-xl border border-bravvo-border relative group">
                             <div className="absolute -top-3 left-6 px-2 bg-bravvo-card text-xs text-gray-500 border border-bravvo-border rounded">
                                 {step.id}
