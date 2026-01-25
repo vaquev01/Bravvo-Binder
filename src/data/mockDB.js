@@ -1,4 +1,4 @@
-import { CARACA_BAR_DATA } from './mockData';
+import { CARACA_BAR_DATA, TADA_ASIAN_FOOD_DATA } from './mockData';
 
 // Helper to deep clone so we don't mutate the seed data directly
 const clone = (data) => JSON.parse(JSON.stringify(data));
@@ -40,9 +40,9 @@ export const MOCK_DB = {
     agencies: [
         {
             id: 'A1',
-            name: 'Growth Masters Agency',
+            name: 'Bravvo Agency',
             logo: '🚀',
-            clients: ['C1', 'C2', 'C3']
+            clients: ['C1', 'C2']
         },
         {
             id: 'A2',
@@ -52,18 +52,32 @@ export const MOCK_DB = {
         }
     ],
     clients: {
-        'C1': generateClient('C1', {
-            clientName: 'Burger King Local',
-            revenue: 95000,
-            revenueGoal: 100000,
-            brand: { archetype: 'Governante', niche: 'Fast Food' }
-        }),
-        'C2': generateClient('C2', {
-            clientName: 'FitGym Academy',
-            revenue: 22000,
-            revenueGoal: 40000,
-            brand: { archetype: 'Herói', niche: 'Fitness' }
-        }),
+        'C1': {
+            ...clone(CARACA_BAR_DATA),
+            id: 'C1',
+            agency: 'A1',
+            status: 'healthy',
+            revenue: 85000,
+            responsible: 'João (Dono)',
+            kpis: {
+                revenue: { value: 85000, goal: 100000 },
+                traffic: { value: 12500, goal: 15000 },
+                sales: { value: 450, goal: 500 }
+            }
+        },
+        'C2': {
+            ...clone(TADA_ASIAN_FOOD_DATA),
+            id: 'C2',
+            agency: 'A1',
+            status: 'attention',
+            revenue: 52000,
+            responsible: 'Ricardo (Proprietário)',
+            kpis: {
+                revenue: { value: 52000, goal: 75000 },
+                traffic: { value: 8200, goal: 12000 },
+                sales: { value: 900, goal: 1200 }
+            }
+        },
         'C3': generateClient('C3', {
             clientName: 'TechStart SaaS',
             revenue: 150000,

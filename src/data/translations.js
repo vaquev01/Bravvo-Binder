@@ -114,6 +114,11 @@ export const translations = {
                 total_revenue: "Receita Total (MRR)",
                 active_workspaces: "Workspaces Ativos",
                 slots: "Vagas",
+                client_workspaces: "Workspaces de Clientes",
+                new_workspace: "Novo Workspace",
+                monthly_rev: "Receita Mensal",
+                head: "Responsável",
+                coming_soon: "Em breve - Funcionalidade em desenvolvimento",
                 pending_approvals: "Aprovações Pendentes",
                 team_online: "Time Online",
                 system_health: "Saúde do Sistema"

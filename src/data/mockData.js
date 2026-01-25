@@ -20,7 +20,20 @@ export const CARACA_BAR_DATA = {
                 promise: "O melhor Happy Hour da cidade",
                 enemy: "Tédio e Comida Ruim",
                 tone: ["Divertido", "Jovem", "Direto"],
-                archetype: "O Cara Comum"
+                archetype: "O Cara Comum",
+                mission: "Criar momentos inesquecíveis de diversão e descontração",
+                vision: "Ser o point de encontro preferido da galera jovem da região",
+                values: ["Diversão", "Autenticidade", "Qualidade", "Comunidade"],
+                niche: "gastronomia",
+                audienceAge: "25-34",
+                audienceGender: "todos",
+                audienceClass: "bc",
+                mood: "colorido",
+                tone: "divertido",
+                primaryColor: "#FF5733",
+                secondaryColor: "#1A1A1A",
+                accentColor: "#F39C12",
+                bio: "O Caraca Bar nasceu da vontade de criar um espaço autêntico onde a galera se sente em casa. Com drinks autorais, burgers artesanais e uma vibe descontraída, somos o point perfeito para começar (ou terminar) a noite."
             }
         },
         S2: {
@@ -104,6 +117,114 @@ export const CARACA_BAR_DATA = {
             { id: 402, metric: "Engajamento Instagram", current: 4.5, target: 3.0, status: "Good", action: "Scale Winning Posts" },
             { id: 403, metric: "Vendas Gin Tônica", current: 150, target: 120, status: "Great", action: "Maintain" },
             { id: 404, metric: "Cadastros Lista VIP", current: 45, target: 100, status: "Critical", action: "Create New Offer" }
+        ]
+    },
+    promptHistory: []
+};
+
+// ============================================================================
+// TADA ASIAN FOOD - Dados Completos
+// ============================================================================
+export const TADA_ASIAN_FOOD_DATA = {
+    clientName: "Tada Asian Food",
+    vaults: {
+        S1: {
+            id: 'S1', label: 'Brand Vault', icon: 'Target', source: 'V1',
+            fields: {
+                promise: "Comida asiática autêntica com delivery rápido",
+                enemy: "Fast food sem qualidade e demora na entrega",
+                tone: ["Moderno", "Clean", "Confiável"],
+                archetype: "O Sábio",
+                mission: "Trazer a verdadeira experiência da culinária asiática para sua casa",
+                vision: "Ser a referência em comida asiática delivery no bairro",
+                values: ["Qualidade", "Rapidez", "Autenticidade"],
+                niche: "gastronomia",
+                audienceAge: "25-44",
+                audienceGender: "todos",
+                audienceClass: "ab",
+                mood: "minimalista",
+                primaryColor: "#D32F2F",
+                secondaryColor: "#FFF8E1",
+                accentColor: "#FFB300",
+                bio: "Tada Asian Food é especializado em culinária pan-asiática com foco em qualidade e velocidade. Nosso cardápio une o melhor da gastronomia japonesa, tailandesa e chinesa."
+            }
+        },
+        S2: {
+            id: 'S2', label: 'Commerce Vault', icon: 'ShoppingBag', source: 'V2',
+            products: [
+                { id: "P1", name: "Combo Sushi 30 peças", role: "Hero", margin: "High", price: 89.90, category: "combo" },
+                { id: "P2", name: "Pad Thai de Frango", role: "Core", margin: "Medium", price: 42.00, category: "prato" },
+                { id: "P3", name: "Yakisoba Premium", role: "Core", margin: "Medium", price: 38.00, category: "prato" },
+                { id: "P4", name: "Temaki de Salmão", role: "Upsell", margin: "High", price: 24.90, category: "temaki" }
+            ],
+            strategy: {
+                format: "Delivery + Balcão",
+                seasonality: "Evergreen",
+                currentTicket: "65.00",
+                targetTicket: "85.00",
+                upsellStrategy: "combos"
+            }
+        },
+        S3: {
+            id: 'S3', label: 'Funnel Vault', icon: 'GitBranch', source: 'V3',
+            steps: [
+                { step: "Descoberta", kpi: "CPM Instagram", goal: "R$ 12,00" },
+                { step: "Interesse", kpi: "CTR Story", goal: "2.5%" },
+                { step: "Conversão", kpi: "Click iFood", goal: "Link Bio" }
+            ],
+            traffic: {
+                primarySource: "Pago + Orgânico",
+                channels: ["instagram", "ifood"],
+                conversionLink: "https://ifood.com.br/tada-asian",
+                trafficType: "Misto"
+            }
+        },
+        S4: {
+            id: 'S4', label: 'Ops Vault', icon: 'Settings', source: 'V4',
+            matrix: [
+                { role: "Aprovador Final", who: "Ricardo (Proprietário)" },
+                { role: "Conteúdo", who: "Agência Bravvo" },
+                { role: "Design", who: "Designer Freelancer" },
+                { role: "Tráfego Pago", who: "Lucas (Gestor)" }
+            ],
+            slas: {
+                approval: "48h",
+                production: "72h"
+            },
+            teamStructure: "Completa"
+        },
+        S5: {
+            id: 'S5', label: 'Design Vault', icon: 'Palette', source: 'V1',
+            palette: { primary: "#D32F2F", secondary: "#FFF8E1", accent: "#FFB300" },
+            rules: { mood: "Clean, Minimalista, Premium" },
+            formats: {
+                story: { ratio: "9:16", safeZone: "15%", overlay: "Nenhum" },
+                feed: { ratio: "1:1", safeZone: "10%", overlay: "Logo Canto" },
+                reel: { ratio: "9:16", pacing: "Médio", style: "Clean Editorial" }
+            },
+            musicalStyle: "Lo-fi, Música Asiática Instrumental"
+        },
+        S6: {
+            id: 'S6', label: 'Learning Vault', icon: 'Brain', source: 'Governança',
+            learnings: [
+                { id: 1, type: "Insight", content: "Fotos macro dos pratos geram 40% mais engajamento", confidence: "High" },
+                { id: 2, type: "Insight", content: "Posts sobre processo de preparo convertem melhor que pratos prontos", confidence: "Medium" },
+                { id: 3, type: "Correction", content: "Evitar legendas muito longas - público prefere visual", confidence: "High" }
+            ]
+        }
+    },
+    dashboard: {
+        D2: [
+            { id: 1, date: TODAY, initiative: "Combo Sushi + Temaki", channel: "Instagram Feed", format: "feed", offerId: "P1", ctaId: "ifood", responsible: "Bravvo", status: "scheduled" },
+            { id: 2, date: TOMORROW, initiative: "Yakisoba do Chef", channel: "Instagram Story", format: "story", offerId: "P3", ctaId: "whatsapp", responsible: "Bravvo", status: "in_production" },
+            { id: 3, date: DAY_AFTER, initiative: "Pad Thai Autêntico", channel: "Instagram Reels", format: "reel", offerId: "P2", ctaId: "ifood", responsible: "Designer", status: "draft" },
+            { id: 4, date: NEXT_WEEK, initiative: "Promo Sushi Especial", channel: "Instagram Feed", format: "feed", offerId: "P1", ctaId: "ifood", responsible: "Bravvo", status: "draft" }
+        ],
+        D5: [
+            { id: 401, metric: "CPM Instagram", current: 11.80, target: 12.00, status: "Good", action: "Manter estratégia" },
+            { id: 402, metric: "Taxa Conversão iFood", current: 3.2, target: 4.0, status: "Warning", action: "Testar novos criativos" },
+            { id: 403, metric: "Ticket Médio", current: 65.00, target: 85.00, status: "Warning", action: "Implementar cross-sell" },
+            { id: 404, metric: "Pedidos/Dia", current: 45, target: 60, status: "Warning", action: "Aumentar frequência posts" }
         ]
     },
     promptHistory: []
