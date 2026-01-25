@@ -237,7 +237,7 @@ export const translations = {
         binder: {
             nav: {
                 agency: "AGÊNCIA",
-                bravvo_os: "BRAVVO OS",
+                bravvo_os: "BRAVVO BINDER",
                 command_center: "CENTRO DE COMANDO",
                 binder: "BINDER",
                 dashboard: "PAINEL"

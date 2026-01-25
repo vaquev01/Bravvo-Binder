@@ -382,7 +382,7 @@ export function PageOps({ formData, setFormData, onComplete }) {
                     className="bg-purple-600 hover:bg-purple-700 text-white px-8 py-4 rounded-xl font-bold flex items-center gap-3 transition-all hover:scale-105 shadow-lg shadow-purple-600/20"
                 >
                     <Sparkles size={20} />
-                    Finalizar & Gerar Bravvo OS
+                    Finalizar & Gerar Bravvo Binder
                 </button>
             </div>
         </form>

@@ -423,7 +423,7 @@ function ClientWorkspaceContent({ onBackToAgency, isAgencyView: _isAgencyView })
                         <div className="h-14 border-b border-white/10 bg-[#0a0a0a] flex items-center justify-between px-6">
                             <div className="flex items-center gap-2">
                                 <Wand2 className="text-purple-500" size={18} />
-                                <span className="font-bold text-gray-200">Bravvo OS - IDF Engine v1</span>
+                                <span className="font-bold text-gray-200">Bravvo Binder - IDF Engine v1</span>
                             </div>
                             <button onClick={() => setSelectedPrompt(null)} className="p-2 hover:bg-white/10 rounded-full transition-colors">
                                 <PlusCircle className="rotate-45 text-gray-400" size={20} />

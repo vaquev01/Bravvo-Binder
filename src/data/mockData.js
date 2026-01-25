@@ -44,7 +44,17 @@ export const CARACA_BAR_DATA = {
             ],
             strategy: {
                 format: "Unitário",
-                seasonality: "Evergreen"
+                seasonality: "Evergreen",
+                upsell: "combos"
+            },
+            metrics: {
+                currentTicket: "35.00",
+                targetTicket: "50.00",
+                currentRevenue: "85000"
+            },
+            bait: {
+                product: "Happy Hour - Gin em Dobro",
+                price: "39.90"
             }
         },
         S3: {
@@ -52,10 +62,15 @@ export const CARACA_BAR_DATA = {
             steps: [
                 { step: "Atenção", kpi: "CPM", goal: "R$ 15,00" },
                 { step: "Interesse", kpi: "CTR", goal: "1.5%" },
-                { step: "Desejo", kpi: "Click Whatsapp", goal: "Link Bio" }
+                { step: "Desejo", kpi: "Click Whatsapp", goal: "https://wa.me/5511999999999" }
             ],
             traffic: {
                 primarySource: "Misto"
+            },
+            channels: ["instagram", "whatsapp", "tiktok"],
+            social: {
+                instagram: "@caracabar",
+                website: "https://caracabar.com.br"
             }
         },
         S4: {
@@ -160,9 +175,16 @@ export const TADA_ASIAN_FOOD_DATA = {
             strategy: {
                 format: "Delivery + Balcão",
                 seasonality: "Evergreen",
+                upsell: "combos"
+            },
+            metrics: {
                 currentTicket: "65.00",
                 targetTicket: "85.00",
-                upsellStrategy: "combos"
+                currentRevenue: "52000"
+            },
+            bait: {
+                product: "Combo Entrada + Prato Principal",
+                price: "69.90"
             }
         },
         S3: {

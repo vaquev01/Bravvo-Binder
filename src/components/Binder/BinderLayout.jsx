@@ -5,7 +5,7 @@ import { useLanguage } from '../../contexts/LanguageContext';
 export function BinderLayout({ activeTab, setActiveTab, completedTabs, children, onBack }) {
     const { t } = useLanguage();
     const tabs = [
-        { id: 'OS', label: 'BRAVVO OS', icon: LayoutDashboard, color: 'text-purple-400', border: 'border-purple-500/50', bg: 'bg-purple-500/10', special: true },
+        { id: 'OS', label: 'BRAVVO BINDER', icon: LayoutDashboard, color: 'text-purple-400', border: 'border-purple-500/50', bg: 'bg-purple-500/10', special: true },
         { id: 'V1', label: 'VAULT 1', icon: Target, color: 'text-red-400', border: 'border-red-500/50', bg: 'bg-red-500/10' },
         { id: 'V2', label: 'VAULT 2', icon: ShoppingBag, color: 'text-orange-400', border: 'border-orange-500/50', bg: 'bg-orange-500/10' },
         { id: 'V3', label: 'VAULT 3', icon: GitBranch, color: 'text-blue-400', border: 'border-blue-500/50', bg: 'bg-blue-500/10' },
