@@ -105,12 +105,18 @@ export const api = {
     getAgencyClients: (agencyId) => {
         const agency = MOCK_DB.agencies.find(a => a.id === agencyId);
         if (!agency) return [];
-        return agency.clients.map(clientId => ({
-            id: clientId,
-            ...MOCK_DB.clients[clientId].vaults.S1.fields, // Basic info
-            name: MOCK_DB.clients[clientId].clientName,
-            kpis: MOCK_DB.clients[clientId].kpis
-        }));
+        return agency.clients.map(clientId => {
+            const client = MOCK_DB.clients[clientId];
+            return {
+                id: clientId,
+                ...client.vaults.S1.fields, // Basic info
+                name: client.clientName,
+                kpis: client.kpis,
+                revenue: client.revenue,
+                responsible: client.responsible,
+                status: client.status
+            };
+        });
     },
     getAllClients: () => {
         return Object.values(MOCK_DB.clients).map(c => ({
