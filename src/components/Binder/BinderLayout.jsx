@@ -1,7 +1,9 @@
 import React from 'react';
 import { Target, ShoppingBag, GitBranch, Users, LayoutDashboard, CheckCircle2, Lightbulb, ArrowLeft } from 'lucide-react';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 export function BinderLayout({ activeTab, setActiveTab, completedTabs, children, onBack }) {
+    const { t } = useLanguage();
     const tabs = [
         { id: 'OS', label: 'BRAVVO OS', icon: LayoutDashboard, color: 'text-purple-400', border: 'border-purple-500/50', bg: 'bg-purple-500/10', special: true },
         { id: 'V1', label: 'VAULT 1', icon: Target, color: 'text-red-400', border: 'border-red-500/50', bg: 'bg-red-500/10' },
@@ -68,17 +70,17 @@ export function BinderLayout({ activeTab, setActiveTab, completedTabs, children,
                             <button
                                 onClick={onBack}
                                 className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/10 transition-colors"
-                                title="Voltar para Agência"
+                                title={t('binder.actions.back_to_agency')}
                             >
                                 <ArrowLeft size={16} />
                             </button>
                         )}
                         <div className="flex flex-col justify-center">
                             <div className="flex items-center gap-2 text-xs text-gray-500 mb-0.5 font-mono">
-                                <span>{onBack ? 'AGENCY' : 'BRAVVO OS'}</span>
+                                <span>{onBack ? t('binder.nav.agency') : t('binder.nav.bravvo_os')}</span>
                                 <span className="text-gray-600">/</span>
                                 <span className={activeTab === 'OS' ? 'text-white font-bold' : ''}>
-                                    {activeTab === 'OS' ? 'COMMAND CENTER' : 'BINDER'}
+                                    {activeTab === 'OS' ? t('binder.nav.command_center') : t('binder.nav.binder')}
                                 </span>
                                 {activeTab !== 'OS' && (
                                     <>
@@ -89,12 +91,12 @@ export function BinderLayout({ activeTab, setActiveTab, completedTabs, children,
                             </div>
                             <div className="flex items-center gap-2">
                                 <h1 className="font-display font-black text-xl tracking-tight text-white leading-none">
-                                    {tabs.find(t => t.id === activeTab)?.label || 'DASHBOARD'}
+                                    {tabs.find(tab => tab.id === activeTab)?.label || t('binder.nav.dashboard')}
                                 </h1>
                                 {/* Autosave Indicator (Mocked for now, but valid UI) */}
                                 <div className="flex items-center gap-1.5 px-2 py-0.5 bg-green-500/10 rounded-full border border-green-500/20 ml-2" title="Todas as alterações salvas">
                                     <CheckCircle2 size={10} className="text-green-500" />
-                                    <span className="text-[9px] font-bold text-green-400 uppercase tracking-wide">Salvo</span>
+                                    <span className="text-[9px] font-bold text-green-400 uppercase tracking-wide">{t('binder.status.saved')}</span>
                                 </div>
                             </div>
                         </div>
@@ -121,14 +123,14 @@ export function BinderLayout({ activeTab, setActiveTab, completedTabs, children,
                                 })}
                             </div>
                             <span className="text-xs font-mono text-gray-400">
-                                {completedTabs.filter(t => t.startsWith('V')).length}/4 Vaults
+                                {completedTabs.filter(t => t.startsWith('V')).length}/4 {t('binder.progress.vaults')}
                             </span>
                         </div>
 
                         <div className="text-right">
-                            <p className="text-xs text-gray-400">FASE ATUAL</p>
-                            <p className={`text-sm font-bold ${tabs.find(t => t.id === activeTab)?.color}`}>
-                                {tabs.find(t => t.id === activeTab)?.label}
+                            <p className="text-xs text-gray-400">{t('binder.actions.current_phase')}</p>
+                            <p className={`text-sm font-bold ${tabs.find(tab => tab.id === activeTab)?.color}`}>
+                                {tabs.find(tab => tab.id === activeTab)?.label}
                             </p>
                         </div>
                     </div>

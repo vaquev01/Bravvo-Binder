@@ -229,6 +229,99 @@ export const translations = {
                 cancelled: "Cancelado"
             }
         },
+        binder: {
+            nav: {
+                agency: "AGÊNCIA",
+                bravvo_os: "BRAVVO OS",
+                command_center: "CENTRO DE COMANDO",
+                binder: "BINDER",
+                dashboard: "PAINEL"
+            },
+            status: {
+                saved: "Salvo",
+                saving: "Salvando...",
+                error: "Erro ao salvar"
+            },
+            progress: {
+                vaults: "Vaults",
+                vault: "Vault",
+                completed: "concluído",
+                of: "de"
+            },
+            actions: {
+                back_to_agency: "Voltar para Agência",
+                current_phase: "FASE ATUAL"
+            }
+        },
+        vaults: {
+            brand: {
+                title: "DNA da Marca",
+                subtitle: "Defina a identidade, valores e personalidade da sua marca",
+                mission_label: "Missão",
+                mission_placeholder: "Por que sua marca existe?",
+                vision_label: "Visão",
+                vision_placeholder: "Onde quer chegar?",
+                values_label: "Valores",
+                values_placeholder: "Digite um valor e pressione Enter",
+                archetype_label: "Arquétipo da Marca",
+                archetype_helper: "Escolha a personalidade que melhor representa sua marca",
+                tone_label: "Tom de Voz",
+                mood_label: "Mood Visual",
+                colors_label: "Paleta de Cores",
+                primary_color: "Cor Primária",
+                secondary_color: "Cor Secundária",
+                accent_color: "Cor de Destaque",
+                logo_label: "Logo",
+                random_mood: "Gerar Mood Aleatório",
+                submit: "Salvar Identidade"
+            },
+            offer: {
+                title: "Oferta & Produto",
+                subtitle: "Configure seus produtos, preços e posicionamento",
+                product_name: "Nome do Produto/Serviço",
+                product_name_placeholder: "ex: Consultoria Premium",
+                category_label: "Categoria",
+                price_label: "Preço",
+                price_placeholder: "ex: R$ 497",
+                description_label: "Descrição",
+                description_placeholder: "Descreva sua oferta principal...",
+                differentials_label: "Diferenciais",
+                differentials_placeholder: "O que torna sua oferta única?",
+                submit: "Salvar Oferta"
+            },
+            funnel: {
+                title: "Funil & Tráfego",
+                subtitle: "Configure canais, links e estratégia de conversão",
+                channels_label: "Canais Ativos",
+                channels_helper: "Selecione todos os canais onde sua marca está presente",
+                channels_selected: "canal(is) selecionado(s)",
+                conversion_label: "Link de Conversão",
+                conversion_placeholder: "URL principal de conversão",
+                traffic_label: "Estratégia de Tráfego",
+                utm_label: "Campanha UTM",
+                utm_placeholder: "ex: lancamento-verao",
+                submit: "Salvar Funil"
+            },
+            ops: {
+                title: "Operações & Time",
+                subtitle: "Defina estrutura de time e responsabilidades",
+                structure_label: "Estrutura do Time",
+                structure_helper: "Quem executará a estratégia?",
+                owner_label: "Responsável",
+                owner_placeholder: "Nome ou cargo",
+                submit: "Salvar Time"
+            },
+            ideas: {
+                title: "Ideias & Referências",
+                subtitle: "Salve inspirações, concorrentes e referências",
+                add_idea: "Adicionar Ideia",
+                add_competitor: "Adicionar Concorrente",
+                add_reference: "Adicionar Referência",
+                url_placeholder: "URL da referência",
+                notes_placeholder: "Suas anotações...",
+                submit: "Salvar"
+            }
+        },
         common: {
             loading: "Carregando...",
             error: "Erro",
