@@ -99,7 +99,155 @@ export const translations = {
                 active_workspaces: "Workspaces Ativos",
                 pending: "Revisões Pendentes",
                 health: "Saúde do Sistema"
+            },
+            actions: {
+                search: "Buscar...",
+                search_wide: "Buscar no sistema...",
+                logout: "Sair",
+                access_os: "Acessar OS",
+                view_all: "Ver Todos",
+                select_client: "Selecionar Cliente"
+            },
+            agency: {
+                command_center: "Central de Comando",
+                bravvo_hq: "Bravvo HQ",
+                total_revenue: "Receita Total (MRR)",
+                active_workspaces: "Workspaces Ativos",
+                slots: "Vagas",
+                pending_approvals: "Aprovações Pendentes",
+                team_online: "Time Online",
+                system_health: "Saúde do Sistema"
+            },
+            master: {
+                bravvo_master: "Bravvo Master",
+                admin: "Admin",
+                global_revenue: "Receita Global (ARR)",
+                total_clients: "Total de Clientes",
+                across_agencies: "Através de {count} agências",
+                system_health: "Saúde do Sistema",
+                requires_attention: "requerem atenção",
+                risks: "Riscos",
+                client_name: "Nome do Cliente",
+                agency_owner: "Agência Responsável",
+                revenue: "Receita",
+                status: "Status",
+                action: "Ação"
             }
+        },
+        os: {
+            status: {
+                governance_active: "Governança Ativa",
+                today: "hoje",
+                tomorrow: "amanhã",
+                week: "semana",
+                month: "mês"
+            },
+            date: {
+                today: "hoje",
+                tomorrow: "amanhã",
+                week: "semana",
+                month: "mês"
+            },
+            actions: {
+                new: "Novo",
+                history: "Histórico",
+                run_gov: "EXECUTAR GOV",
+                commit: "COMMIT",
+                save: "Salvar",
+                cancel: "Cancelar",
+                edit: "Editar",
+                delete: "Deletar",
+                add: "Adicionar",
+                remove: "Remover",
+                create: "Criar",
+                update: "Atualizar"
+            },
+            kpis: {
+                revenue: "Receita",
+                traffic: "Tráfego CPM",
+                sales: "Volume de Vendas",
+                goal: "Meta",
+                next_priority: "Próxima Prioridade",
+                no_items_scheduled: "Nenhum item agendado"
+            },
+            table: {
+                date: "Data",
+                initiative: "Iniciativa",
+                channel: "Canal",
+                status: "Status",
+                owner: "Responsável",
+                edit: "Editar",
+                unassigned: "Não atribuído"
+            },
+            roadmap: {
+                title: "Roadmap Tático",
+                date: "Data",
+                initiative: "Iniciativa",
+                channel: "Canal",
+                status: "Status",
+                owner: "Responsável",
+                edit: "Editar",
+                no_items: "Nenhuma iniciativa encontrada para este período",
+                add_item: "Adicionar Item",
+                quick_actions: "Ações Rápidas"
+            },
+            vaults: {
+                brand_dna: "DNA DA MARCA",
+                offer: "OFERTA",
+                traffic: "TRÁFEGO",
+                team: "TIME"
+            },
+            quick_add: {
+                title: "Nova Iniciativa",
+                title_label: "Título",
+                date_label: "Data",
+                channel_label: "Canal",
+                create_button: "Criar Item",
+                placeholder: "ex: Post de Lançamento de Verão"
+            },
+            detail_edit: {
+                title: "Editar Iniciativa",
+                title_label: "Título",
+                date_label: "Data",
+                channel_label: "Canal",
+                copy_label: "Copy",
+                copy_placeholder: "Legenda...",
+                save: "Salvar Alterações"
+            },
+            status_options: {
+                draft: "Rascunho",
+                in_production: "Em Produção",
+                scheduled: "Agendado",
+                done: "Publicado",
+                cancelled: "Cancelado"
+            }
+        },
+        common: {
+            loading: "Carregando...",
+            error: "Erro",
+            success: "Sucesso",
+            submit: "Enviar",
+            close: "Fechar",
+            back: "Voltar",
+            next: "Próximo",
+            previous: "Anterior",
+            save: "Salvar",
+            cancel: "Cancelar",
+            delete: "Deletar",
+            edit: "Editar",
+            add: "Adicionar",
+            remove: "Remover",
+            search: "Buscar",
+            filter: "Filtrar",
+            all: "Todos",
+            none: "Nenhum",
+            yes: "Sim",
+            no: "Não",
+            ok: "OK",
+            ready_to_operate: "Pronto para Operar.",
+            all_systems_normal: "Todos os Sistemas Normais",
+            status: "Status",
+            sign_in: "Entrar"
         }
     },
     en: {

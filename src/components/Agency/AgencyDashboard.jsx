@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react';
+import { useLanguage } from '../../contexts/LanguageContext';
 import {
     LayoutGrid,
     Users,
@@ -12,6 +13,7 @@ import {
 import { api } from '../../data/mockDB';
 
 export function AgencyDashboard({ onSelectClient, onLogout }) {
+    const { t } = useLanguage();
     // Mock Agency Data (Agency A1 for demo)
     const agencyId = 'A1';
 
@@ -36,15 +38,15 @@ export function AgencyDashboard({ onSelectClient, onLogout }) {
                         <Command size={18} className="text-black" strokeWidth={2.5} />
                     </div>
                     <div className="flex flex-col">
-                        <span className="text-xs font-bold text-gray-500 uppercase tracking-widest">Command Center</span>
-                        <span className="text-sm font-bold text-white">Bravvo HQ</span>
+                        <span className="text-xs font-bold text-gray-500 uppercase tracking-widest">{t('dashboard.agency.command_center')}</span>
+                        <span className="text-sm font-bold text-white">{t('dashboard.agency.bravvo_hq')}</span>
                     </div>
                 </div>
 
                 <div className="flex items-center gap-6">
                     <div className="hidden md:flex items-center gap-1 bg-[var(--bg-surface)] p-1 rounded-lg border border-[var(--border-subtle)]">
-                        {['Overview', 'Financials', 'Team', 'Audit'].map(tab => (
-                            <button key={tab} className={`px-4 py-1.5 text-[11px] font-bold uppercase tracking-wide rounded ${tab === 'Overview' ? 'bg-white text-black shadow-sm' : 'text-gray-500 hover:text-white hover:bg-white/5'} transition-all`}>
+                        {[t('dashboard.nav.overview'), t('dashboard.nav.financials'), t('dashboard.nav.team'), t('dashboard.nav.audit')].map(tab => (
+                            <button key={tab} className={`px-4 py-1.5 text-[11px] font-bold uppercase tracking-wide rounded ${tab === t('dashboard.nav.overview') ? 'bg-white text-black shadow-sm' : 'text-gray-500 hover:text-white hover:bg-white/5'} transition-all`}>
                                 {tab}
                             </button>
                         ))}
@@ -54,7 +56,7 @@ export function AgencyDashboard({ onSelectClient, onLogout }) {
                 <div className="flex items-center gap-3">
                     <div className="flex items-center gap-2 px-3 py-1.5 bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded text-xs text-gray-400 group focus-within:border-white/20 transition-colors">
                         <Search size={12} />
-                        <input className="bg-transparent outline-none w-24 focus:w-48 transition-all placeholder-gray-600" placeholder="Search..." />
+                        <input className="bg-transparent outline-none w-24 focus:w-48 transition-all placeholder-gray-600" placeholder={t('dashboard.actions.search')} />
                         <span className="text-[10px] text-gray-600 border border-white/10 px-1 rounded">⌘K</span>
                     </div>
                     <button
@@ -72,7 +74,7 @@ export function AgencyDashboard({ onSelectClient, onLogout }) {
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <div className="bento-grid p-5 bento-cell group relative">
                         <div className="flex justify-between items-start mb-6">
-                            <span className="text-label">Total Revenue (MRR)</span>
+                            <span className="text-label">{t('dashboard.agency.total_revenue')}</span>
                             <div className="p-1.5 bg-green-500/10 rounded text-green-500">
                                 <TrendingUp size={14} />
                             </div>
@@ -87,21 +89,21 @@ export function AgencyDashboard({ onSelectClient, onLogout }) {
 
                     <div className="bento-grid p-5 bento-cell group relative">
                         <div className="flex justify-between items-start mb-6">
-                            <span className="text-label">Active Workspaces</span>
+                            <span className="text-label">{t('dashboard.agency.active_workspaces')}</span>
                             <Users maxLength={16} className="text-gray-600 group-hover:text-white transition-colors" />
                         </div>
                         <div className="flex items-baseline gap-2">
                             <h2 className="text-3xl font-mono font-medium tracking-tighter text-white">
                                 {agencyStats.activeClients}
                             </h2>
-                            <span className="text-xs text-gray-500">/ 20 Slots</span>
+                            <span className="text-xs text-gray-500">/ 20 {t('dashboard.agency.slots')}</span>
                         </div>
                         <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
                     </div>
 
                     <div className="bento-grid p-5 bento-cell group relative">
                         <div className="flex justify-between items-start mb-6">
-                            <span className="text-label">Pending Reviews</span>
+                            <span className="text-label">{t('dashboard.stats.pending')}</span>
                             <div className="flex items-center gap-2">
                                 <span className="w-2 h-2 rounded-full bg-orange-500 animate-pulse"></span>
                             </div>
@@ -114,7 +116,7 @@ export function AgencyDashboard({ onSelectClient, onLogout }) {
 
                     <div className="bento-grid p-5 bento-cell group relative">
                         <div className="flex justify-between items-start mb-6">
-                            <span className="text-label">System Health</span>
+                            <span className="text-label">{t('dashboard.stats.health')}</span>
                             <Activity size={16} className="text-gray-600 group-hover:text-green-500 transition-colors" />
                         </div>
                         <h2 className="text-3xl font-mono font-medium tracking-tighter text-white">
@@ -176,7 +178,7 @@ export function AgencyDashboard({ onSelectClient, onLogout }) {
                                     onClick={() => onSelectClient(client)}
                                     className="mt-4 w-full h-8 flex items-center justify-center gap-2 text-[11px] font-bold uppercase tracking-wide border border-white/10 rounded hover:bg-white hover:text-black transition-all text-gray-500 opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 duration-200"
                                 >
-                                    Access OS <ArrowRight size={12} />
+                                    {t('dashboard.actions.access_os')} <ArrowRight size={12} />
                                 </button>
                             </div>
                         ))}

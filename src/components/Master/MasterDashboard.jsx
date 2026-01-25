@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { useLanguage } from '../../contexts/LanguageContext';
 import {
     Users,
     Shield,
@@ -12,6 +13,7 @@ import {
 import { api } from '../../data/mockDB';
 
 export function MasterDashboard({ onSelectClient, onLogout }) {
+    const { t } = useLanguage();
     const [searchTerm, setSearchTerm] = useState('');
     const [filterAgency, setFilterAgency] = useState('all');
 
@@ -35,15 +37,15 @@ export function MasterDashboard({ onSelectClient, onLogout }) {
             <header className="h-14 border-b border-[var(--border-subtle)] flex items-center justify-between px-6 bg-[var(--bg-deep)] sticky top-0 z-50">
                 <div className="flex items-center gap-3">
                     <div className="w-8 h-8 rounded bg-blue-600 flex items-center justify-center font-bold text-sm">M</div>
-                    <span className="font-bold text-gray-200 text-sm">Bravvo Master</span>
-                    <span className="text-[9px] px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20 font-bold uppercase tracking-widest">Admin</span>
+                    <span className="font-bold text-gray-200 text-sm">{t('dashboard.master.bravvo_master')}</span>
+                    <span className="text-[9px] px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20 font-bold uppercase tracking-widest">{t('dashboard.master.admin')}</span>
                 </div>
 
                 <div className="flex items-center gap-4">
                     <div className="flex items-center gap-2 px-3 py-1.5 bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded text-xs text-gray-400 focus-within:border-white/20 transition-colors">
                         <Search size={12} />
                         <input
-                            placeholder="Search system wide..."
+                            placeholder={t('dashboard.actions.search_wide')}
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                             className="bg-transparent outline-none w-48 focus:w-64 transition-all placeholder-gray-600"
@@ -52,7 +54,7 @@ export function MasterDashboard({ onSelectClient, onLogout }) {
                     <button
                         onClick={onLogout}
                         className="p-2 hover:bg-white/10 rounded text-gray-500 hover:text-white transition-colors"
-                        title="Logout"
+                        title={t('dashboard.actions.logout')}
                     >
                         <LogOut size={16} />
                     </button>
@@ -65,7 +67,7 @@ export function MasterDashboard({ onSelectClient, onLogout }) {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="bento-grid p-5 bento-cell group">
                         <div className="flex justify-between items-start mb-6">
-                            <span className="text-label">Global Revenue (ARR)</span>
+                            <span className="text-label">{t('dashboard.master.global_revenue')}</span>
                             <div className="p-1 bg-green-500/10 rounded text-green-500">
                                 <TrendingUp size={14} />
                             </div>
@@ -77,27 +79,27 @@ export function MasterDashboard({ onSelectClient, onLogout }) {
 
                     <div className="bento-grid p-5 bento-cell group">
                         <div className="flex justify-between items-start mb-6">
-                            <span className="text-label">Total Clients</span>
+                            <span className="text-label">{t('dashboard.master.total_clients')}</span>
                             <DatabaseIcon count={allClients.length} />
                         </div>
                         <h2 className="text-3xl font-mono font-medium tracking-tight text-white group-hover:text-blue-400 transition-colors">
                             {allClients.length}
                         </h2>
                         <p className="text-[10px] text-gray-500 mt-2 font-mono">
-                            Across {agencies.length} agencies
+                            {t('dashboard.master.across_agencies').replace('{count}', agencies.length)}
                         </p>
                     </div>
 
                     <div className="bento-grid p-5 bento-cell group">
                         <div className="flex justify-between items-start mb-6">
-                            <span className="text-label">System Health</span>
+                            <span className="text-label">{t('dashboard.master.system_health')}</span>
                             <AlertTriangle className={criticalClients > 0 ? "text-red-500" : "text-green-500"} size={14} />
                         </div>
                         <h2 className="text-3xl font-mono font-medium tracking-tight text-white">
-                            {criticalClients > 0 ? `${criticalClients} Risks` : '100% OK'}
+                            {criticalClients > 0 ? `${criticalClients} ${t('dashboard.master.risks')}` : '100% OK'}
                         </h2>
                         <p className="text-[10px] text-gray-500 mt-2 font-mono">
-                            {criticalClients} requires attention
+                            {criticalClients} {t('dashboard.master.requires_attention')}
                         </p>
                     </div>
                 </div>
@@ -129,11 +131,11 @@ export function MasterDashboard({ onSelectClient, onLogout }) {
                         {/* Header */}
                         <div className="grid grid-cols-[80px_1fr_1fr_150px_100px_120px] gap-4 px-6 py-3 border-b border-[var(--border-subtle)] bg-[#080808]">
                             <div className="text-label">ID</div>
-                            <div className="text-label">Client Name</div>
-                            <div className="text-label">Agency Owner</div>
-                            <div className="text-label">Revenue</div>
-                            <div className="text-label text-center">Status</div>
-                            <div className="text-label text-right">Action</div>
+                            <div className="text-label">{t('dashboard.master.client_name')}</div>
+                            <div className="text-label">{t('dashboard.master.agency_owner')}</div>
+                            <div className="text-label">{t('dashboard.master.revenue')}</div>
+                            <div className="text-label text-center">{t('dashboard.master.status')}</div>
+                            <div className="text-label text-right">{t('dashboard.master.action')}</div>
                         </div>
 
                         {/* Body */}

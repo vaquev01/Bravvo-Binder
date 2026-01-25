@@ -33,7 +33,7 @@ export function LandingPage({ onLogin }) {
                         onClick={onLogin}
                         className="text-[13px] font-medium text-white hover:text-gray-300 transition-colors"
                     >
-                        Sign In &rarr;
+                        {t('common.sign_in')} &rarr;
                     </button>
 
                     {/* Mobile Language Switcher (visible only on small screens) */}
@@ -255,7 +255,7 @@ export function LandingPage({ onLogin }) {
                 <div className="absolute inset-0 bg-grid-white/[0.02] bg-[size:64px_64px]" />
                 <div className="relative z-10 max-w-2xl mx-auto px-6">
                     <h2 className="text-4xl md:text-6xl font-bold tabular-nums tracking-tight text-white mb-10">
-                        Ready to Operate.
+                        {t('common.ready_to_operate')}
                     </h2>
                     <div className="flex flex-col items-center gap-6">
                         <button
@@ -312,10 +312,10 @@ export function LandingPage({ onLogin }) {
                     </div>
 
                     <div>
-                        <h4 className="font-bold text-white mb-6">Status</h4>
+                        <h4 className="font-bold text-white mb-6">{t('common.status')}</h4>
                         <div className="flex items-center gap-2 text-green-500">
                             <div className="w-2 h-2 rounded-full bg-green-500" />
-                            <span>All Systems Normal</span>
+                            <span>{t('common.all_systems_normal')}</span>
                         </div>
                     </div>
                 </div>

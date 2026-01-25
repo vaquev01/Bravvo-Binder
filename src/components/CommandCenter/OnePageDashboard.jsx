@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useLanguage } from '../../contexts/LanguageContext';
 import {
     ShoppingBag,
     Terminal,
@@ -123,6 +124,7 @@ function StatusDropdown({ value, onChange, options }) {
 
 // Detailed Edit Modal (Kept mostly same but restyled)
 function DetailEditModal({ open, onClose, item, onSave }) {
+    const { t } = useLanguage();
     const [form, setForm] = useState(item || {});
 
     useEffect(() => {
@@ -142,7 +144,7 @@ function DetailEditModal({ open, onClose, item, onSave }) {
             <div className="bg-[#0A0A0A] border border-white/10 rounded-lg w-full max-w-2xl animate-fadeIn flex flex-col max-h-[90vh] shadow-2xl">
                 <div className="flex justify-between items-center p-4 border-b border-white/10 bg-[#0A0A0A]">
                     <div>
-                        <h3 className="text-sm font-bold text-white uppercase tracking-widest">Edit Initiative</h3>
+                        <h3 className="text-sm font-bold text-white uppercase tracking-widest">{t('os.detail_edit.title')}</h3>
                         <p className="text-[10px] text-gray-500 font-mono">ID: {item.id}</p>
                     </div>
                     <button onClick={onClose} className="text-gray-500 hover:text-white p-2">
@@ -153,7 +155,7 @@ function DetailEditModal({ open, onClose, item, onSave }) {
                 <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-6">
                     <div className="space-y-4">
                         <div>
-                            <label className="text-label">Title</label>
+                            <label className="text-label">{t('os.detail_edit.title_label')}</label>
                             <input
                                 required
                                 className="premium-input bg-[#111]"
@@ -163,7 +165,7 @@ function DetailEditModal({ open, onClose, item, onSave }) {
                         </div>
                         <div className="grid grid-cols-2 gap-4">
                             <div>
-                                <label className="text-label">Date</label>
+                                <label className="text-label">{t('os.detail_edit.date_label')}</label>
                                 <input
                                     type="date"
                                     className="premium-input bg-[#111]"
@@ -172,7 +174,7 @@ function DetailEditModal({ open, onClose, item, onSave }) {
                                 />
                             </div>
                             <div>
-                                <label className="text-label">Channel</label>
+                                <label className="text-label">{t('os.detail_edit.channel_label')}</label>
                                 <select
                                     className="premium-input bg-[#111]"
                                     value={form.channel || 'Instagram Feed'}
@@ -188,10 +190,10 @@ function DetailEditModal({ open, onClose, item, onSave }) {
                             </div>
                         </div>
                         <div>
-                            <label className="text-label">Copy</label>
+                            <label className="text-label">{t('os.detail_edit.copy_label')}</label>
                             <textarea
                                 className="premium-input bg-[#111] min-h-[100px]"
-                                placeholder="Caption..."
+                                placeholder={t('os.detail_edit.copy_placeholder')}
                                 value={form.caption || ''}
                                 onChange={e => setForm({ ...form, caption: e.target.value })}
                             />
@@ -200,8 +202,8 @@ function DetailEditModal({ open, onClose, item, onSave }) {
                 </form>
 
                 <div className="p-4 border-t border-white/10 bg-[#0A0A0A] flex justify-end gap-2">
-                    <button onClick={onClose} className="btn-ghost">Cancel</button>
-                    <button onClick={handleSubmit} className="btn-primary">Save Changes</button>
+                    <button onClick={onClose} className="btn-ghost">{t('common.cancel')}</button>
+                    <button onClick={handleSubmit} className="btn-primary">{t('os.detail_edit.save')}</button>
                 </div>
             </div>
         </div>
@@ -210,6 +212,7 @@ function DetailEditModal({ open, onClose, item, onSave }) {
 
 // Quick Add Modal
 function QuickAddModal({ open, onClose, onAdd }) {
+    const { t } = useLanguage();
     const [form, setForm] = useState({
         initiative: '',
         channel: 'Instagram Feed',
@@ -243,24 +246,24 @@ function QuickAddModal({ open, onClose, onAdd }) {
         <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
             <div className="bg-[#0A0A0A] border border-white/10 rounded-lg w-full max-w-lg p-6 shadow-2xl">
                 <div className="flex justify-between items-center mb-6">
-                    <h3 className="text-sm font-bold text-white uppercase tracking-widest">New Initiative</h3>
+                    <h3 className="text-sm font-bold text-white uppercase tracking-widest">{t('os.quick_add.title')}</h3>
                     <button onClick={onClose} className="text-gray-500 hover:text-white"><X size={16} /></button>
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div>
-                        <label className="text-label">Title</label>
+                        <label className="text-label">{t('os.quick_add.title_label')}</label>
                         <input
                             required
                             className="premium-input"
                             value={form.initiative}
                             onChange={e => setForm({ ...form, initiative: e.target.value })}
-                            placeholder="e.g. Summer Launch Post"
+                            placeholder={t('os.quick_add.placeholder')}
                         />
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                         <div>
-                            <label className="text-label">Date</label>
+                            <label className="text-label">{t('os.quick_add.date_label')}</label>
                             <input
                                 type="date"
                                 className="premium-input"
@@ -269,7 +272,7 @@ function QuickAddModal({ open, onClose, onAdd }) {
                             />
                         </div>
                         <div>
-                            <label className="text-label">Channel</label>
+                            <label className="text-label">{t('os.quick_add.channel_label')}</label>
                             <select
                                 className="premium-input"
                                 value={form.channel}
@@ -283,8 +286,8 @@ function QuickAddModal({ open, onClose, onAdd }) {
                         </div>
                     </div>
                     <div className="pt-4 flex justify-end gap-2">
-                        <button type="button" onClick={onClose} className="btn-ghost">Cancel</button>
-                        <button type="submit" className="btn-primary">Create Item</button>
+                        <button type="button" onClick={onClose} className="btn-ghost">{t('common.cancel')}</button>
+                        <button type="submit" className="btn-primary">{t('os.quick_add.create_button')}</button>
                     </div>
                 </form>
             </div>
@@ -300,6 +303,7 @@ export function OnePageDashboard({
     meetingState,
     setMeetingState
 }) {
+    const { t } = useLanguage();
     const { addToast } = useToast();
 
     // UI State
@@ -425,26 +429,26 @@ export function OnePageDashboard({
                                 : 'text-gray-500 hover:text-gray-300'
                                 }`}
                         >
-                            {f}
+                            {t(`os.date.${f}`)}
                         </button>
                     ))}
                 </div>
 
                 <div className="flex items-center gap-2">
-                    <button onClick={() => setShowHistory(true)} className="btn-ghost !h-7 !px-2" title="History">
+                    <button onClick={() => setShowHistory(true)} className="btn-ghost !h-7 !px-2" title={t('os.actions.history')}>
                         <History size={14} />
                     </button>
                     <div className="w-px h-4 bg-white/10 mx-1"></div>
                     <button onClick={() => setShowQuickAdd(true)} className="btn-primary !h-7 !px-3">
-                        <Plus size={14} /> New
+                        <Plus size={14} /> {t('os.actions.new')}
                     </button>
                     {meetingState.active ? (
                         <button onClick={handleSaveMeeting} className="ml-2 h-7 px-3 bg-purple-600 text-white text-[10px] font-bold rounded animate-pulse">
-                            COMMIT
+                            {t('os.actions.commit')}
                         </button>
                     ) : (
                         <button onClick={toggleGovernanceMode} className="ml-2 btn-ghost !h-7 !px-3 !border-purple-500/30 text-purple-400 hover:text-purple-300">
-                            <Terminal size={12} className="mr-1" /> RUN GOV
+                            <Terminal size={12} className="mr-1" /> {t('os.actions.run_gov')}
                         </button>
                     )}
                 </div>
@@ -457,7 +461,7 @@ export function OnePageDashboard({
                 <div className="grid grid-cols-4 gap-4 mb-6">
                     <div className="bento-grid p-4 bento-cell">
                         <div className="flex justify-between mb-4">
-                            <span className="text-label">Revenue</span>
+                            <span className="text-label">{t('os.kpis.revenue')}</span>
                             <span className="text-mono-data text-green-500">+12%</span>
                         </div>
                         <InlineEdit
@@ -473,7 +477,7 @@ export function OnePageDashboard({
 
                     <div className="bento-grid p-4 bento-cell">
                         <div className="flex justify-between mb-4">
-                            <span className="text-label">Traffic CPM</span>
+                            <span className="text-label">{t('os.kpis.traffic')}</span>
                             <TrendingUp size={12} className="text-blue-500" />
                         </div>
                         <InlineEdit
@@ -489,7 +493,7 @@ export function OnePageDashboard({
 
                     <div className="bento-grid p-4 bento-cell">
                         <div className="flex justify-between mb-4">
-                            <span className="text-label">Sales Vol</span>
+                            <span className="text-label">{t('os.kpis.sales')}</span>
                             <ShoppingBag size={12} className="text-orange-500" />
                         </div>
                         <InlineEdit
@@ -504,11 +508,11 @@ export function OnePageDashboard({
 
                     <div className="bento-grid p-4 bento-cell bg-gradient-to-br from-[var(--bg-surface)] to-blue-900/10">
                         <div className="flex justify-between mb-2">
-                            <span className="text-label text-blue-400">Next Priority</span>
+                            <span className="text-label text-blue-400">{t('os.kpis.next_priority')}</span>
                             <Zap size={12} className="text-blue-500" />
                         </div>
                         <div className="text-sm font-medium text-white truncate">
-                            {filteredCalendar[0]?.initiative || 'No Items Scheduled'}
+                            {filteredCalendar[0]?.initiative || t('os.kpis.no_items_scheduled')}
                         </div>
                     </div>
                 </div>
@@ -518,12 +522,12 @@ export function OnePageDashboard({
                     <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--border-subtle)] bg-[var(--bg-surface)]">
                         <div className="flex items-center gap-2">
                             <CalendarIcon size={14} className="text-gray-500" />
-                            <span className="text-[11px] font-bold text-gray-300 uppercase tracking-widest">Tactical Roadmap</span>
+                            <span className="text-[11px] font-bold text-gray-300 uppercase tracking-widest">{t('os.roadmap.title')}</span>
                             <span className="bg-white/5 text-gray-500 text-[9px] px-1.5 py-0.5 rounded font-mono border border-white/5">{filteredCalendar.length}</span>
                         </div>
                         {/* Keyboard Hint */}
                         <div className="flex items-center gap-1.5 opacity-50">
-                            <span className="text-[9px] text-gray-600 font-medium">Quick Actions</span>
+                            <span className="text-[9px] text-gray-600 font-medium">{t('os.roadmap.quick_actions')}</span>
                             <kbd className="hidden sm:inline-flex h-4 items-center gap-1 rounded border border-[var(--border-subtle)] bg-[var(--bg-deep)] px-1.5 font-mono text-[9px] font-medium text-[var(--text-secondary)]">
                                 <span className="text-xs">⌘</span>K
                             </kbd>
@@ -532,12 +536,12 @@ export function OnePageDashboard({
 
                     {/* Table Header */}
                     <div className="grid grid-cols-[100px_1fr_150px_120px_120px_60px] gap-4 px-4 py-2 border-b border-[var(--border-subtle)] bg-[#080808]">
-                        <div className="text-label">Date</div>
-                        <div className="text-label">Initiative</div>
-                        <div className="text-label">Channel</div>
-                        <div className="text-label">Status</div>
-                        <div className="text-label">Owner</div>
-                        <div className="text-label text-right">Edit</div>
+                        <div className="text-label">{t('os.table.date')}</div>
+                        <div className="text-label">{t('os.table.initiative')}</div>
+                        <div className="text-label">{t('os.table.channel')}</div>
+                        <div className="text-label">{t('os.table.status')}</div>
+                        <div className="text-label">{t('os.table.owner')}</div>
+                        <div className="text-label text-right">{t('os.table.edit')}</div>
                     </div>
 
                     {/* Table Body */}
@@ -562,7 +566,7 @@ export function OnePageDashboard({
                                     />
                                 </div>
                                 <div className="text-xs text-gray-600 truncate">
-                                    {item.responsible || ' Unassigned'}
+                                    {item.responsible || t('os.table.unassigned')}
                                 </div>
                                 <div className="flex justify-end opacity-0 group-hover:opacity-100 transition-opacity">
                                     <button onClick={() => setEditingItem(item)} className="p-1.5 hover:bg-white/10 rounded text-gray-400 hover:text-white transform group-hover:scale-110 transition-transform">
@@ -576,9 +580,9 @@ export function OnePageDashboard({
                                 <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center mb-4">
                                     <CalendarIcon size={20} opacity={0.5} />
                                 </div>
-                                <p className="text-xs">No initiatives found for this period</p>
+                                <p className="text-xs">{t('os.roadmap.no_items')}</p>
                                 <button onClick={() => setShowQuickAdd(true)} className="mt-4 text-xs font-bold text-gray-400 hover:text-white transition-colors flex items-center gap-1">
-                                    <Plus size={10} /> Add Item
+                                    <Plus size={10} /> {t('os.roadmap.add_item')}
                                 </button>
                             </div>
                         )}
@@ -588,10 +592,10 @@ export function OnePageDashboard({
                 {/* 3. VAULTS & RESOURCES */}
                 <div className="grid grid-cols-4 gap-4">
                     {[
-                        { id: 'V1', label: 'BRAND DNA', val: appData.vaults.S1.fields.archetype, class: 'border-l-2 border-red-500/50' },
-                        { id: 'V2', label: 'OFFER', val: appData.vaults.S2.products[0]?.name || 'N/A', class: 'border-l-2 border-orange-500/50' },
-                        { id: 'V3', label: 'TRAFFIC', val: appData.vaults.S3.traffic.primarySource, class: 'border-l-2 border-blue-500/50' },
-                        { id: 'V4', label: 'TEAM', val: appData.vaults.S4.matrix[0]?.who || 'N/A', class: 'border-l-2 border-green-500/50' },
+                        { id: 'V1', label: t('os.vaults.brand_dna'), val: appData.vaults.S1.fields.archetype, class: 'border-l-2 border-red-500/50' },
+                        { id: 'V2', label: t('os.vaults.offer'), val: appData.vaults.S2.products[0]?.name || 'N/A', class: 'border-l-2 border-orange-500/50' },
+                        { id: 'V3', label: t('os.vaults.traffic'), val: appData.vaults.S3.traffic.primarySource, class: 'border-l-2 border-blue-500/50' },
+                        { id: 'V4', label: t('os.vaults.team'), val: appData.vaults.S4.matrix[0]?.who || 'N/A', class: 'border-l-2 border-green-500/50' },
                     ].map(v => (
                         <div key={v.id} onClick={() => setActiveTab(v.id)} className={`bento-grid p-4 hover:bg-[var(--bg-surface)] cursor-pointer transition-colors ${v.class}`}>
                             <div className="text-label mb-2">{v.label}</div>
