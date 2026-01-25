@@ -15,13 +15,21 @@ const CTA_OPTIONS = [
 ];
 
 export function PageFunnel({ formData, setFormData, onNext }) {
+    const [validationError, setValidationError] = React.useState(false);
+
     const handleSubmit = (e) => {
         e.preventDefault();
+        if (!formData.conversionLink) {
+            setValidationError(true);
+            alert("⚠️ Por favor, insira o Link de Conversão (WhatsApp ou Site) para continuar.");
+            return;
+        }
         onNext();
     };
 
     const updateField = (field, value) => {
         setFormData({ ...formData, [field]: value });
+        if (field === 'conversionLink' && value) setValidationError(false);
     };
 
     const activeChannels = formData.channels || [];
@@ -77,10 +85,10 @@ export function PageFunnel({ formData, setFormData, onNext }) {
                             <span className="bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-gray-500 font-mono text-sm flex items-center">https://</span>
                             <input
                                 required
-                                className="input-field font-mono flex-1"
                                 placeholder="wa.me/5511999999999"
                                 value={formData.conversionLink || ''}
                                 onChange={e => updateField('conversionLink', e.target.value)}
+                                className={`input-field font-mono flex-1 ${validationError ? 'border-red-500 ring-1 ring-red-500' : ''}`}
                             />
                         </div>
                         <p className="text-xs text-blue-400/80 mt-2">
@@ -176,7 +184,7 @@ export function PageFunnel({ formData, setFormData, onNext }) {
                 <h3 className="text-sm font-bold text-gray-300 uppercase tracking-wider flex items-center gap-2">
                     <span className="w-6 h-6 bg-blue-500/20 text-blue-400 rounded flex items-center justify-center text-xs">4</span>
                     <BarChart3 size={16} className="text-blue-400" />
-                    Metas & Tracking
+                    Metas & Tracking (Calculadora Reversa)
                 </h3>
 
                 <div className="bg-white/5 border border-white/10 rounded-xl p-6">
@@ -197,8 +205,60 @@ export function PageFunnel({ formData, setFormData, onNext }) {
                             </div>
                         </div>
                         <div>
+                            <label className="input-label">Ticket Médio (Estimado)</label>
+                            <p className="text-xs text-gray-500 mb-2">Puxado do V2 ou insira manual</p>
+                            <div className="relative">
+                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">R$</span>
+                                <input
+                                    type="number"
+                                    className="input-field pl-10 font-mono text-lg"
+                                    placeholder="50"
+                                    value={formData.targetTicket || ''}
+                                    onChange={e => updateField('targetTicket', e.target.value)}
+                                />
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Reverse Calculator Results */}
+                    {(formData.monthlyGoal > 0 && formData.targetTicket > 0) && (
+                        <div className="mt-6 p-4 bg-blue-500/10 border border-blue-500/30 rounded-lg animate-fadeIn">
+                            <h4 className="text-sm font-bold text-blue-400 mb-4 flex items-center gap-2">
+                                <Target size={14} />
+                                Para bater essa meta, você precisa de:
+                            </h4>
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
+                                <div>
+                                    <p className="text-2xl font-black text-white">
+                                        {Math.ceil(formData.monthlyGoal / formData.targetTicket).toLocaleString()}
+                                    </p>
+                                    <p className="text-xs text-gray-400 uppercase tracking-wider mt-1">Vendas</p>
+                                </div>
+                                <div className="relative">
+                                    <div className="absolute left-0 top-1/2 -translate-y-1/2 w-full h-[1px] bg-white/10 -z-10 hidden md:block"></div>
+                                    <p className="text-xs text-gray-500 bg-[#0A0A0A] px-2 inline-block relative z-10 mb-1">
+                                        Se conv. {formData.targetConversion || 2}%
+                                    </p>
+                                    <div>
+                                        <p className="text-xl font-bold text-gray-300">
+                                            {Math.ceil((formData.monthlyGoal / formData.targetTicket) / ((formData.targetConversion || 2) / 100)).toLocaleString()}
+                                        </p>
+                                        <p className="text-xs text-gray-400 uppercase tracking-wider mt-1">Leads / Cliques</p>
+                                    </div>
+                                </div>
+                                <div>
+                                    <p className="text-xl font-bold text-gray-300">
+                                        R$ {Math.ceil(((formData.monthlyGoal / formData.targetTicket) / ((formData.targetConversion || 2) / 100)) * (formData.cpl || 1.5)).toLocaleString()}
+                                    </p>
+                                    <p className="text-xs text-gray-400 uppercase tracking-wider mt-1">Investimento Est. (CPL R$ {formData.cpl || 1.5})</p>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                        <div>
                             <label className="input-label">Estratégia de Tráfego</label>
-                            <p className="text-xs text-gray-500 mb-2">De onde virá seu público?</p>
                             <select
                                 className="input-field"
                                 value={formData.trafficType || 'Misto'}
@@ -211,25 +271,21 @@ export function PageFunnel({ formData, setFormData, onNext }) {
                                 <option value="Indicacao">🗣️ Indicação / Boca a Boca</option>
                             </select>
                         </div>
-                    </div>
-
-                    {/* UTM Configuration */}
-                    <div className="mt-6 pt-6 border-t border-white/10">
-                        <label className="input-label">UTM Campaign Base</label>
-                        <p className="text-xs text-gray-500 mb-2">
-                            Nome base para rastreamento de campanhas (sem espaços, use underscores)
-                        </p>
-                        <input
-                            className="input-field font-mono"
-                            placeholder="ex: bravvo_jan2026"
-                            value={formData.utmCampaign || ''}
-                            onChange={e => updateField('utmCampaign', e.target.value.replace(/\s/g, '_').toLowerCase())}
-                        />
-                        {formData.utmCampaign && (
-                            <p className="text-xs text-blue-400 mt-2 font-mono">
-                                Preview: ?utm_source=instagram&utm_campaign={formData.utmCampaign}
-                            </p>
-                        )}
+                        {/* UTM Configuration */}
+                        <div>
+                            <label className="input-label">UTM Campaign Base</label>
+                            <input
+                                className="input-field font-mono"
+                                placeholder="ex: bravvo_jan2026"
+                                value={formData.utmCampaign || ''}
+                                onChange={e => updateField('utmCampaign', e.target.value.replace(/\s/g, '_').toLowerCase())}
+                            />
+                            {formData.utmCampaign && (
+                                <p className="text-xs text-blue-400 mt-2 font-mono">
+                                    ?utm_source=ig&utm_campaign={formData.utmCampaign}
+                                </p>
+                            )}
+                        </div>
                     </div>
                 </div>
             </section>
@@ -288,7 +344,7 @@ export function PageFunnel({ formData, setFormData, onNext }) {
             </section>
 
             {/* Submit */}
-            <div className="pt-8 border-t border-white/5 flex justify-end">
+            <div className="pt-6 border-t border-white/5 flex justify-end sticky bottom-0 bg-[#050505] pb-6 z-10 shadow-[0_-10px_20px_rgba(0,0,0,0.5)]">
                 <button
                     type="submit"
                     className="bg-blue-500 hover:bg-blue-600 text-white px-8 py-4 rounded-xl font-bold flex items-center gap-3 transition-all hover:scale-105 shadow-lg shadow-blue-500/20"

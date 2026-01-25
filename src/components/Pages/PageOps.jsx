@@ -376,7 +376,7 @@ export function PageOps({ formData, setFormData, onComplete }) {
             </section>
 
             {/* Submit */}
-            <div className="pt-8 border-t border-white/5 flex justify-end">
+            <div className="pt-6 border-t border-white/5 flex justify-end sticky bottom-0 bg-[#050505] pb-6 z-10 shadow-[0_-10px_20px_rgba(0,0,0,0.5)]">
                 <button
                     type="submit"
                     className="bg-purple-600 hover:bg-purple-700 text-white px-8 py-4 rounded-xl font-bold flex items-center gap-3 transition-all hover:scale-105 shadow-lg shadow-purple-600/20"

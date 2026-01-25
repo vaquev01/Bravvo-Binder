@@ -1,11 +1,25 @@
-import React, { createContext, useState, useContext } from 'react';
+import React, { createContext, useState, useContext, useEffect } from 'react';
 import { CARACA_BAR_DATA } from '../data/mockData';
 
 const VaultContext = createContext();
 
-export const VaultProvider = ({ children }) => {
-    // In a real app, this would fetch from an API
-    const [appData, setAppData] = useState(CARACA_BAR_DATA);
+export const VaultProvider = ({ children, initialData, onSave }) => {
+    // Initialize with provided data or fallback to mock
+    const [appData, setAppData] = useState(initialData || CARACA_BAR_DATA);
+
+    // Update state when initialData changes (Client Switch)
+    useEffect(() => {
+        if (initialData) {
+            setAppData(initialData);
+        }
+    }, [initialData]);
+
+    // Persist changes
+    useEffect(() => {
+        if (onSave) {
+            onSave(appData);
+        }
+    }, [appData, onSave]);
 
     const updateVault = (vaultId, newData) => {
         setAppData(prev => ({

@@ -1,6 +1,6 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 // import { CARACA_BAR_DATA } from './data/mockData'; // REMOVED: Now using Context
-import { generatePrompt, generateSimplePrompt } from './utils/promptGenerator';
+import { generatePrompt } from './utils/promptGenerator';
 import { VisualVault } from './components/VisualVault';
 import { DashboardTable } from './components/DashboardTable';
 // import { OnboardingWizard } from './components/Onboarding/OnboardingWizard'; // REMOVED
@@ -12,6 +12,10 @@ import { PageOps } from './components/Pages/PageOps';
 import { PageIdeas } from './components/Pages/PageIdeas';
 // NEW: Import One Page Dashboard
 import { OnePageDashboard } from './components/CommandCenter/OnePageDashboard';
+
+// IMPORTS FOR IMPROVEMENTS
+import { useLocalStorage } from './hooks/useLocalStorage';
+import { ToastProvider, useToast } from './contexts/ToastContext';
 
 import {
     LayoutDashboard,
@@ -36,7 +40,33 @@ import {
 
 import { useVaults } from './contexts/VaultContext';
 
-function App() {
+// --- NEW COMPONENTS FOR MULTI-TENANCY ---
+import { LandingPage } from './components/Marketing/LandingPage';
+import { LoginScreen } from './components/Auth/LoginScreen';
+import { AgencyDashboard } from './components/Agency/AgencyDashboard';
+import { MasterDashboard } from './components/Master/MasterDashboard';
+import { api } from './data/mockDB';
+// Import VaultProvider to wrap the workspace instance
+import { VaultProvider } from './contexts/VaultContext';
+
+// ============================================================================
+// CLIENT WORKSPACE (THE ORIGINAL APP "OS")
+// ============================================================================
+function ClientWorkspace({ onBackToAgency, isAgencyView, initialData, onSave }) {
+    // We wrap the internal content with VaultProvider so it can accept initialData
+    return (
+        <VaultProvider initialData={initialData} onSave={onSave}>
+            <ClientWorkspaceContent
+                onBackToAgency={onBackToAgency}
+                isAgencyView={isAgencyView}
+            />
+        </VaultProvider>
+    );
+}
+
+function ClientWorkspaceContent({ onBackToAgency, isAgencyView }) {
+    const { addToast } = useToast();
+
     // State
     const [activeSection, setActiveSection] = useState('dashboard'); // 'dashboard' or 'vaults' or 'logs'
     const [activeId, setActiveId] = useState('D2'); // D1-D5 or S1-S5
@@ -48,7 +78,7 @@ function App() {
     const [promptHistory, setPromptHistory] = useState([]);
 
     // --- GOVERNANCE / MEETING STATE (Lifted for Persistence) ---
-    const [meetingState, setMeetingState] = useState({
+    const [meetingState, setMeetingState] = useLocalStorage('bravvo_meeting_state', {
         active: false,
         comments: {
             general: '',
@@ -64,82 +94,104 @@ function App() {
     const [completedTabs, setCompletedTabs] = useState(['V1', 'V2', 'V3', 'V4', 'V5']); // Assume config is ready or optional for now
 
     // Shared Form State (Lifted from Wizard)
-    const [formData, setFormData] = useState({
+    // NOTE: In a real implementation, formData would also come from VaultContext (S1..S5 fields)
+    // For now we keep it separate but it SHOULD eventually be merged. 
+    // We will initialize it from the Context to ensure consistency.
+    const { appData, setAppData } = useVaults();
+
+    // We use a simple effect to sync local form state with Context if needed, 
+    // but for now we rely on appData mostly. 
+    const [formData, setFormData] = useLocalStorage('bravvo_form_data', {
         // --- V1: Brand Vault ---
-        clientName: "",
-        niche: "gastronomia",
-        tagline: "",
-        promise: "",
-        enemy: "",
-        brandValues: [],
-        audienceAge: "25-34",
-        audienceGender: "todos",
-        audienceClass: "bc",
-        audiencePain: "",
-        archetype: "O Cara Comum",
-        tone: "casual",
-        mood: "moderno",
-        primaryColor: "#F97316",
-        secondaryColor: "#1E293B",
-        accentColor: "#10B981",
-        bio: "",
+        clientName: appData.clientName || "",
+        niche: appData.vaults.S1.fields.niche || "gastronomia",
+        tagline: appData.vaults.S1.fields.tagline || "",
+        promise: appData.vaults.S1.fields.promise || "",
+        enemy: appData.vaults.S1.fields.enemy || "",
+        brandValues: appData.vaults.S1.fields.brandValues || [],
+        audienceAge: appData.vaults.S1.fields.audienceAge || "25-34",
+        audienceGender: appData.vaults.S1.fields.audienceGender || "todos",
+        audienceClass: appData.vaults.S1.fields.audienceClass || "bc",
+        audiencePain: appData.vaults.S1.fields.audiencePain || "",
+        archetype: appData.vaults.S1.fields.archetype || "O Cara Comum",
+        tone: appData.vaults.S1.fields.tone || "casual",
+        mood: appData.vaults.S5.rules.mood || "moderno",
+        primaryColor: appData.vaults.S5.palette.primary || "#F97316",
+        secondaryColor: appData.vaults.S5.palette.secondary || "#1E293B",
+        accentColor: appData.vaults.S5.palette.accent || "#10B981",
+        bio: appData.vaults.S1.fields.bio || "",
 
         // --- V2: Commerce Vault ---
-        products: [],
-        currentTicket: "",
-        targetTicket: "",
-        currentRevenue: "",
-        upsellStrategy: "none",
-        saleFormat: "presencial",
-        baitProduct: "",
-        baitPrice: "",
+        products: appData.vaults.S2.products || [],
+        currentTicket: appData.vaults.S2.metrics.currentTicket || "",
+        targetTicket: appData.vaults.S2.metrics.targetTicket || "",
+        currentRevenue: appData.vaults.S2.metrics.currentRevenue || "",
+        upsellStrategy: appData.vaults.S2.strategy.upsell || "none",
+        saleFormat: appData.vaults.S2.strategy.format || "presencial",
+        baitProduct: appData.vaults.S2.bait.product || "",
+        baitPrice: appData.vaults.S2.bait.price || "",
 
         // --- V3: Funnel Vault ---
-        channels: [],
-        conversionLink: "",
-        instagramHandle: "",
-        websiteUrl: "",
-        primaryCTA: "whatsapp",
-        secondaryCTA: "saibamais",
-        ctaText: "",
-        monthlyGoal: "",
-        trafficType: "Misto",
-        utmCampaign: "",
-        currentConversion: "",
-        targetConversion: "",
-        cpl: "",
+        channels: appData.vaults.S3.channels || [],
+        conversionLink: appData.vaults.S3.steps.find(s => s.step === 'Desejo')?.goal || "",
+        instagramHandle: appData.vaults.S3.social.instagram || "",
+        websiteUrl: appData.vaults.S3.social.website || "",
+        primaryCTA: appData.vaults.S3.cta.primary || "whatsapp",
+        secondaryCTA: appData.vaults.S3.cta.secondary || "saibamais",
+        ctaText: appData.vaults.S3.cta.text || "",
+        monthlyGoal: appData.vaults.S3.metrics.monthlyGoal || "",
+        trafficType: appData.vaults.S3.traffic.primarySource || "Misto",
+        utmCampaign: appData.vaults.S3.traffic.utmCampaign || "",
+        currentConversion: appData.vaults.S3.metrics.currentConversion || "",
+        targetConversion: appData.vaults.S3.metrics.targetConversion || "",
+        cpl: appData.vaults.S3.metrics.cpl || "",
 
         // --- V4: Ops Vault ---
-        approverName: "",
-        teamStructure: "Enxuta",
-        slaHours: 24,
-        contentOwner: "",
-        trafficOwner: "",
-        supportOwner: "",
-        emergencyContact: "",
-        postingFrequency: "3x",
-        bestDays: [],
-        bestTimes: [],
-        startDate: "",
-        cycleDuration: "30",
-        // V4 Additions: Stakeholders & Competitors
-        stakeholders: [],  // [{id, name, role, contact, contactType, canApprove}]
-        competitors: [],   // [{id, name, handle, notes, link}]
+        approverName: appData.vaults.S4.matrix.find(m => m.role === 'Aprovador Final')?.who || "",
+        teamStructure: appData.vaults.S4.matrix.find(m => m.role === 'Time')?.who || "Enxuta",
+        slaHours: parseInt(appData.vaults.S4.slas.approval) || 24,
+        contentOwner: appData.vaults.S4.owners.content || "",
+        trafficOwner: appData.vaults.S4.owners.traffic || "",
+        supportOwner: appData.vaults.S4.owners.support || "",
+        emergencyContact: appData.vaults.S4.contacts.emergency || "",
+        postingFrequency: appData.vaults.S4.schedule.frequency || "3x",
+        bestDays: appData.vaults.S4.schedule.bestDays || [],
+        bestTimes: appData.vaults.S4.schedule.bestTimes || [],
+        startDate: appData.vaults.S4.schedule.startDate || "",
+        cycleDuration: appData.vaults.S4.schedule.cycleDuration || "30",
+        stakeholders: appData.vaults.S4.stakeholders || [],
+        competitors: appData.vaults.S4.competitors || [],
 
         // --- V5: Ideas & References Vault ---
-        ideas: [],         // [{id, title, description, url, tags, createdAt}]
-        references: [],    // [{id, title, url, type, notes, createdAt}]
-        notepad: "",       // Free-form notepad
+        ideas: appData.vaults.S5.ideas || [],
+        references: appData.vaults.S5.references || [],
+        notepad: appData.vaults.S5.notepad || "",
 
         // --- Governance History ---
-        governanceHistory: [],  // [{id, date, kpiSnapshot, tasksSummary, postsApproved, notes}]
+        governanceHistory: appData.governanceHistory || [],
+
+        // --- V5: Brand Assets (NEW) ---
+        brandAssets: appData.vaults.S5.brandAssets || {
+            logos: [],
+            textures: [],
+            icons: [],
+            postTemplates: []
+        },
+
+        // --- V5: Brand Identity (NEW) ---
+        brandIdentity: appData.vaults.S5.brandIdentity || {
+            musicalStyle: "",
+            visualVibes: [],
+            keyElements: [],
+            prohibitedElements: [],
+            colorMeanings: "",
+            photoStyle: "",
+            typographyNotes: ""
+        },
 
         // --- Theme Customization ---
-        customThemeEnabled: false
+        customThemeEnabled: appData.customThemeEnabled || false
     });
-
-    // Application Data (Consumed from Context)
-    const { appData, setAppData } = useVaults();
 
     // Handlers
     const handleGeneratePrompt = useCallback((item) => {
@@ -160,8 +212,13 @@ function App() {
             await navigator.clipboard.writeText(textToCopy);
             setCopied(true);
             setTimeout(() => setCopied(false), 2000);
+            addToast({
+                title: 'Copiado para a área de transferência',
+                type: 'success',
+                duration: 2000
+            });
         }
-    }, [selectedPrompt, promptTab]);
+    }, [selectedPrompt, promptTab, addToast]);
 
     const handleOnboardingComplete = (newClientData) => {
         // --- 1. VAULT GENERATION (SOURCE OF TRUTH) ---
@@ -173,21 +230,23 @@ function App() {
                 ...appData.vaults.S1.fields,
                 promise: newClientData.promise, // From V1
                 enemy: newClientData.enemy,     // From V1
-                tone: newClientData.tone.split(','),
-                archetype: newClientData.archetype // From V1 (Enhanced)
+                tone: Array.isArray(newClientData.tone) ? newClientData.tone : (newClientData.tone || '').split(','),
+                archetype: newClientData.archetype // From V1
             }
         };
 
         // S2: Commerce Vault
+        const inputProducts = newClientData.products || [];
+        const heroProduct = inputProducts[0] || { name: "Produto Exemplo", price: 0, margin: "Medium" };
+
         const newS2 = {
             ...appData.vaults.S2,
-            products: [
-                { id: "P_NEW_1", name: newClientData.heroProduct, role: "Hero", margin: newClientData.heroMargin, price: parseFloat(newClientData.heroPrice) },
-                { id: "P_NEW_2", name: "Produto Complementar", role: "Upsell", margin: "High", price: parseFloat(newClientData.heroPrice) * 0.2 }
+            products: inputProducts.length > 0 ? inputProducts : [
+                { id: "P_NEW_1", name: "Produto Inicial", role: "Hero", margin: "High", price: 100 },
             ],
             strategy: {
-                format: newClientData.offerFormat,
-                seasonality: "Evergreen" // Default for now
+                format: newClientData.saleFormat || "presencial",
+                seasonality: "Evergreen"
             }
         };
 
@@ -258,7 +317,7 @@ function App() {
                 initiative: `Lançamento: ${newS1.fields.promise}`, // Uses S1
                 channel: "Instagram Reel",
                 format: "reel",
-                offerId: newS2.products[0].id, // Uses S2
+                offerId: heroProduct.id || "P_NEW_1", // Uses S2
                 ctaId: "CTA_MAIN", // Implicitly linked to S3 Goal
                 responsible: "IA Agent",
                 status: "scheduled",
@@ -270,7 +329,7 @@ function App() {
                 initiative: `Combater: ${newS1.fields.enemy}`, // Uses S1
                 channel: "Instagram Story",
                 format: "story",
-                offerId: newS2.products[0].id,
+                offerId: heroProduct.id || "P_NEW_1",
                 ctaId: "CTA_MAIN",
                 responsible: "IA Agent",
                 status: "draft",
@@ -298,6 +357,12 @@ function App() {
                 D5: appData.dashboard.D5  // Keep existing template for KPIs
             }
         });
+
+        addToast({
+            title: 'Dados Salvos e Processados',
+            description: 'O OnePage Dashboard foi atualizado com sucesso.',
+            type: 'success'
+        });
     };
 
     // --- BINDER LOGIC ---
@@ -307,6 +372,11 @@ function App() {
         }
         setBinderTab(next);
         window.scrollTo(0, 0);
+
+        // Add minimal feedback for stepping forward
+        if (current !== 'V5') { // Don't show on last step as it conflicts with Complete toast
+            // Optional: could add toast here, but might be annoying
+        }
     };
 
     // Renamed Handlers from R to V
@@ -319,7 +389,12 @@ function App() {
     };
 
     return (
-        <BinderLayout activeTab={binderTab} setActiveTab={setBinderTab} completedTabs={completedTabs}>
+        <BinderLayout
+            activeTab={binderTab}
+            setActiveTab={setBinderTab}
+            completedTabs={completedTabs}
+            onBack={onBackToAgency} // Pass back handler if in agency mode
+        >
 
             {binderTab === 'V1' && (
                 <PageBrand formData={formData} setFormData={setFormData} onNext={handleV1Next} />
@@ -419,6 +494,136 @@ function App() {
             )}
         </BinderLayout>
     );
+}
+
+// WRAPPER
+function App() {
+    return (
+        <ToastProvider>
+            <AppContent />
+        </ToastProvider>
+    );
+}
+
+// ============================================================================
+// MAIN APP ROUTER
+// ============================================================================
+function AppContent() {
+    const [viewMode, setViewMode] = useState('landing'); // 'landing' | 'login' | 'agency' | 'master' | 'client_workspace'
+    const [currentUser, setCurrentUser] = useState(null); // { role: 'agency' | 'master', client: null }
+    const [clientData, setClientData] = useState(null); // The actual data for the workspace
+    const { addToast } = useToast();
+
+    // AUTO-LOGIN CHECK
+    useEffect(() => {
+        const savedSession = localStorage.getItem('bravvo_session');
+        if (savedSession) {
+            try {
+                const session = JSON.parse(savedSession);
+                // Simple validation - in real app, better token check
+                if (session.user === 'bravvo') {
+                    setCurrentUser({ role: 'agency', client: null }); // Map Bravvo Admin to Agency Dashboard for now (Command Center)
+                    setViewMode('agency');
+                    addToast({ title: 'Bem-vindo de volta, Commander', type: 'success' });
+                }
+            } catch (e) {
+                console.error("Session parse error", e);
+                localStorage.removeItem('bravvo_session');
+            }
+        }
+    }, [addToast]);
+
+    const handleLogin = (role, credentials) => {
+        // SAVING SESSION
+        if (credentials && credentials.remember) {
+            localStorage.setItem('bravvo_session', JSON.stringify({
+                user: credentials.username,
+                role: role,
+                token: 'mock-token-123'
+            }));
+        }
+
+        if (role === 'agency') {
+            setViewMode('agency');
+            setCurrentUser({ role: 'agency', client: null });
+        } else if (role === 'master') {
+            setViewMode('master');
+            setCurrentUser({ role: 'master', client: null });
+        } else {
+            // Client login - for demo, we pick C1
+            const data = api.getClientData('C1');
+            setClientData(data);
+            setViewMode('client_workspace');
+            setCurrentUser({ role: 'client', client: { name: 'Direct Client' } });
+        }
+    };
+
+    const handleSelectClient = (client) => {
+        // Fetch fresh data for the selected client from Mock DB
+        const data = api.getClientData(client.id);
+        setClientData(data);
+        setCurrentUser(prev => ({ ...prev, client: client }));
+        setViewMode('client_workspace');
+    };
+
+    const handleSaveClientData = (newData) => {
+        if (clientData && clientData.id) {
+            api.updateClientData(clientData.id, newData);
+        }
+    };
+
+    const handleLogout = () => {
+        localStorage.removeItem('bravvo_session'); // Clear session
+        setViewMode('login');
+        setCurrentUser(null);
+        setClientData(null);
+    };
+
+    const handleBackToAgency = () => {
+        if (currentUser?.role === 'master') {
+            setViewMode('master');
+        } else {
+            setViewMode('agency');
+        }
+        setClientData(null);
+    };
+
+    switch (viewMode) {
+        case 'landing':
+            return <LandingPage onLogin={() => setViewMode('login')} />;
+
+        case 'login':
+            return <LoginScreen onLogin={handleLogin} />;
+
+        case 'agency':
+            return (
+                <AgencyDashboard
+                    onSelectClient={handleSelectClient}
+                    onLogout={handleLogout}
+                />
+            );
+
+        case 'master':
+            return (
+                <MasterDashboard
+                    onSelectClient={handleSelectClient}
+                    onLogout={handleLogout}
+                />
+            );
+
+        case 'client_workspace':
+            return (
+                <ClientWorkspace
+                    onBackToAgency={currentUser?.role !== 'client' ? handleBackToAgency : undefined}
+                    isAgencyView={currentUser?.role !== 'client'}
+                    initialData={clientData}
+                    onSave={handleSaveClientData}
+                />
+            );
+
+        default:
+            return <LandingPage onLogin={() => setViewMode('login')} />;
+    }
 }
 
 export default App;

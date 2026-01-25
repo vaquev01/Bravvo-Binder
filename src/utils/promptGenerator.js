@@ -45,6 +45,7 @@ export function generatePrompt(item, vaults) {
 function generateIDFPrompt(item, vaults) {
     const s1 = vaults?.S1?.fields || {};
     const s5 = vaults?.S5 || {};
+    const brandIdentity = vaults?.brandIdentity || {}; // NEW: Access Brand Identity
     const products = vaults?.S2?.items || vaults?.S2?.products || [];
     const product = products.find(p => p.id === item.offerId) || products[0] || { name: 'Product Name' };
 
@@ -87,12 +88,14 @@ Safe zones: ${format.safe}`;
     const visualBlock = `[VISUAL DIRECTION]
 Subject: ${product.name} (${item.visual_style || 'Hero Shot'})
 Camera: ${isVideo ? 'Smooth tracking / Dolly' : 'Documentary / Editorial'}
-Lighting: ${mood} lighting, soft shadows, no harsh studio glare
+Lighting: ${mood} lighting, ${brandIdentity.photoStyle || 'soft shadows, no harsh studio glare'}
 Composition: Geometric balance, rule of thirds
 Background: Clean, ${s5.palette?.background || 'Dark/Neutral'}
 Color accent: ${primaryColor} (Subtle usage)
 Mood: ${mood}
-Archetype: ${archetype}`;
+Vibe: ${brandIdentity.visualVibes?.join(', ') || 'Modern'}
+Archetype: ${archetype}
+Key Elements: ${brandIdentity.keyElements?.join(', ') || 'N/A'}`;
 
     // 5. GRAPHIC LAYER BLOCK
     const graphicBlock = `[GRAPHIC LAYER]
@@ -114,7 +117,7 @@ No flashy effects` : 'N/A (Static Image)'}`;
     const soundBlock = `[VOICE & SOUND]
 ${isVideo ? `Voice: Casual, Natural
 Tone: Friendly, non-advertising
-Music: Low, warm groove
+Music: ${brandIdentity.musicalStyle || 'Low, warm groove'}
 Ambient sound: Enabled` : 'N/A (Silent)'}`;
 
     // 8. COPY BLOCK
@@ -132,7 +135,8 @@ No stock feeling
 No blur
 No watermark
 No exaggerated contrast
-No heavy filters`;
+No heavy filters
+DO NOT USE: ${brandIdentity.prohibitedElements?.join(', ') || 'N/A'}`;
 
     // COMPOSE FINAL PROMPT
     return `${controlBlock}

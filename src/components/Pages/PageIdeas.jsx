@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Lightbulb, Link2, FileText, Plus, Trash2, ExternalLink, Tag, Calendar, Sparkles } from 'lucide-react';
+import { Lightbulb, Link2, FileText, Plus, Trash2, ExternalLink, Sparkles } from 'lucide-react';
 
 const IDEA_TAGS = [
     'Conteúdo', 'Promoção', 'Lançamento', 'Sazonal', 'Tendência', 'Reels', 'Stories', 'Carrossel', 'Collab'
@@ -75,13 +75,15 @@ export function PageIdeas({ formData, setFormData, onComplete }) {
                         <Lightbulb size={20} className="text-yellow-400" />
                     </div>
                     <div>
-                        <h2 className="text-2xl font-bold text-white">V5 • Ideas & References</h2>
+                        <h2 className="text-2xl font-bold text-white">V5 • Ideas Vault</h2>
                         <p className="text-sm text-gray-400">Banco de ideias, referências e anotações rápidas</p>
                     </div>
                 </div>
             </div>
 
-            {/* Section 1: Ideas Bank */}
+            {/* ═══════════════════════════════════════════════════════════════════ */}
+            {/* SECTION 1: IDEAS BANK */}
+            {/* ═══════════════════════════════════════════════════════════════════ */}
             <section className="space-y-6">
                 <h3 className="text-lg font-semibold text-white flex items-center gap-2">
                     <Lightbulb size={16} className="text-yellow-400" />
@@ -192,8 +194,8 @@ export function PageIdeas({ formData, setFormData, onComplete }) {
                                         type="button"
                                         onClick={() => toggleIdeaTag(tag)}
                                         className={`px-3 py-1 rounded-full text-xs font-medium border transition-all ${newIdea.tags.includes(tag)
-                                                ? 'bg-yellow-500 text-black border-yellow-500'
-                                                : 'bg-white/5 text-gray-400 border-white/10 hover:border-white/30'
+                                            ? 'bg-yellow-500 text-black border-yellow-500'
+                                            : 'bg-white/5 text-gray-400 border-white/10 hover:border-white/30'
                                             }`}
                                     >
                                         {tag}
@@ -228,7 +230,9 @@ export function PageIdeas({ formData, setFormData, onComplete }) {
                 )}
             </section>
 
-            {/* Section 2: References */}
+            {/* ═══════════════════════════════════════════════════════════════════ */}
+            {/* SECTION 2: REFERENCES */}
+            {/* ═══════════════════════════════════════════════════════════════════ */}
             <section className="space-y-6">
                 <h3 className="text-lg font-semibold text-white flex items-center gap-2">
                     <Link2 size={16} className="text-blue-400" />
@@ -359,7 +363,9 @@ export function PageIdeas({ formData, setFormData, onComplete }) {
                 )}
             </section>
 
-            {/* Section 3: Notepad */}
+            {/* ═══════════════════════════════════════════════════════════════════ */}
+            {/* SECTION 3: NOTEPAD */}
+            {/* ═══════════════════════════════════════════════════════════════════ */}
             <section className="space-y-6">
                 <h3 className="text-lg font-semibold text-white flex items-center gap-2">
                     <FileText size={16} className="text-purple-400" />
@@ -396,17 +402,17 @@ export function PageIdeas({ formData, setFormData, onComplete }) {
                 </div>
             </section>
 
-            {/* Submit (optional for V5) */}
-            <div className="pt-8 border-t border-white/5 flex justify-between items-center">
+            {/* Submit */}
+            <div className="pt-6 border-t border-white/5 flex justify-between items-center sticky bottom-0 bg-[#050505] pb-6 z-10 shadow-[0_-10px_20px_rgba(0,0,0,0.5)]">
                 <p className="text-sm text-gray-500">
-                    💡 Suas ideias e referências ficam salvas automaticamente
+                    💡 Seus assets e configurações ficam salvos automaticamente
                 </p>
                 <button
                     type="submit"
                     className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-xl font-bold flex items-center gap-2 transition-all hover:scale-105 shadow-lg shadow-purple-600/20"
                 >
                     <Sparkles size={18} />
-                    Concluído
+                    Concluir V5
                 </button>
             </div>
         </form>

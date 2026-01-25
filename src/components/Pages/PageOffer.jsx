@@ -44,6 +44,49 @@ export function PageOffer({ formData, setFormData, onNext }) {
                     <span className="w-6 h-6 bg-orange-500/20 text-orange-400 rounded flex items-center justify-center text-xs">1</span>
                     <ShoppingBag size={16} className="text-orange-400" />
                     Catálogo de Produtos
+                    <button
+                        type="button"
+                        onClick={() => {
+                            // Smart Fill Logic for Products
+                            const niche = formData.niche ? formData.niche.toLowerCase() : 'geral';
+                            let suggestedProducts = [];
+
+                            if (niche.includes('gastronomia') || niche.includes('restaurante') || niche.includes('bar')) {
+                                suggestedProducts = [
+                                    { id: `P-${Date.now()}-1`, name: "Prato Principal da Casa", role: "Hero", margin: "Medium", price: 49.90 },
+                                    { id: `P-${Date.now()}-2`, name: "Drink Especial", role: "Upsell", margin: "High", price: 29.90 },
+                                    { id: `P-${Date.now()}-3`, name: "Sobremesa Assinatura", role: "Cross-sell", margin: "High", price: 18.90 }
+                                ];
+                            } else if (niche.includes('moda') || niche.includes('roupa')) {
+                                suggestedProducts = [
+                                    { id: `P-${Date.now()}-1`, name: "Peça da Coleção Nova", role: "Hero", margin: "Medium", price: 199.90 },
+                                    { id: `P-${Date.now()}-2`, name: "Acessório Complementar", role: "Upsell", margin: "High", price: 59.90 },
+                                    { id: `P-${Date.now()}-3`, name: "Kit Básico", role: "Cross-sell", margin: "Medium", price: 149.90 }
+                                ];
+                            } else if (niche.includes('serviço') || niche.includes('consultoria')) {
+                                suggestedProducts = [
+                                    { id: `P-${Date.now()}-1`, name: "Consultoria Premium", role: "Hero", margin: "High", price: 1500.00 },
+                                    { id: `P-${Date.now()}-2`, name: "Workshop Online", role: "Cross-sell", margin: "High", price: 297.00 },
+                                    { id: `P-${Date.now()}-3`, name: "E-book Exclusivo", role: "Upsell", margin: "High", price: 47.00 }
+                                ];
+                            } else {
+                                // Default Generic
+                                suggestedProducts = [
+                                    { id: `P-${Date.now()}-1`, name: "Produto Principal", role: "Hero", margin: "Medium", price: 100.00 },
+                                    { id: `P-${Date.now()}-2`, name: "Produto Complementar", role: "Upsell", margin: "High", price: 50.00 },
+                                    { id: `P-${Date.now()}-3`, name: "Serviço Adicional", role: "Cross-sell", margin: "High", price: 150.00 }
+                                ];
+                            }
+
+                            // Only add if list is empty or has only 1 empty item
+                            if (!formData.products || formData.products.length === 0 || (formData.products.length === 1 && !formData.products[0].name)) {
+                                updateField('products', suggestedProducts);
+                            }
+                        }}
+                        className="ml-auto text-xs bg-white/10 hover:bg-white/20 px-3 py-1 rounded flex items-center gap-1 transition-colors"
+                    >
+                        🎲 Inspirar-me
+                    </button>
                 </h3>
                 <p className="text-xs text-gray-500">
                     Adicione seus principais produtos. O primeiro é automaticamente marcado como "Carro-Chefe" (usado em campanhas).
@@ -241,7 +284,7 @@ export function PageOffer({ formData, setFormData, onNext }) {
             </section>
 
             {/* Submit */}
-            <div className="pt-8 border-t border-white/5 flex justify-end">
+            <div className="pt-6 border-t border-white/5 flex justify-end sticky bottom-0 bg-[#050505] pb-6 z-10 shadow-[0_-10px_20px_rgba(0,0,0,0.5)]">
                 <button
                     type="submit"
                     className="bg-orange-500 hover:bg-orange-600 text-white px-8 py-4 rounded-xl font-bold flex items-center gap-3 transition-all hover:scale-105 shadow-lg shadow-orange-500/20"

@@ -1,7 +1,7 @@
 import React from 'react';
-import { Target, ShoppingBag, GitBranch, Users, LayoutDashboard, CheckCircle2, Lock, Lightbulb } from 'lucide-react';
+import { Target, ShoppingBag, GitBranch, Users, LayoutDashboard, CheckCircle2, Lock, Lightbulb, ArrowLeft } from 'lucide-react';
 
-export function BinderLayout({ activeTab, setActiveTab, completedTabs, children }) {
+export function BinderLayout({ activeTab, setActiveTab, completedTabs, children, onBack }) {
     const tabs = [
         { id: 'OS', label: 'BRAVVO OS', icon: LayoutDashboard, color: 'text-purple-400', border: 'border-purple-500/50', bg: 'bg-purple-500/10', special: true },
         { id: 'V1', label: 'VAULT 1', icon: Target, color: 'text-red-400', border: 'border-red-500/50', bg: 'bg-red-500/10' },
@@ -63,14 +63,68 @@ export function BinderLayout({ activeTab, setActiveTab, completedTabs, children 
             <main className="flex-1 overflow-hidden relative flex flex-col">
                 {/* Header */}
                 <header className="h-16 border-b border-white/5 flex items-center justify-between px-8 bg-[#0a0a0a]/50 backdrop-blur-sm shrink-0">
-                    <div>
-                        <h1 className="font-display font-black text-xl tracking-tight text-white">
-                            BRAVVO <span className="text-bravvo-primary">BINDER</span>
-                        </h1>
-                        <p className="text-xs text-gray-500">v4.0 • Strategic Planning Core</p>
+                    <div className="flex items-center gap-4">
+                        {onBack && (
+                            <button
+                                onClick={onBack}
+                                className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/10 transition-colors"
+                                title="Voltar para Agência"
+                            >
+                                <ArrowLeft size={16} />
+                            </button>
+                        )}
+                        <div className="flex flex-col justify-center">
+                            <div className="flex items-center gap-2 text-xs text-gray-500 mb-0.5 font-mono">
+                                <span>{onBack ? 'AGENCY' : 'BRAVVO OS'}</span>
+                                <span className="text-gray-600">/</span>
+                                <span className={activeTab === 'OS' ? 'text-white font-bold' : ''}>
+                                    {activeTab === 'OS' ? 'COMMAND CENTER' : 'BINDER'}
+                                </span>
+                                {activeTab !== 'OS' && (
+                                    <>
+                                        <span className="text-gray-600">/</span>
+                                        <span className="text-white font-bold">{tabs.find(t => t.id === activeTab)?.label}</span>
+                                    </>
+                                )}
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <h1 className="font-display font-black text-xl tracking-tight text-white leading-none">
+                                    {tabs.find(t => t.id === activeTab)?.label || 'DASHBOARD'}
+                                </h1>
+                                {/* Autosave Indicator (Mocked for now, but valid UI) */}
+                                <div className="flex items-center gap-1.5 px-2 py-0.5 bg-green-500/10 rounded-full border border-green-500/20 ml-2" title="Todas as alterações salvas">
+                                    <CheckCircle2 size={10} className="text-green-500" />
+                                    <span className="text-[9px] font-bold text-green-400 uppercase tracking-wide">Salvo</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <div className="flex items-center gap-4">
+                        {/* Progress Indicator */}
+                        <div className="hidden md:flex items-center gap-3 bg-white/5 px-4 py-2 rounded-xl border border-white/10">
+                            <div className="flex gap-1">
+                                {['V1', 'V2', 'V3', 'V4'].map((vaultId) => {
+                                    const isComplete = completedTabs.includes(vaultId);
+                                    const isCurrent = activeTab === vaultId;
+                                    return (
+                                        <button
+                                            key={vaultId}
+                                            onClick={() => setActiveTab(vaultId)}
+                                            className={`w-3 h-3 rounded-full transition-all duration-300 hover:scale-125 cursor-pointer ${isCurrent ? 'bg-white animate-pulse shadow-[0_0_10px_rgba(255,255,255,0.8)]' :
+                                                isComplete ? 'bg-green-500 hover:bg-green-400' :
+                                                    'bg-white/20 hover:bg-white/40'
+                                                }`}
+                                            title={`Go to ${vaultId}`}
+                                        />
+                                    );
+                                })}
+                            </div>
+                            <span className="text-xs font-mono text-gray-400">
+                                {completedTabs.filter(t => t.startsWith('V')).length}/4 Vaults
+                            </span>
+                        </div>
+
                         <div className="text-right">
                             <p className="text-xs text-gray-400">FASE ATUAL</p>
                             <p className={`text-sm font-bold ${tabs.find(t => t.id === activeTab)?.color}`}>
