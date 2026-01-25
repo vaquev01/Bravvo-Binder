@@ -3,7 +3,9 @@ import {
     Shield,
     ArrowRight,
     BrainCircuit,
-    Command
+    Command,
+    User,
+    Play
 } from 'lucide-react';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { LanguageSwitcher } from '../../components/ui/LanguageSwitcher';
@@ -31,9 +33,10 @@ export function LandingPage({ onLogin }) {
 
                     <button
                         onClick={onLogin}
-                        className="text-[13px] font-medium text-white hover:text-gray-300 transition-colors"
+                        className="px-4 py-2 bg-white/10 hover:bg-white/20 border border-white/20 rounded text-[13px] font-bold text-white transition-all flex items-center gap-2"
                     >
-                        {t('common.sign_in')} &rarr;
+                        <User size={14} />
+                        {t('common.sign_in')}
                     </button>
 
                     {/* Mobile Language Switcher (visible only on small screens) */}
@@ -69,13 +72,14 @@ export function LandingPage({ onLogin }) {
                             <div className="flex flex-col sm:flex-row items-start gap-4">
                                 <button
                                     onClick={onLogin}
-                                    className="h-12 px-8 bg-white text-black text-[13px] font-bold tracking-wide rounded hover:bg-gray-200 transition-all flex items-center gap-2 hover:translate-y-[-2px] hover:shadow-[0_0_20px_rgba(255,255,255,0.3)] duration-300"
+                                    className="h-14 px-10 bg-white text-black text-[14px] font-bold tracking-wide rounded hover:bg-gray-200 transition-all flex items-center gap-3 hover:translate-y-[-2px] hover:shadow-[0_0_30px_rgba(255,255,255,0.4)] duration-300 group"
                                 >
+                                    <Play size={16} className="group-hover:scale-110 transition-transform" />
                                     {t('landing.hero.cta_primary')}
-                                    <ArrowRight size={14} />
                                 </button>
                                 <button
-                                    className="h-12 px-8 bg-transparent border border-white/20 text-white text-[13px] font-bold tracking-wide rounded hover:bg-white/5 transition-all"
+                                    onClick={onLogin}
+                                    className="h-14 px-10 bg-transparent border-2 border-white/30 text-white text-[14px] font-bold tracking-wide rounded hover:bg-white/10 hover:border-white/50 transition-all"
                                 >
                                     {t('landing.hero.cta_secondary')}
                                 </button>
@@ -260,8 +264,9 @@ export function LandingPage({ onLogin }) {
                     <div className="flex flex-col items-center gap-6">
                         <button
                             onClick={onLogin}
-                            className="h-14 px-12 bg-white text-black text-sm font-bold tracking-wide rounded hover:scale-105 transition-transform shadow-[0_0_50px_rgba(255,255,255,0.2)]"
+                            className="h-16 px-14 bg-white text-black text-base font-bold tracking-wide rounded-lg hover:scale-105 transition-all shadow-[0_0_50px_rgba(255,255,255,0.3)] flex items-center gap-3 group"
                         >
+                            <Play size={18} className="group-hover:scale-110 transition-transform" />
                             {t('landing.hero.cta_primary')}
                         </button>
                         <p className="text-xs text-gray-600 font-mono">

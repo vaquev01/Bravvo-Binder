@@ -6,8 +6,8 @@ export const translations = {
                 title_line1: "Sistema Operacional",
                 title_line2: "para Marketing Moderno.",
                 subtitle: "A era do caos em planilhas acabou. O Bravvo Binder centraliza estratégia, criatividade e governança em uma única fonte da verdade.",
-                cta_primary: "INICIAR OPERAÇÃO",
-                cta_secondary: "AGENDAR DEMO"
+                cta_primary: "ACESSAR SISTEMA",
+                cta_secondary: "VER PLANOS"
             },
             stats: {
                 agencies: "Agências Ativas",
@@ -51,17 +51,17 @@ export const translations = {
         auth: {
             login: {
                 badge: "Bravvo OS Enterprise v5.0",
-                title_line1: "Governança de",
-                title_line2: "Alto Nível.",
-                subtitle: "O sistema operacional definitivo para agências e marcas que buscam ordem no caos.",
+                title_line1: "Acesso ao Sistema",
+                title_line2: "de Governança.",
+                subtitle: "Entre com suas credenciais para acessar o sistema operacional de marketing.",
                 cta_pricing: "Ver Planos & Preços",
-                form_title: "Acessar Sistema",
+                form_title: "Fazer Login",
                 label_user: "USUÁRIO",
                 label_pass: "SENHA",
-                placeholder_user: "Seu usuário",
-                placeholder_pass: "Sua senha",
-                remember: "Permanecer conectado",
-                submit: "ENTRAR NO OS",
+                placeholder_user: "Digite seu usuário",
+                placeholder_pass: "Digite sua senha",
+                remember: "Manter-me conectado",
+                submit: "ACESSAR SISTEMA",
                 help: "Dúvidas de acesso? Contate seu gerente de conta."
             },
             pricing: {
@@ -189,7 +189,15 @@ export const translations = {
                 edit: "Editar",
                 no_items: "Nenhuma iniciativa encontrada para este período",
                 add_item: "Adicionar Item",
-                quick_actions: "Ações Rápidas"
+                quick_actions: "Ações Rápidas",
+                quick_add: {
+                    title: "Nova Iniciativa",
+                    title_label: "Título da Iniciativa",
+                    date_label: "Data de Publicação",
+                    channel_label: "Canal/Plataforma",
+                    placeholder: "ex: Post de Lançamento Verão",
+                    create_button: "Criar Iniciativa"
+                }
             },
             vaults: {
                 brand_dna: "DNA DA MARCA",
@@ -197,22 +205,21 @@ export const translations = {
                 traffic: "TRÁFEGO",
                 team: "TIME"
             },
-            quick_add: {
-                title: "Nova Iniciativa",
-                title_label: "Título",
-                date_label: "Data",
-                channel_label: "Canal",
-                create_button: "Criar Item",
-                placeholder: "ex: Post de Lançamento de Verão"
+            channels: {
+                instagram_feed: "Instagram Feed",
+                instagram_reels: "Instagram Reels",
+                instagram_stories: "Instagram Stories",
+                tiktok: "TikTok",
+                whatsapp: "WhatsApp Status",
+                google_ads: "Google Ads"
             },
-            detail_edit: {
-                title: "Editar Iniciativa",
-                title_label: "Título",
-                date_label: "Data",
-                channel_label: "Canal",
-                copy_label: "Copy",
-                copy_placeholder: "Legenda...",
-                save: "Salvar Alterações"
+            status_labels: {
+                draft: "Rascunho",
+                pending: "Pendente",
+                active: "Ativo",
+                review: "Em Revisão",
+                approved: "Aprovado",
+                completed: "Concluído"
             },
             status_options: {
                 draft: "Rascunho",
@@ -244,10 +251,10 @@ export const translations = {
             yes: "Sim",
             no: "Não",
             ok: "OK",
-            ready_to_operate: "Pronto para Operar.",
-            all_systems_normal: "Todos os Sistemas Normais",
+            ready_to_operate: "Pronto para começar?",
+            all_systems_normal: "Todos os Sistemas Operacionais",
             status: "Status",
-            sign_in: "Entrar"
+            sign_in: "FAZER LOGIN"
         }
     },
     en: {
