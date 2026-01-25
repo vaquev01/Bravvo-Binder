@@ -537,7 +537,7 @@ export function PageBrand({ formData, setFormData, onNext }) {
                             <div className="flex gap-2">
                                 <input
                                     className="input-field flex-1"
-                                    placeholder="Add..."
+                                    placeholder="Adicionar..."
                                     value={newKeyElement}
                                     onChange={e => setNewKeyElement(e.target.value)}
                                     onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), addKeyElement())}
