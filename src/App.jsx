@@ -109,13 +109,13 @@ function ClientWorkspaceContent({ onBackToAgency, isAgencyView: _isAgencyView })
 
         // --- V2: Commerce Vault ---
         products: appData.vaults.S2.products || [],
-        currentTicket: appData.vaults.S2.metrics.currentTicket || "",
-        targetTicket: appData.vaults.S2.metrics.targetTicket || "",
-        currentRevenue: appData.vaults.S2.metrics.currentRevenue || "",
-        upsellStrategy: appData.vaults.S2.strategy.upsell || "none",
-        saleFormat: appData.vaults.S2.strategy.format || "presencial",
-        baitProduct: appData.vaults.S2.bait.product || "",
-        baitPrice: appData.vaults.S2.bait.price || "",
+        currentTicket: appData.vaults.S2.metrics?.currentTicket || "",
+        targetTicket: appData.vaults.S2.metrics?.targetTicket || "",
+        currentRevenue: appData.vaults.S2.metrics?.currentRevenue || "",
+        upsellStrategy: appData.vaults.S2.strategy?.upsell || "none",
+        saleFormat: appData.vaults.S2.strategy?.format || "presencial",
+        baitProduct: appData.vaults.S2.bait?.product || "",
+        baitPrice: appData.vaults.S2.bait?.price || "",
 
         // --- V3: Funnel Vault ---
         channels: appData.vaults.S3.channels || [],
