@@ -30,6 +30,7 @@
     --brand-secondary: #1E293B;
     --brand-accent: #FF5733;
     --accent-purple: var(--brand-accent);
+    --brand-font: Inter;
 
     /* SEMANTIC COLORS */
     --color-success: #22C55E;
@@ -87,6 +88,7 @@
   body {
     @apply bg-[var(--bg-deep)] text-[var(--text-primary)] font-sans antialiased selection:bg-white/20 selection:text-white;
     font-feature-settings: "ss01", "ss02", "cv01", "cv02";
+    font-family: var(--brand-font), ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
   }
 
   /* Custom Scrollbar - Minimal */

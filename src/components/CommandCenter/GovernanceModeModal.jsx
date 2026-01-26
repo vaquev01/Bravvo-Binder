@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { 
     X, CheckCircle2, AlertTriangle, Target,
     ArrowUpRight, BarChart3, Calendar, FileText, Zap,
@@ -51,6 +51,29 @@ export function GovernanceModeModal({
         production: '',
         execution: '',
     });
+
+    const initialGoalsRef = useRef(null);
+    const [goalDraft, setGoalDraft] = useState({});
+    const [goalChangedAt, setGoalChangedAt] = useState({});
+
+    useEffect(() => {
+        if (!open) return;
+
+        const baseline = {
+            revenue: kpis?.revenue?.goal || 0,
+            traffic: kpis?.traffic?.goal || 0,
+            sales: kpis?.sales?.goal || 0,
+        };
+
+        if (!initialGoalsRef.current) {
+            initialGoalsRef.current = baseline;
+        }
+
+        setGoalDraft(prev => {
+            if (prev && Object.keys(prev).length > 0) return prev;
+            return baseline;
+        });
+    }, [open, kpis?.revenue?.goal, kpis?.traffic?.goal, kpis?.sales?.goal]);
 
     useEffect(() => {
         if (!open) return;
@@ -233,6 +256,26 @@ export function GovernanceModeModal({
             }))
         );
 
+        const goalChanges = ['revenue', 'traffic', 'sales']
+            .map((id) => {
+                const fromGoal = Number(initialGoalsRef.current?.[id] ?? 0);
+                const toGoal = Number(goalDraft?.[id] ?? fromGoal);
+                if (Number.isNaN(toGoal) || toGoal === fromGoal) return null;
+                return {
+                    id,
+                    fromGoal,
+                    toGoal,
+                    changedAt: goalChangedAt?.[id] || new Date().toISOString(),
+                };
+            })
+            .filter(Boolean);
+
+        const kpiSnapshotWithGoals = {
+            revenue: { ...(kpis?.revenue || {}), goal: Number(goalDraft?.revenue ?? kpis?.revenue?.goal ?? 0) },
+            traffic: { ...(kpis?.traffic || {}), goal: Number(goalDraft?.traffic ?? kpis?.traffic?.goal ?? 0) },
+            sales: { ...(kpis?.sales || {}), goal: Number(goalDraft?.sales ?? kpis?.sales?.goal ?? 0) },
+        };
+
         // Build governance data
         const governanceData = {
             period: `${periodData.startDate} - ${periodData.endDate}`,
@@ -242,7 +285,8 @@ export function GovernanceModeModal({
             timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
             responsible: currentUser?.name || currentUser?.role || 'Operador',
             type: governanceFrequency,
-            kpiSnapshot: kpis,
+            kpiSnapshot: kpiSnapshotWithGoals,
+            goalChanges,
             roadmapReview: roadmapStats,
             productionAnalysis: productionData,
             executionAnalysis: {
@@ -285,6 +329,7 @@ export function GovernanceModeModal({
                 ata,
                 recalibration,
                 nextWindow,
+                goalChanges,
                 roadmapUpdates: roadmapReview.map(item => ({
                     id: item.id,
                     status: item.governanceStatus,
@@ -454,14 +499,27 @@ export function GovernanceModeModal({
                                 <div className="grid grid-cols-3 gap-4">
                                     {['revenue', 'traffic', 'sales'].map(key => {
                                         const kpi = kpis?.[key] || { value: 0, goal: 0 };
-                                        const achievement = kpi.goal > 0 ? (kpi.value / kpi.goal * 100).toFixed(0) : 0;
+                                        const goalValue = Number(goalDraft?.[key] ?? kpi.goal ?? 0);
+                                        const achievement = goalValue > 0 ? (kpi.value / goalValue * 100).toFixed(0) : 0;
                                         const isAbove = achievement >= 100;
                                         return (
                                             <div key={key} className={`card-elevated p-4 ${isAbove ? 'border-green-500/30' : 'border-red-500/30'}`}>
                                                 <p className="text-label mb-2">{key === 'revenue' ? 'Receita' : key === 'traffic' ? 'Tráfego' : 'Vendas'}</p>
                                                 <p className="text-metric">{key === 'revenue' || key === 'traffic' ? `R$ ${kpi.value?.toLocaleString()}` : kpi.value}</p>
                                                 <div className="flex items-center justify-between mt-2">
-                                                    <span className="text-caption">Meta: {key === 'revenue' || key === 'traffic' ? `R$ ${kpi.goal?.toLocaleString()}` : kpi.goal}</span>
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="text-caption">Meta:</span>
+                                                        <input
+                                                            type="number"
+                                                            className="bg-black/30 border border-white/10 rounded px-2 py-1 w-[110px] text-[11px] font-mono text-gray-200 focus:outline-none focus:border-purple-500/50"
+                                                            value={goalValue}
+                                                            onChange={e => {
+                                                                const next = parseFloat(e.target.value);
+                                                                setGoalDraft(prev => ({ ...prev, [key]: Number.isFinite(next) ? next : 0 }));
+                                                                setGoalChangedAt(prev => ({ ...prev, [key]: new Date().toISOString() }));
+                                                            }}
+                                                        />
+                                                    </div>
                                                     <span className={`text-xs font-bold ${isAbove ? 'text-green-400' : 'text-red-400'}`}>{achievement}%</span>
                                                 </div>
                                             </div>

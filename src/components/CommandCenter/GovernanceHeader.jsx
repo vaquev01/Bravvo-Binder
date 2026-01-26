@@ -100,6 +100,11 @@ export function GovernanceHeader({
     calendarRule,
     onUpdateCalendarRule
 }) {
+    const today = new Date();
+    const todayWeekday = today.toLocaleDateString('pt-BR', { weekday: 'short' }).replace('.', '').toUpperCase();
+    const todayDay = today.toLocaleDateString('pt-BR', { day: '2-digit' });
+    const todayMonth = today.toLocaleDateString('pt-BR', { month: 'short' }).replace('.', '').toUpperCase();
+
     const nextMeeting = getNextMeetingDate(frequency, calendarRule);
     const status = getGovernanceStatus(lastGovernance, frequency);
     const computedWindow = computeCycleWindow(frequency, calendarRule);
@@ -130,48 +135,53 @@ export function GovernanceHeader({
                 : 'bg-[#080808] border-white/10'
         }`}>
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                {/* Left: Governance Info */}
-                <div className="flex items-center gap-4">
-                    {/* Icon */}
-                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
-                        isGovernanceActive ? 'bg-purple-500/20' : 'bg-white/5'
-                    }`}>
-                        <Shield size={24} className={isGovernanceActive ? 'text-purple-400' : 'text-gray-500'} />
+                <div className="flex items-stretch gap-4">
+                    <div className="w-[86px] shrink-0 rounded-xl border border-white/10 bg-white/5 flex flex-col items-center justify-center px-3 py-2">
+                        <div className="text-[10px] font-mono text-gray-400 uppercase tracking-widest">{todayWeekday}</div>
+                        <div className="text-2xl font-bold text-white leading-tight mt-0.5">{todayDay}</div>
+                        <div className="text-[10px] font-mono text-gray-500 uppercase tracking-widest mt-0.5">{todayMonth}</div>
                     </div>
 
-                    {/* Info */}
-                    <div>
-                        <div className="flex items-center gap-2 mb-1">
-                            <span className="text-sm font-bold text-white">Governança</span>
-                            {/* Frequency Selector */}
-                            <select
-                                value={frequency}
-                                onChange={(e) => onChangeFrequency?.(e.target.value)}
-                                className="bg-transparent border border-white/10 rounded px-2 py-0.5 text-[10px] font-bold text-gray-400 uppercase tracking-wider focus:outline-none focus:border-purple-500/50 cursor-pointer"
-                            >
-                                <option value="daily">Diária</option>
-                                <option value="weekly">Semanal</option>
-                                <option value="monthly">Mensal</option>
-                            </select>
-                            <button
-                                type="button"
-                                onClick={() => setShowEditor(v => !v)}
-                                className="ml-1 p-1.5 rounded-lg hover:bg-white/5 text-gray-500 hover:text-gray-300 transition-colors"
-                                title="Calendário"
-                            >
-                                <Settings2 size={14} />
-                            </button>
+                    <div className="w-px bg-white/10 my-2" />
+
+                    <div className="flex items-center gap-4">
+                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
+                            isGovernanceActive ? 'bg-purple-500/20' : 'bg-white/5'
+                        }`}>
+                            <Shield size={24} className={isGovernanceActive ? 'text-purple-400' : 'text-gray-500'} />
                         </div>
-                        <div className="flex items-center gap-3 text-[11px]">
-                            {/* Status */}
-                            <div className={`flex items-center gap-1 px-2 py-0.5 rounded-full ${status.bgColor}`}>
-                                <StatusIcon size={10} className={status.color} />
-                                <span className={`font-medium ${status.color}`}>{status.label}</span>
+
+                        <div>
+                            <div className="flex items-center gap-2 mb-1">
+                                <span className="text-sm font-bold text-white">Governança</span>
+                                <select
+                                    value={frequency}
+                                    onChange={(e) => onChangeFrequency?.(e.target.value)}
+                                    className="bg-transparent border border-white/10 rounded px-2 py-0.5 text-[10px] font-bold text-gray-400 uppercase tracking-wider focus:outline-none focus:border-purple-500/50 cursor-pointer"
+                                >
+                                    <option value="daily">Diária</option>
+                                    <option value="weekly">Semanal</option>
+                                    <option value="monthly">Mensal</option>
+                                </select>
+                                <button
+                                    type="button"
+                                    onClick={() => setShowEditor(v => !v)}
+                                    className="ml-1 p-1.5 rounded-lg hover:bg-white/5 text-gray-500 hover:text-gray-300 transition-colors"
+                                    title="Calendário"
+                                >
+                                    <Settings2 size={14} />
+                                </button>
                             </div>
-                            {/* Next Meeting */}
-                            <div className="flex items-center gap-1 text-gray-500">
-                                <Calendar size={10} />
-                                <span>Próxima: <span className="text-gray-400">{formatDate(nextMeeting)}</span></span>
+
+                            <div className="flex items-center gap-3 text-[11px]">
+                                <div className={`flex items-center gap-1 px-2 py-0.5 rounded-full ${status.bgColor}`}>
+                                    <StatusIcon size={10} className={status.color} />
+                                    <span className={`font-medium ${status.color}`}>{status.label}</span>
+                                </div>
+                                <div className="flex items-center gap-1 text-gray-500">
+                                    <Calendar size={10} />
+                                    <span>Próxima: <span className="text-gray-400">{formatDate(nextMeeting)}</span></span>
+                                </div>
                             </div>
                         </div>
                     </div>

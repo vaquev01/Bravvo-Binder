@@ -9,7 +9,8 @@ import {
     History,
     MessageCircle,
     Upload,
-    Book
+    Book,
+    Palette
 } from 'lucide-react';
 import { formatHumanDate } from './DaySummary';
 import { OnboardingChecklist } from '../ui/OnboardingChecklist';
@@ -695,18 +696,34 @@ export function OnePageDashboard({
     };
 
     const handleGovernanceModeComplete = (result) => {
-        const { ata, recalibration, nextWindow, roadmapUpdates } = result;
+        const { ata, recalibration, nextWindow, roadmapUpdates, goalChanges } = result;
 
         const nextKpis = { ...kpis };
-        const goalUpdates = [];
+        const autoGoalUpdates = [];
         if (recalibration?.suggestedKpis) {
             Object.entries(recalibration.suggestedKpis).forEach(([key, data]) => {
                 if (nextKpis[key] && data?.newGoal) {
                     nextKpis[key].goal = data.newGoal;
-                    goalUpdates.push({ id: key, newGoal: data.newGoal, reason: data?.reason || 'recalibration' });
+                    autoGoalUpdates.push({ id: key, fromGoal: kpis?.[key]?.goal ?? 0, toGoal: data.newGoal, reason: data?.reason || 'recalibration' });
                 }
             });
         }
+
+        const manualGoalUpdates = Array.isArray(goalChanges)
+            ? goalChanges.map(ch => ({
+                id: ch.id,
+                fromGoal: ch.fromGoal,
+                toGoal: ch.toGoal,
+                changedAt: ch.changedAt
+            }))
+            : [];
+
+        // Manual changes override any auto suggested goals
+        manualGoalUpdates.forEach(ch => {
+            if (!nextKpis[ch.id]) return;
+            nextKpis[ch.id].goal = ch.toGoal;
+        });
+
         setKpis(nextKpis);
 
         const updatedHistoryForForm = [ata, ...(appData.governanceHistory || [])];
@@ -725,23 +742,40 @@ export function OnePageDashboard({
                 : prevD2;
 
             const prevContractKpis = Array.isArray(prev?.measurementContract?.kpis) ? prev.measurementContract.kpis : [];
-            const nextContractKpis = goalUpdates.length > 0
-                ? prevContractKpis.map(k => {
-                    const update = goalUpdates.find(u => String(u.id) === String(k.id));
-                    if (!update) return k;
-                    return { ...k, target: update.newGoal };
-                })
-                : prevContractKpis;
+            const finalGoalMap = {
+                revenue: nextKpis?.revenue?.goal,
+                traffic: nextKpis?.traffic?.goal,
+                sales: nextKpis?.sales?.goal,
+            };
 
-            const goalAuditEntries = goalUpdates.map(u => ({
-                id: Date.now() + Math.random(),
-                ts: new Date().toISOString(),
-                actor: currentUser?.role ? `${currentUser.role} (${currentUser.client?.name || 'System'})` : 'System',
-                action: 'GOVERNANCE_RECALIBRATION',
-                target: u.id,
-                newValue: u.newGoal,
-                details: u.reason
-            }));
+            const nextContractKpis = prevContractKpis.map(k => {
+                const nextTarget = finalGoalMap?.[k.id];
+                if (typeof nextTarget !== 'number') return k;
+                return { ...k, target: nextTarget };
+            });
+
+            const goalAuditEntries = [
+                ...autoGoalUpdates.map(u => ({
+                    id: Date.now() + Math.random(),
+                    ts: new Date().toISOString(),
+                    actor: currentUser?.role ? `${currentUser.role} (${currentUser.client?.name || 'System'})` : 'System',
+                    action: 'GOVERNANCE_RECALIBRATION',
+                    target: u.id,
+                    oldValue: u.fromGoal,
+                    newValue: u.toGoal,
+                    details: u.reason
+                })),
+                ...manualGoalUpdates.map(u => ({
+                    id: Date.now() + Math.random(),
+                    ts: u.changedAt || new Date().toISOString(),
+                    actor: currentUser?.role ? `${currentUser.role} (${currentUser.client?.name || 'System'})` : 'Operador',
+                    action: 'GOVERNANCE_GOAL_CHANGE',
+                    target: u.id,
+                    oldValue: u.fromGoal,
+                    newValue: u.toGoal,
+                    details: 'Alteração manual durante a governança'
+                }))
+            ];
 
             return {
                 ...prev,
@@ -1256,6 +1290,15 @@ export function OnePageDashboard({
                     </button>
                     <button onClick={() => setShowImport(true)} className="btn-ghost !h-7 !px-2" title="Importar Dados">
                         <Upload size={14} />
+                    </button>
+                    <button
+                        onClick={() => {
+                            setAppData(prev => ({ ...prev, customThemeEnabled: !prev?.customThemeEnabled }));
+                        }}
+                        className="btn-ghost !h-7 !px-2"
+                        title="Personalizar (usar paleta da marca)"
+                    >
+                        <Palette size={14} />
                     </button>
                     <div className="w-px h-4 bg-white/10 mx-1"></div>
                     {meetingState.active && (

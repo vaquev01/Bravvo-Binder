@@ -167,6 +167,7 @@ class StorageService {
         const s4GovernanceCalendar = ensureObject(s4.governanceCalendar, {});
         const s5Palette = ensureObject(s5.palette, {});
         const s5Rules = ensureObject(s5.rules, {});
+        const s5BrandIdentity = ensureObject(s5.brandIdentity, {});
 
         merged.vaults = {
             ...merged.vaults,
@@ -274,7 +275,8 @@ class StorageService {
                     colorMeanings: '',
                     photoStyle: '',
                     typographyNotes: '',
-                    ...ensureObject(s5.brandIdentity)
+                    fontFamily: typeof s5BrandIdentity.fontFamily === 'string' ? s5BrandIdentity.fontFamily : 'Inter',
+                    ...s5BrandIdentity
                 }
             }
         };

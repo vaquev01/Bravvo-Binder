@@ -204,6 +204,7 @@ function ClientWorkspaceContent({ onBackToAgency, isAgencyView: _isAgencyView, c
         const root = document.documentElement;
         const enabled = Boolean(appData?.customThemeEnabled);
         const palette = appData?.vaults?.S5?.palette;
+        const brandIdentity = appData?.vaults?.S5?.brandIdentity;
 
         const applyVar = (name, value) => {
             if (enabled && typeof value === 'string' && value.trim()) {
@@ -216,6 +217,7 @@ function ClientWorkspaceContent({ onBackToAgency, isAgencyView: _isAgencyView, c
         applyVar('--brand-primary', palette?.primary);
         applyVar('--brand-secondary', palette?.secondary);
         applyVar('--brand-accent', palette?.accent);
+        applyVar('--brand-font', brandIdentity?.fontFamily);
 
         if (enabled && typeof palette?.accent === 'string' && palette.accent.trim()) {
             root.style.setProperty('--accent-purple', palette.accent.trim());

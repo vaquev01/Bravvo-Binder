@@ -429,6 +429,21 @@ export function PageBrand({ formData: externalFormData, setFormData: externalSet
                         </div>
                     </div>
 
+                    <div className="mt-6">
+                        <label className="input-label">Fonte do Sistema</label>
+                        <select
+                            className="input-field"
+                            value={formData.brandIdentity?.fontFamily || 'Inter'}
+                            onChange={e => updateBrandIdentity('fontFamily', e.target.value)}
+                        >
+                            <option value="Inter">Inter</option>
+                            <option value="system-ui">System</option>
+                            <option value="Roboto">Roboto</option>
+                            <option value="Poppins">Poppins</option>
+                            <option value="Montserrat">Montserrat</option>
+                        </select>
+                    </div>
+
                     {/* NEW: Brand Assets Upload (Moved from V5) */}
                     <div className="mt-8 pt-8 border-t border-[var(--border-subtle)]">
                         <label className="input-label flex items-center gap-2 mb-4">

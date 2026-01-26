@@ -35,6 +35,7 @@ export function generateATA(governanceData) {
         responsible,
         type,
         kpiSnapshot,
+        goalChanges,
         roadmapReview,
         productionAnalysis,
         executionAnalysis,
@@ -80,6 +81,8 @@ export function generateATA(governanceData) {
                 goal: kpiSnapshot?.sales?.goal || 0,
             },
         },
+
+        goalChanges: Array.isArray(goalChanges) ? goalChanges : [],
 
         // Resumo do Roadmap
         roadmapSummary: {
@@ -385,6 +388,7 @@ function reprioritizeRoadmap(ata, currentRoadmap) {
  * Formata ATA para exibição
  */
 export function formatATAForDisplay(ata) {
+    const goalChanges = Array.isArray(ata?.goalChanges) ? ata.goalChanges : [];
     return {
         title: `ATA de Governança - ${ata.signature.period}`,
         subtitle: `${ata.signature.type === 'weekly' ? 'Semanal' : ata.signature.type === 'daily' ? 'Diária' : 'Mensal'} | ${new Date(ata.signature.closedAt).toLocaleString('pt-BR')}`,
@@ -397,6 +401,14 @@ export function formatATAForDisplay(ata) {
                     `Tráfego: R$ ${ata.kpis.traffic.value} investido`,
                 ],
             },
+            ...(goalChanges.length > 0 ? [{
+                title: 'Metas Alteradas',
+                items: goalChanges.map(ch => {
+                    const label = ch.id === 'revenue' ? 'Receita' : ch.id === 'traffic' ? 'Tráfego' : ch.id === 'sales' ? 'Vendas' : String(ch.id);
+                    const when = ch.changedAt ? new Date(ch.changedAt).toLocaleString('pt-BR') : '';
+                    return `${label}: ${ch.fromGoal} → ${ch.toGoal}${when ? ` (${when})` : ''}`;
+                })
+            }] : []),
             {
                 title: 'Execução',
                 items: [
