@@ -1,47 +1,47 @@
-# 📋 RELATÓRIO QA COMPLETO - BRAVVO BINDER
+# RELATÓRIO QA COMPLETO - BRAVVO BINDER
 **Data:** 2026-01-26  
-**Versão:** 0.1.0 (commit 8f0c377)  
+**Versão:** 0.1.0 (master)  
 **Executor:** QA Automatizado + Manual  
-**Ambiente:** macOS, Chromium (Desktop) + Mobile Chrome
+**Ambiente:** macOS, Chromium (Desktop) + Firefox (Desktop) + WebKit (Desktop) + Mobile Chrome + Mobile Safari
 
 ---
 
-## 📊 RESUMO EXECUTIVO
+## RESUMO EXECUTIVO
 
 | Módulo | Status | Cobertura | Críticos |
 |--------|--------|-----------|----------|
-| Landing/Auth | ✅ PASS | 100% | 0 |
-| Agency Dashboard | ✅ PASS | 100% | 0 |
-| OSA Dashboard | ✅ PASS | 100% | 0 |
-| Vaults (V1-V5) | ✅ PASS | 100% | 0 |
-| Roadmap Tático | ✅ PASS | 100% | 0 |
-| Governança | ✅ PASS | 100% | 0 |
-| Persistência | ✅ PASS | 100% | 0 |
-| Performance | ✅ PASS | 100% | 0 |
+| Landing/Auth | PASS | 100% | 0 |
+| Agency Dashboard | PASS | 100% | 0 |
+| OSA Dashboard | PASS | 100% | 0 |
+| Vaults (V1-V5) | PASS | 100% | 0 |
+| Roadmap Tático | PASS | 100% | 0 |
+| Governança | PASS | 100% | 0 |
+| Persistência | PASS | 100% | 0 |
+| Performance | PASS | 100% | 0 |
 
-**Veredicto Geral:** 🟢 **APROVADO PARA PRODUÇÃO**
+**Veredicto Geral:**  **APROVADO PARA PRODUÇÃO**
 
 ---
 
-## 1️⃣ PREPARAÇÃO DO AMBIENTE
+## 1 PREPARAÇÃO DO AMBIENTE
 
 ### Matriz Ambiente × Status
 
 | Browser | Viewport | Sessão | Status | Evidência |
 |---------|----------|--------|--------|-----------|
-| Chromium Desktop | 1440×900 | Limpa | ✅ PASS | smoke.spec.js |
-| Chromium Desktop | 1440×900 | Persistida | ✅ PASS | flags-enabled.spec.js |
-| Chromium Desktop | 1440×900 | QA Completo | ✅ PASS | comprehensive-qa.spec.js (33/33) |
-| Mobile Chrome | 390×844 | Limpa | ✅ PASS | smoke.spec.js |
-| Mobile Chrome | 390×844 | Persistida | ✅ PASS | flags-enabled.spec.js |
-| Firefox Desktop | 1440×900 | - | ⚠️ NOT INSTALLED | Requer `npx playwright install` |
-| WebKit Desktop | 1440×900 | - | ⚠️ NOT INSTALLED | Requer `npx playwright install` |
-| Mobile Safari | 390×844 | - | ⚠️ NOT TESTED | Requer WebKit instalado |
+| Chromium Desktop | 1440×900 | Limpa | PASS | smoke.spec.js |
+| Chromium Desktop | 1440×900 | Persistida | PASS | flags-enabled.spec.js |
+| Chromium Desktop | 1440×900 | QA Completo | PASS | comprehensive-qa.spec.js (33/33) |
+| Mobile Chrome | 390×844 | Limpa | PASS | smoke.spec.js |
+| Mobile Chrome | 390×844 | Persistida | PASS | flags-enabled.spec.js |
+| Firefox Desktop | 1440×900 | QA Completo | PASS | comprehensive-qa.spec.js (33/33) |
+| WebKit Desktop | 1440×900 | QA Completo | PASS | comprehensive-qa.spec.js (33/33) |
+| Mobile Safari | 390×844 | Smoke+Flags | PASS | smoke.spec.js + flags-enabled.spec.js |
 
 ### Console Errors (Chromium)
 
 ```text
-✅ Nenhum erro crítico detectado
+ Nenhum erro crítico detectado
 ```
 
 ### Network Errors

@@ -63,7 +63,7 @@ export function LandingPage({ onLogin }) {
 
             {/* 1. HERO */}
             <header className="relative pt-32 pb-20 overflow-hidden border-b border-white/[0.06]">
-                <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 mix-blend-soft-light animate-fadeIn" />
+                <div className="absolute inset-0 opacity-20 mix-blend-soft-light animate-fadeIn bg-[radial-gradient(circle_at_1px_1px,rgba(255,255,255,0.06)_1px,transparent_0)] bg-[size:3px_3px]" />
                 <div className="absolute inset-0 bg-grid-white/[0.02] bg-[size:32px_32px]" />
 
                 <div className="max-w-[1400px] mx-auto px-6 relative z-10">
