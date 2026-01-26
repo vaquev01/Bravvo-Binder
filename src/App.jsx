@@ -57,6 +57,7 @@ function ClientWorkspaceContent({ onBackToAgency, isAgencyView: _isAgencyView, c
     const [_activeId, _setActiveId] = useState('D2'); // D1-D5 or S1-S5
     // Prompt UI State
     const [selectedPrompt, setSelectedPrompt] = useState(null);
+    const [isGenerating, setIsGenerating] = useState(false);
     const [promptTab, setPromptTab] = useState('ai'); // 'ai' or 'human'
     const [_selectedItem, setSelectedItem] = useState(null);
     const [copied, setCopied] = useState(false);
@@ -180,6 +181,7 @@ function ClientWorkspaceContent({ onBackToAgency, isAgencyView: _isAgencyView, c
 
     // Handlers
     const handleGeneratePrompt = useCallback((item) => {
+        setIsGenerating(true);
         // Now returns object { aiPrompt, humanGuide }
         const promptData = generatePrompt(item, appData.vaults);
         setSelectedPrompt(promptData);
@@ -189,6 +191,7 @@ function ClientWorkspaceContent({ onBackToAgency, isAgencyView: _isAgencyView, c
             { id: Date.now(), item: item.initiative, timestamp: new Date().toLocaleTimeString(), prompt: promptData },
             ...prev.slice(0, 9)
         ]);
+        setIsGenerating(false);
     }, [appData.vaults]);
 
     const handleCopy = useCallback(async () => {
