@@ -4,6 +4,11 @@ const DEFAULT_FLAGS = {
     DASH_ONBOARDING: false,
     DASH_INSIGHTS: false,
     DASH_INSIGHTS_ACTIONS: false,
+    DASH_EDIT_DRAWER: false,
+    DASH_QUICKADD_DRAWER: false,
+    DASH_UNDO: false,
+    DASH_DELETE_ACTION: false,
+    DASH_SKELETON_REAL: false,
     DASH_EMPTY_STATES: false
 };
 

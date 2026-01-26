@@ -19,6 +19,7 @@ import { DaySummary, formatHumanDate } from './DaySummary';
 import { OnboardingChecklist } from '../ui/OnboardingChecklist';
 import { InsightCards } from '../ui/InsightCards';
 import { EmptyState } from '../ui/EmptyState';
+import { Drawer } from '../ui/Drawer';
 import { GovernanceHistory } from './GovernanceHistory';
 import { ImportDataModal } from './ImportDataModal';
 import { PlaybookModal } from './PlaybookModal';
@@ -142,8 +143,7 @@ function StatusDropdown({ value, onChange, options }) {
     );
 }
 
-// Detailed Edit Modal
-function DetailEditModal({ open, onClose, item, onSave }) {
+function DetailEditForm({ item, onSave, onClose }) {
     const { t } = useLanguage();
     const [form, setForm] = useState(item || {});
 
@@ -163,13 +163,105 @@ function DetailEditModal({ open, onClose, item, onSave }) {
         });
     }, [item]);
 
-    if (!open || !item) return null;
-
     const handleSubmit = (e) => {
         e.preventDefault();
         onSave(form);
         onClose();
     };
+
+    return (
+        <form onSubmit={handleSubmit} className="flex flex-col h-full">
+            <div className="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-6">
+                <div className="space-y-4">
+                <div>
+                    <label className="text-label">{t('os.detail_edit.title_label')}</label>
+                    <input
+                        required
+                        className="premium-input bg-[#111]"
+                        value={form.initiative || ''}
+                        onChange={e => setForm({ ...form, initiative: e.target.value })}
+                        data-testid="detail-edit-initiative"
+                    />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                    <div>
+                        <label className="text-label">{t('os.detail_edit.date_label')}</label>
+                        <input
+                            type="date"
+                            className="premium-input bg-[#111]"
+                            value={form.date || ''}
+                            onChange={e => setForm({ ...form, date: e.target.value })}
+                        />
+                    </div>
+                    <div>
+                        <label className="text-label">{t('os.detail_edit.channel_label')}</label>
+                        <div className="grid grid-cols-2 gap-2">
+                            <select
+                                className="premium-input bg-[#111]"
+                                value={form.channelId || 'instagram'}
+                                onChange={e => {
+                                    const nextChannelId = e.target.value;
+                                    const nextSubchannelId = getDefaultSubchannelId(nextChannelId);
+                                    setForm(prev => ({
+                                        ...prev,
+                                        channelId: nextChannelId,
+                                        subchannelId: nextSubchannelId,
+                                        channel: toLegacyChannelLabel(nextChannelId, nextSubchannelId),
+                                        format: getDefaultContentType(nextChannelId, nextSubchannelId)
+                                    }));
+                                }}
+                            >
+                                {listChannels().map(c => (
+                                    <option key={c.id} value={c.id}>{c.label}</option>
+                                ))}
+                            </select>
+                            <select
+                                className="premium-input bg-[#111]"
+                                value={form.subchannelId || getDefaultSubchannelId(form.channelId || 'instagram') || ''}
+                                onChange={e => {
+                                    const nextSub = e.target.value;
+                                    const nextChannelId = form.channelId || 'instagram';
+                                    setForm(prev => ({
+                                        ...prev,
+                                        subchannelId: nextSub,
+                                        channel: toLegacyChannelLabel(nextChannelId, nextSub),
+                                        format: getDefaultContentType(nextChannelId, nextSub)
+                                    }));
+                                }}
+                            >
+                                {listSubchannels(form.channelId || 'instagram').map(sc => (
+                                    <option key={sc.id} value={sc.id}>{sc.label}</option>
+                                ))}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <label className="text-label">{t('os.detail_edit.copy_label')}</label>
+                    <textarea
+                        className="premium-input bg-[#111] min-h-[100px]"
+                        placeholder={t('os.detail_edit.copy_placeholder')}
+                        value={form.caption || ''}
+                        onChange={e => setForm({ ...form, caption: e.target.value })}
+                        data-testid="detail-edit-caption"
+                    />
+                </div>
+                </div>
+            </div>
+
+            <div className="p-4 border-t border-white/10 bg-[#0A0A0A] flex justify-end gap-2">
+                <button type="button" onClick={onClose} className="btn-ghost">{t('common.cancel')}</button>
+                <button type="submit" className="btn-primary" data-testid="detail-edit-save">
+                    {t('os.detail_edit.save')}
+                </button>
+            </div>
+        </form>
+    );
+}
+
+function DetailEditModal({ open, onClose, item, onSave }) {
+    const { t } = useLanguage();
+    if (!open || !item) return null;
 
     return (
         <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4" data-testid="detail-edit-modal">
@@ -184,97 +276,7 @@ function DetailEditModal({ open, onClose, item, onSave }) {
                     </button>
                 </div>
 
-                <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-6">
-                    <div className="space-y-4">
-                        <div>
-                            <label className="text-label">{t('os.detail_edit.title_label')}</label>
-                            <input
-                                required
-                                className="premium-input bg-[#111]"
-                                value={form.initiative || ''}
-                                onChange={e => setForm({ ...form, initiative: e.target.value })}
-                                data-testid="detail-edit-initiative"
-                            />
-                        </div>
-                        <div className="grid grid-cols-2 gap-4">
-                            <div>
-                                <label className="text-label">{t('os.detail_edit.date_label')}</label>
-                                <input
-                                    type="date"
-                                    className="premium-input bg-[#111]"
-                                    value={form.date || ''}
-                                    onChange={e => setForm({ ...form, date: e.target.value })}
-                                />
-                            </div>
-                            <div>
-                                <label className="text-label">{t('os.detail_edit.channel_label')}</label>
-                                <div className="grid grid-cols-2 gap-2">
-                                    <select
-                                        className="premium-input bg-[#111]"
-                                        value={form.channelId || 'instagram'}
-                                        onChange={e => {
-                                            const nextChannelId = e.target.value;
-                                            const nextSubchannelId = getDefaultSubchannelId(nextChannelId);
-                                            setForm(prev => ({
-                                                ...prev,
-                                                channelId: nextChannelId,
-                                                subchannelId: nextSubchannelId,
-                                                channel: toLegacyChannelLabel(nextChannelId, nextSubchannelId),
-                                                format: getDefaultContentType(nextChannelId, nextSubchannelId)
-                                            }));
-                                        }}
-                                    >
-                                        {listChannels().map(c => (
-                                            <option key={c.id} value={c.id}>{c.label}</option>
-                                        ))}
-                                    </select>
-                                    <select
-                                        className="premium-input bg-[#111]"
-                                        value={form.subchannelId || getDefaultSubchannelId(form.channelId || 'instagram') || ''}
-                                        onChange={e => {
-                                            const nextSub = e.target.value;
-                                            const nextChannelId = form.channelId || 'instagram';
-                                            setForm(prev => ({
-                                                ...prev,
-                                                subchannelId: nextSub,
-                                                channel: toLegacyChannelLabel(nextChannelId, nextSub),
-                                                format: getDefaultContentType(nextChannelId, nextSub)
-                                            }));
-                                        }}
-                                    >
-                                        {listSubchannels(form.channelId || 'instagram').map(sc => (
-                                            <option key={sc.id} value={sc.id}>{sc.label}</option>
-                                        ))}
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-                        <div>
-                            <label className="text-label">{t('os.detail_edit.copy_label')}</label>
-                            <textarea
-                                className="premium-input bg-[#111] min-h-[100px]"
-                                placeholder={t('os.detail_edit.copy_placeholder')}
-                                value={form.caption || ''}
-                                onChange={e => setForm({ ...form, caption: e.target.value })}
-                                data-testid="detail-edit-caption"
-                            />
-                        </div>
-                    </div>
-                </form>
-
-                <div className="p-4 border-t border-white/10 bg-[#0A0A0A] flex justify-end gap-2">
-                    <button onClick={onClose} className="btn-ghost">{t('common.cancel')}</button>
-                    <button
-                        onClick={() => {
-                            onSave(form);
-                            onClose();
-                        }}
-                        className="btn-primary"
-                        data-testid="detail-edit-save"
-                    >
-                        {t('os.detail_edit.save')}
-                    </button>
-                </div>
+                <DetailEditForm item={item} onSave={onSave} onClose={onClose} />
             </div>
         </div>
     );
@@ -415,6 +417,7 @@ export function OnePageDashboard({
     const FLAG_DASH_ONBOARDING = getFeatureFlag('DASH_ONBOARDING', false);
     const FLAG_DASH_INSIGHTS = getFeatureFlag('DASH_INSIGHTS', false);
     const FLAG_DASH_INSIGHTS_ACTIONS = getFeatureFlag('DASH_INSIGHTS_ACTIONS', false);
+    const FLAG_DASH_EDIT_DRAWER = getFeatureFlag('DASH_EDIT_DRAWER', false);
     const FLAG_DASH_EMPTY_STATES = getFeatureFlag('DASH_EMPTY_STATES', false);
 
     // UI State
@@ -1080,7 +1083,26 @@ export function OnePageDashboard({
 
                 {/* Modal Mounts */}
                 <QuickAddModal open={showQuickAdd} onClose={() => setShowQuickAdd(false)} onAdd={handleAddItem} />
-                <DetailEditModal open={!!editingItem} onClose={() => setEditingItem(null)} item={editingItem || {}} onSave={handleSaveItem} />
+                {FLAG_DASH_EDIT_DRAWER ? (
+                    <Drawer
+                        open={!!editingItem}
+                        onClose={() => setEditingItem(null)}
+                        title={t('os.detail_edit.title')}
+                        subtitle={editingItem?.id ? `ID: ${editingItem.id}` : undefined}
+                        width="lg"
+                        testId="detail-edit-drawer"
+                    >
+                        {editingItem && (
+                            <DetailEditForm
+                                item={editingItem}
+                                onSave={handleSaveItem}
+                                onClose={() => setEditingItem(null)}
+                            />
+                        )}
+                    </Drawer>
+                ) : (
+                    <DetailEditModal open={!!editingItem} onClose={() => setEditingItem(null)} item={editingItem} onSave={handleSaveItem} />
+                )}
                 <GovernanceHistory open={showHistory} onClose={() => setShowHistory(false)} history={formData?.governanceHistory || []} />
                 <ImportDataModal open={showImport} onClose={() => setShowImport(false)} contract={appData.measurementContract} onImport={handleImport} />
                 <PlaybookModal open={showPlaybooks} onClose={() => setShowPlaybooks(false)} onApply={handleApplyPlaybook} />
