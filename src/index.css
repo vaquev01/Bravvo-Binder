@@ -62,11 +62,11 @@
 
   /* Common UI Elements */
   .btn-primary {
-    @apply h-9 px-4 bg-[var(--brand-accent)] text-white text-xs font-bold rounded hover:brightness-110 active:brightness-95 transition-all flex items-center gap-2 justify-center;
+    @apply h-9 px-4 bg-[var(--brand-accent)] text-white text-xs font-bold rounded hover:brightness-110 active:brightness-95 transition-all flex items-center gap-2 justify-center focus-ring;
   }
 
   .btn-ghost {
-    @apply h-9 px-4 bg-transparent border border-[var(--border-subtle)] text-[var(--text-secondary)] text-xs font-medium rounded hover:text-white hover:border-[var(--border-active)] hover:bg-white/5 transition-all flex items-center gap-2 justify-center;
+    @apply h-9 px-4 bg-transparent border border-[var(--border-subtle)] text-[var(--text-secondary)] text-xs font-medium rounded hover:text-white hover:border-[var(--border-active)] hover:bg-white/5 transition-all flex items-center gap-2 justify-center focus-ring;
   }
 
   .premium-input {
@@ -94,7 +94,7 @@
   }
 
   .btn-primary-lg {
-    @apply h-12 px-8 bg-[var(--brand-accent)] text-white text-sm font-bold rounded-xl hover:brightness-110 active:brightness-95 transition-all flex items-center gap-3 justify-center;
+    @apply h-12 px-8 bg-[var(--brand-accent)] text-white text-sm font-bold rounded-xl hover:brightness-110 active:brightness-95 transition-all flex items-center gap-3 justify-center focus-ring;
   }
 
   /* Animations - The 10/10 Polish */

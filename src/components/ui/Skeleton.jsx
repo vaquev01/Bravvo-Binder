@@ -8,7 +8,7 @@ import React from 'react';
 
 // Skeleton base com animação shimmer
 export function Skeleton({ className = '', variant = 'text' }) {
-    const baseClasses = 'bg-white/5 rounded animate-pulse';
+    const baseClasses = 'skeleton-shimmer rounded';
     
     const variantClasses = {
         text: 'h-4 w-full',
@@ -27,7 +27,7 @@ export function Skeleton({ className = '', variant = 'text' }) {
 // Skeleton para linha de tabela/lista
 export function SkeletonRow({ columns = 5 }) {
     return (
-        <div className="flex items-center gap-4 px-4 py-3 border-b border-white/5">
+        <div className="flex items-center gap-4 px-4 py-3 border-b border-[var(--border-subtle)]">
             {Array.from({ length: columns }).map((_, i) => (
                 <Skeleton 
                     key={i} 
@@ -92,7 +92,7 @@ export function SkeletonDaySummary() {
 export function SkeletonTable({ rows = 5 }) {
     return (
         <div className="bento-grid overflow-hidden">
-            <div className="px-4 py-3 border-b border-white/10 bg-white/5">
+            <div className="px-4 py-3 border-b border-[var(--border-subtle)] bg-[var(--bg-panel)]">
                 <Skeleton className="h-4 w-32" />
             </div>
             {Array.from({ length: rows }).map((_, i) => (
