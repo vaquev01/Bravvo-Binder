@@ -31,6 +31,7 @@ export function GovernanceModeModal({
     vaults,
     governanceFrequency = 'weekly',
     currentWindow,
+    calendarRule,
     currentUser,
     variant = 'modal',
 }) {
@@ -77,9 +78,10 @@ export function GovernanceModeModal({
 
         if (governanceFrequency === 'weekly') {
             const day = today.getDay();
-            const daysSinceMonday = (day + 6) % 7;
+            const weekStartDay = Number.isFinite(calendarRule?.weekStartDay) ? calendarRule.weekStartDay : 1;
+            const daysSinceStart = (day - weekStartDay + 7) % 7;
             const start = new Date(today);
-            start.setDate(start.getDate() - daysSinceMonday);
+            start.setDate(start.getDate() - daysSinceStart);
             const end = new Date(start);
             end.setDate(end.getDate() + 6);
             setPeriodData(p => ({
@@ -99,7 +101,7 @@ export function GovernanceModeModal({
                 endDate: p.endDate || toDateStr(end)
             }));
         }
-    }, [open, currentWindow, governanceFrequency, periodData.startDate, periodData.endDate]);
+    }, [open, currentWindow, governanceFrequency, periodData.startDate, periodData.endDate, calendarRule?.weekStartDay]);
 
     const [roadmapReview, setRoadmapReview] = useState(
         roadmapItems.map(item => ({
@@ -272,7 +274,7 @@ export function GovernanceModeModal({
         const recalibration = recalibrateSystem(ata, vaults, roadmapItems);
         
         // Generate next governance window
-        const nextWindow = generateNextGovernanceWindow(ata, governanceFrequency);
+        const nextWindow = generateNextGovernanceWindow(ata, governanceFrequency, calendarRule);
 
         setTimeout(() => {
             setIsProcessing(false);

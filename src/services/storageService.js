@@ -164,6 +164,7 @@ class StorageService {
         const s4Owners = ensureObject(s4.owners, {});
         const s4Contacts = ensureObject(s4.contacts, {});
         const s4Schedule = ensureObject(s4.schedule, {});
+        const s4GovernanceCalendar = ensureObject(s4.governanceCalendar, {});
         const s5Palette = ensureObject(s5.palette, {});
         const s5Rules = ensureObject(s5.rules, {});
 
@@ -233,6 +234,12 @@ class StorageService {
                     startDate: s4Schedule.startDate || '',
                     cycleDuration: s4Schedule.cycleDuration || '30',
                     ...s4Schedule
+                },
+                governanceCalendar: {
+                    weekStartDay: Number.isFinite(s4GovernanceCalendar.weekStartDay) ? s4GovernanceCalendar.weekStartDay : 1,
+                    meetingWeekday: Number.isFinite(s4GovernanceCalendar.meetingWeekday) ? s4GovernanceCalendar.meetingWeekday : 1,
+                    monthlyMeetingDay: Number.isFinite(s4GovernanceCalendar.monthlyMeetingDay) ? s4GovernanceCalendar.monthlyMeetingDay : 1,
+                    ...s4GovernanceCalendar
                 },
                 stakeholders: ensureArray(s4.stakeholders),
                 competitors: ensureArray(s4.competitors)

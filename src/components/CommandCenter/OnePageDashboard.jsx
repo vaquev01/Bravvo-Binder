@@ -30,6 +30,7 @@ import { VaultCards } from './VaultCards';
 import { useToast } from '../../contexts/ToastContext';
 import { getFeatureFlag } from '../../utils/featureFlags';
 import { useUndo } from '../../hooks/useUndo';
+import { generateNextGovernanceWindow } from '../../services/governanceService';
 import {
     listChannels,
     listSubchannels,
@@ -559,6 +560,8 @@ export function OnePageDashboard({
     const [historyFocusEntryId, setHistoryFocusEntryId] = useState(null);
     const [governanceFrequency, setGovernanceFrequency] = useState(appData.governanceFrequency || 'weekly');
 
+    const governanceCalendarRule = appData?.vaults?.S4?.governanceCalendar;
+
     const { executeWithUndo } = useUndo();
 
     // Editable KPI State - Linked to Global Data
@@ -829,7 +832,38 @@ export function OnePageDashboard({
 
     const handleFrequencyChange = (newFreq) => {
         setGovernanceFrequency(newFreq);
-        setAppData(prev => ({ ...prev, governanceFrequency: newFreq }));
+        setAppData(prev => {
+            const next = { ...prev, governanceFrequency: newFreq };
+            const ata = prev?.lastGovernanceATA || null;
+            const rule = prev?.vaults?.S4?.governanceCalendar;
+            if (ata) {
+                next.nextGovernanceWindow = generateNextGovernanceWindow(ata, newFreq, rule);
+            }
+            return next;
+        });
+    };
+
+    const handleUpdateCalendarRule = (ruleDraft) => {
+        setAppData(prev => {
+            const prevVaults = prev?.vaults || {};
+            const prevS4 = prevVaults?.S4 || {};
+            const nextS4 = { ...prevS4, governanceCalendar: { ...(prevS4?.governanceCalendar || {}), ...ruleDraft } };
+
+            const next = {
+                ...prev,
+                vaults: {
+                    ...prevVaults,
+                    S4: nextS4
+                }
+            };
+
+            const ata = prev?.lastGovernanceATA || null;
+            if (ata) {
+                next.nextGovernanceWindow = generateNextGovernanceWindow(ata, governanceFrequency, nextS4.governanceCalendar);
+            }
+
+            return next;
+        });
     };
 
     const handlePriorityAction = (action) => {
@@ -1250,6 +1284,8 @@ export function OnePageDashboard({
                     onToggleGovernance={toggleGovernanceMode}
                     onChangeFrequency={handleFrequencyChange}
                     nextWindow={appData?.nextGovernanceWindow}
+                    calendarRule={governanceCalendarRule}
+                    onUpdateCalendarRule={handleUpdateCalendarRule}
                 />
 
                 {/* MEETING MODE (embedded) */}
@@ -1269,6 +1305,7 @@ export function OnePageDashboard({
                             governanceFrequency={governanceFrequency}
                             currentUser={currentUser}
                             currentWindow={appData?.nextGovernanceWindow}
+                            calendarRule={governanceCalendarRule}
                         />
                     </div>
                 ) : (

@@ -1,7 +1,7 @@
-import React from 'react';
-import { Calendar, Clock, AlertCircle, CheckCircle2, Shield } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { Calendar, Clock, AlertCircle, CheckCircle2, Shield, Settings2 } from 'lucide-react';
 
-function getNextMeetingDate(frequency) {
+function getNextMeetingDate(frequency, calendarRule) {
     const today = new Date();
     const dayOfWeek = today.getDay();
     
@@ -12,18 +12,54 @@ function getNextMeetingDate(frequency) {
             return tomorrow;
         }
         case 'weekly': {
-            const daysUntilMonday = (8 - dayOfWeek) % 7 || 7;
-            const nextMonday = new Date(today);
-            nextMonday.setDate(nextMonday.getDate() + daysUntilMonday);
-            return nextMonday;
+            const meetingWeekday = Number.isFinite(calendarRule?.meetingWeekday) ? calendarRule.meetingWeekday : 1;
+            const daysUntil = (meetingWeekday - dayOfWeek + 7) % 7 || 7;
+            const next = new Date(today);
+            next.setDate(next.getDate() + daysUntil);
+            return next;
         }
         case 'monthly': {
+            const day = Number.isFinite(calendarRule?.monthlyMeetingDay) ? calendarRule.monthlyMeetingDay : 1;
             const nextMonth = new Date(today.getFullYear(), today.getMonth() + 1, 1);
+            const lastDay = new Date(nextMonth.getFullYear(), nextMonth.getMonth() + 1, 0).getDate();
+            nextMonth.setDate(Math.max(1, Math.min(day, lastDay)));
             return nextMonth;
         }
         default:
             return null;
     }
+}
+
+function computeCycleWindow(frequency, calendarRule) {
+    const toDateStr = (d) => d.toISOString().split('T')[0];
+    const now = new Date();
+    const today = new Date(now);
+    today.setHours(0, 0, 0, 0);
+
+    if (frequency === 'daily') {
+        const s = toDateStr(today);
+        return { startDate: s, endDate: s };
+    }
+
+    if (frequency === 'weekly') {
+        const weekStartDay = Number.isFinite(calendarRule?.weekStartDay) ? calendarRule.weekStartDay : 1;
+        const dow = today.getDay();
+        const daysSinceStart = (dow - weekStartDay + 7) % 7;
+        const start = new Date(today);
+        start.setDate(start.getDate() - daysSinceStart);
+        const end = new Date(start);
+        end.setDate(end.getDate() + 6);
+        return { startDate: toDateStr(start), endDate: toDateStr(end) };
+    }
+
+    if (frequency === 'monthly') {
+        const start = new Date(today.getFullYear(), today.getMonth(), 1);
+        const end = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+        return { startDate: toDateStr(start), endDate: toDateStr(end) };
+    }
+
+    const s = toDateStr(today);
+    return { startDate: s, endDate: s };
 }
 
 function formatDate(date) {
@@ -60,10 +96,29 @@ export function GovernanceHeader({
     isGovernanceActive,
     onToggleGovernance,
     onChangeFrequency,
-    nextWindow
+    nextWindow,
+    calendarRule,
+    onUpdateCalendarRule
 }) {
-    const nextMeeting = getNextMeetingDate(frequency);
+    const nextMeeting = getNextMeetingDate(frequency, calendarRule);
     const status = getGovernanceStatus(lastGovernance, frequency);
+    const computedWindow = computeCycleWindow(frequency, calendarRule);
+    const windowToShow = nextWindow?.startDate && nextWindow?.endDate ? nextWindow : computedWindow;
+
+    const [showEditor, setShowEditor] = useState(false);
+    const [ruleDraft, setRuleDraft] = useState({
+        weekStartDay: Number.isFinite(calendarRule?.weekStartDay) ? calendarRule.weekStartDay : 1,
+        meetingWeekday: Number.isFinite(calendarRule?.meetingWeekday) ? calendarRule.meetingWeekday : 1,
+        monthlyMeetingDay: Number.isFinite(calendarRule?.monthlyMeetingDay) ? calendarRule.monthlyMeetingDay : 1,
+    });
+
+    useEffect(() => {
+        setRuleDraft({
+            weekStartDay: Number.isFinite(calendarRule?.weekStartDay) ? calendarRule.weekStartDay : 1,
+            meetingWeekday: Number.isFinite(calendarRule?.meetingWeekday) ? calendarRule.meetingWeekday : 1,
+            monthlyMeetingDay: Number.isFinite(calendarRule?.monthlyMeetingDay) ? calendarRule.monthlyMeetingDay : 1,
+        });
+    }, [calendarRule?.weekStartDay, calendarRule?.meetingWeekday, calendarRule?.monthlyMeetingDay]);
     
     const StatusIcon = status.status === 'ok' ? CheckCircle2 : 
                        status.status === 'warning' ? Clock : AlertCircle;
@@ -98,6 +153,14 @@ export function GovernanceHeader({
                                 <option value="weekly">Semanal</option>
                                 <option value="monthly">Mensal</option>
                             </select>
+                            <button
+                                type="button"
+                                onClick={() => setShowEditor(v => !v)}
+                                className="ml-1 p-1.5 rounded-lg hover:bg-white/5 text-gray-500 hover:text-gray-300 transition-colors"
+                                title="Calendário"
+                            >
+                                <Settings2 size={14} />
+                            </button>
                         </div>
                         <div className="flex items-center gap-3 text-[11px]">
                             {/* Status */}
@@ -139,9 +202,74 @@ export function GovernanceHeader({
                 </div>
             )}
 
-            {nextWindow?.startDate && nextWindow?.endDate && (
+            {windowToShow?.startDate && windowToShow?.endDate && (
                 <div className="mt-3 text-[11px] text-gray-500">
-                    Período do ciclo: <span className="text-gray-300 font-medium">{nextWindow.startDate} → {nextWindow.endDate}</span>
+                    Período do ciclo: <span className="text-gray-300 font-medium">{windowToShow.startDate} → {windowToShow.endDate}</span>
+                </div>
+            )}
+
+            {showEditor && (
+                <div className="mt-4 pt-4 border-t border-white/10">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <div>
+                            <label className="text-label">Início da semana</label>
+                            <select
+                                className="bg-transparent border border-white/10 rounded px-2 py-1 text-[11px] text-gray-300 w-full"
+                                value={ruleDraft.weekStartDay}
+                                onChange={(e) => setRuleDraft(p => ({ ...p, weekStartDay: parseInt(e.target.value, 10) }))}
+                            >
+                                <option value={0}>Dom</option>
+                                <option value={1}>Seg</option>
+                                <option value={2}>Ter</option>
+                                <option value={3}>Qua</option>
+                                <option value={4}>Qui</option>
+                                <option value={5}>Sex</option>
+                                <option value={6}>Sáb</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label className="text-label">Dia da reunião (semanal)</label>
+                            <select
+                                className="bg-transparent border border-white/10 rounded px-2 py-1 text-[11px] text-gray-300 w-full"
+                                value={ruleDraft.meetingWeekday}
+                                onChange={(e) => setRuleDraft(p => ({ ...p, meetingWeekday: parseInt(e.target.value, 10) }))}
+                            >
+                                <option value={0}>Dom</option>
+                                <option value={1}>Seg</option>
+                                <option value={2}>Ter</option>
+                                <option value={3}>Qua</option>
+                                <option value={4}>Qui</option>
+                                <option value={5}>Sex</option>
+                                <option value={6}>Sáb</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label className="text-label">Dia da reunião (mensal)</label>
+                            <input
+                                type="number"
+                                min={1}
+                                max={31}
+                                className="bg-transparent border border-white/10 rounded px-2 py-1 text-[11px] text-gray-300 w-full"
+                                value={ruleDraft.monthlyMeetingDay}
+                                onChange={(e) => setRuleDraft(p => ({ ...p, monthlyMeetingDay: parseInt(e.target.value, 10) || 1 }))}
+                            />
+                        </div>
+                    </div>
+                    <div className="mt-3 flex justify-end gap-2">
+                        <button type="button" className="btn-ghost !h-7 !px-3" onClick={() => setShowEditor(false)}>
+                            Cancelar
+                        </button>
+                        <button
+                            type="button"
+                            className="btn-primary !h-7 !px-3"
+                            onClick={() => {
+                                onUpdateCalendarRule?.(ruleDraft);
+                                setShowEditor(false);
+                            }}
+                        >
+                            Salvar calendário
+                        </button>
+                    </div>
                 </div>
             )}
         </div>

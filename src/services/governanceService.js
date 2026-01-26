@@ -188,7 +188,7 @@ export function recalibrateSystem(ata, vaults, currentRoadmap) {
 /**
  * Gera nova janela de governança
  */
-export function generateNextGovernanceWindow(ata, frequency = 'weekly') {
+export function generateNextGovernanceWindow(ata, frequency = 'weekly', calendarRule) {
     const toDateStr = (d) => d.toISOString().split('T')[0];
     const baseEndRaw = ata?.signature?.periodEndDate;
     const now = new Date();
@@ -209,28 +209,45 @@ export function generateNextGovernanceWindow(ata, frequency = 'weekly') {
     let nextDate = new Date(baseEnd);
     nextDate.setDate(nextDate.getDate() + 1);
     let windowEnd = new Date(nextDate);
+    let scheduledGovernanceDate = new Date(nextDate);
 
     if (frequency === 'daily') {
         windowEnd = new Date(nextDate);
         windowEnd.setHours(23, 59, 59);
+        scheduledGovernanceDate = new Date(nextDate);
     } else if (frequency === 'weekly') {
-        // Align to calendar week: Monday -> Sunday
+        const weekStartDay = Number.isFinite(calendarRule?.weekStartDay) ? calendarRule.weekStartDay : 1;
+        const meetingWeekday = Number.isFinite(calendarRule?.meetingWeekday) ? calendarRule.meetingWeekday : 1;
+
         const dow = nextDate.getDay();
-        const daysToMonday = (1 - dow + 7) % 7;
-        nextDate.setDate(nextDate.getDate() + daysToMonday);
+        const daysToStart = (weekStartDay - dow + 7) % 7;
+        nextDate.setDate(nextDate.getDate() + daysToStart);
+
         windowEnd = new Date(nextDate);
         windowEnd.setDate(windowEnd.getDate() + 6);
         windowEnd.setHours(23, 59, 59);
+
+        const meetingOffset = (meetingWeekday - nextDate.getDay() + 7) % 7;
+        scheduledGovernanceDate = new Date(nextDate);
+        scheduledGovernanceDate.setDate(scheduledGovernanceDate.getDate() + meetingOffset);
     } else if (frequency === 'monthly') {
-        const start = new Date(nextDate.getFullYear(), nextDate.getMonth() + 1, 1);
-        const end = new Date(nextDate.getFullYear(), nextDate.getMonth() + 2, 0);
+        const meetingDay = Number.isFinite(calendarRule?.monthlyMeetingDay) ? calendarRule.monthlyMeetingDay : 1;
+
+        const start = new Date(nextDate.getFullYear(), nextDate.getMonth(), 1);
+        const end = new Date(nextDate.getFullYear(), nextDate.getMonth() + 1, 0);
         nextDate = start;
         windowEnd = end;
         windowEnd.setHours(23, 59, 59);
+
+        const lastDay = end.getDate();
+        const day = Math.max(1, Math.min(meetingDay, lastDay));
+        scheduledGovernanceDate = new Date(start);
+        scheduledGovernanceDate.setDate(day);
     } else {
         windowEnd = new Date(nextDate);
         windowEnd.setDate(windowEnd.getDate() + 6);
         windowEnd.setHours(23, 59, 59);
+        scheduledGovernanceDate = new Date(nextDate);
     }
 
     return {
@@ -238,7 +255,7 @@ export function generateNextGovernanceWindow(ata, frequency = 'weekly') {
         frequency,
         startDate: toDateStr(nextDate),
         endDate: toDateStr(windowEnd),
-        scheduledGovernance: nextDate.toISOString(),
+        scheduledGovernance: scheduledGovernanceDate.toISOString(),
         
         // Metas do período (baseadas na recalibração)
         periodGoals: {
