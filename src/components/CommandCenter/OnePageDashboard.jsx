@@ -522,11 +522,19 @@ export function OnePageDashboard({
             measurementContract: {
                 ...(prev.measurementContract || {}),
                 kpis: newContractKpis,
+                lastUpdate: new Date().toISOString(),
                 auditLog: [...logEntries, ...(prev.measurementContract?.auditLog || [])]
             }
         }));
 
         addToast({ title: 'Importação Concluída', description: `${logEntries.length} métricas atualizadas.`, type: 'success' });
+    };
+
+    // Helper for Data Freshness
+    const getLastUpdateLabel = () => {
+        if (!appData.measurementContract?.lastUpdate) return 'Nunca atualizado';
+        const date = new Date(appData.measurementContract.lastUpdate);
+        return date.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
     };
 
     // --- INTEGRATIONS: DEEP LINKS ---
@@ -556,6 +564,10 @@ export function OnePageDashboard({
                         <span className="text-[11px] font-bold text-gray-400 uppercase tracking-widest hover:text-white transition-colors">
                             {meetingState.active ? 'Governance Active' : appData.clientName}
                         </span>
+                    </div>
+                    {/* Data Freshness Indicator */}
+                    <div className="hidden md:flex flex-col items-start ml-2">
+                        <span className="text-[9px] text-gray-600 font-mono uppercase tracking-wider">Dados: {getLastUpdateLabel()}</span>
                     </div>
                 </div>
 

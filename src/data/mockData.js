@@ -150,9 +150,9 @@ export const CARACA_BAR_DATA = {
             secondaryKpis: []
         },
         kpis: [
-            { id: "revenue", label: "Receita", format: "currency", source: "manual", target: 50000, value: 32500, active: true },
-            { id: "traffic", label: "Tráfego (ROAS)", format: "decimal", source: "manual", target: 15, value: 12, active: true },
-            { id: "sales", label: "Vendas", format: "integer", source: "manual", target: 120, value: 154, active: true }
+            { id: "revenue", label: "Receita", format: "currency", source: "manual", target: 50000, active: true },
+            { id: "traffic", label: "Tráfego (ROAS)", format: "decimal", source: "manual", target: 15, active: true },
+            { id: "sales", label: "Vendas", format: "integer", source: "manual", target: 120, active: true }
         ],
         auditLog: []
     },
@@ -290,7 +290,8 @@ export const TADA_ASIAN_FOOD_DATA = {
         kpis: [
             { id: "cpm", label: "CPM Instagram", format: "currency", source: "api", target: 12.00, value: 11.80, active: true },
             { id: "conversion", label: "Taxa Conversão", format: "percentage", source: "manual", target: 4.0, value: 3.2, active: true },
-            { id: "ticket", label: "Ticket Médio", format: "currency", source: "csv", target: 85.00, value: 65.00, active: true }
+            { id: "ticket", label: "Ticket Médio", format: "currency", source: "csv", target: 85.00, value: 65.00, active: true },
+            { id: "offline_visits", label: "Visitas Loja (Offline)", format: "integer", source: "manual", target: 150, value: 120, active: true }
         ],
         auditLog: []
     },
