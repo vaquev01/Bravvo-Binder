@@ -236,7 +236,7 @@ function StatusDropdown({ value, onChange, options, testId }) {
         in_production: 'bg-yellow-500',
         done: 'bg-blue-500',
         delayed: 'bg-red-500',
-        cancelled: 'bg-red-500',
+        cancelled: 'bg-gray-500',
     };
 
     return (
@@ -823,7 +823,7 @@ export function OnePageDashboard({
         { value: 'scheduled', label: 'Scheduled', color: 'bg-green-500' },
         { value: 'done', label: 'Published', color: 'bg-blue-500' },
         { value: 'delayed', label: 'Delayed', color: 'bg-red-500' },
-        { value: 'cancelled', label: 'Cancelled', color: 'bg-red-500' },
+        { value: 'cancelled', label: 'Cancelado', color: 'bg-gray-500' },
     ];
 
     const formatIcons = {
@@ -1421,6 +1421,7 @@ export function OnePageDashboard({
                                 { id: 'draft', label: 'Em edição', pct: roadmapStatusStats.pct.draft, color: 'bg-gray-500/10 text-gray-300 border-white/10' },
                                 { id: 'scheduled', label: 'Agendado', pct: roadmapStatusStats.pct.scheduled, color: 'bg-green-500/10 text-green-300 border-green-500/30' },
                                 { id: 'done', label: 'Concluído', pct: roadmapStatusStats.pct.done, color: 'bg-blue-500/10 text-blue-300 border-blue-500/30' },
+                                { id: 'cancelled', label: 'Cancelado', pct: roadmapStatusStats.pct.cancelled, color: 'bg-gray-500/10 text-gray-300 border-white/10' },
                             ].map(s => (
                                 <button
                                     key={String(s.id)}
