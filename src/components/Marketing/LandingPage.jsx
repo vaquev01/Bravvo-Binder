@@ -1,7 +1,6 @@
 import React from 'react';
 import {
     Shield,
-    ArrowRight,
     BrainCircuit,
     Command,
     User,

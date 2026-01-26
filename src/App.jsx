@@ -180,19 +180,33 @@ function ClientWorkspaceContent({ onBackToAgency, isAgencyView: _isAgencyView, c
     });
 
     // Handlers
-    const handleGeneratePrompt = useCallback((item) => {
+    const handleGeneratePrompt = useCallback(async (item) => {
         setIsGenerating(true);
-        // Now returns object { aiPrompt, humanGuide }
-        const promptData = generatePrompt(item, appData.vaults);
-        setSelectedPrompt(promptData);
-        setPromptTab('ai'); // Reset to AI tab
-        setSelectedItem(item);
-        setPromptHistory(prev => [
-            { id: Date.now(), item: item.initiative, timestamp: new Date().toLocaleTimeString(), prompt: promptData },
-            ...prev.slice(0, 9)
-        ]);
-        setIsGenerating(false);
-    }, [appData.vaults]);
+        try {
+            const result = await aiService.generateCreativeBrief(item, appData.vaults);
+            if (!result?.success) {
+                throw new Error(result?.error || 'Falha ao gerar o prompt.');
+            }
+
+            const promptData = result.data;
+            setSelectedPrompt(promptData);
+            setPromptTab('ai'); // Reset to AI tab
+            setSelectedItem(item);
+            setPromptHistory(prev => [
+                { id: Date.now(), item: item?.initiative || 'Item', timestamp: new Date().toLocaleTimeString(), prompt: promptData },
+                ...prev.slice(0, 9)
+            ]);
+        } catch (err) {
+            console.error('Prompt generation error:', err);
+            addToast({
+                title: 'Falha ao gerar prompt',
+                description: err instanceof Error ? err.message : 'Tente novamente.',
+                type: 'error'
+            });
+        } finally {
+            setIsGenerating(false);
+        }
+    }, [addToast, appData.vaults]);
 
     const handleCopy = useCallback(async () => {
         if (selectedPrompt) {

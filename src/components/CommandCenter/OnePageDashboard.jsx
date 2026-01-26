@@ -10,7 +10,6 @@ import {
     Zap,
     TrendingUp,
     History,
-    Share2,
     MessageCircle,
     Upload,
     Book
@@ -642,7 +641,19 @@ export function OnePageDashboard({
                     <button onClick={() => setShowHistory(true)} className="btn-ghost !h-7 !px-2" title={t('os.actions.history')}>
                         <History size={14} />
                     </button>
+                    <button onClick={() => setShowImport(true)} className="btn-ghost !h-7 !px-2" title="Importar Dados">
+                        <Upload size={14} />
+                    </button>
                     <div className="w-px h-4 bg-white/10 mx-1"></div>
+                    {meetingState.active && (
+                        <button
+                            onClick={() => setShowPlaybooks(true)}
+                            className="btn-ghost !h-7 !px-3 !border-blue-500/30 text-blue-400 hover:text-blue-300"
+                            title="Gerar Plano (Playbooks)"
+                        >
+                            <Book size={12} className="md:mr-1" /> <span className="hidden md:inline">Gerar Plano</span>
+                        </button>
+                    )}
                     <button onClick={() => setShowQuickAdd(true)} className="btn-primary !h-7 !px-3">
                         <Plus size={14} /> <span className="hidden md:inline ml-1">{t('os.actions.new')}</span>
                     </button>

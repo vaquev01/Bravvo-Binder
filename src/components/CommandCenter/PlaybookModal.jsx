@@ -1,10 +1,8 @@
 import React, { useState } from 'react';
 import { Book, Check, X, Play, Info } from 'lucide-react';
-import { useLanguage } from '../../contexts/LanguageContext';
 import { PLAYBOOKS } from '../../data/mockData';
 
 export function PlaybookModal({ open, onClose, onApply }) {
-    const { t } = useLanguage();
     const [selectedId, setSelectedId] = useState(null);
 
     if (!open) return null;
