@@ -3,11 +3,11 @@ export const translations = {
         landing: {
             status: "Sistema Operacional: Online",
             hero: {
-                title_line1: "Sistema Operacional",
-                title_line2: "para Marketing Moderno.",
-                subtitle: "A era do caos em planilhas acabou. O Bravvo Binder centraliza estratégia, criatividade e governança em uma única fonte da verdade.",
-                cta_primary: "ACESSAR SISTEMA",
-                cta_secondary: "VER PLANOS"
+                title_line1: "Seu Marketing Organizado",
+                title_line2: "em Um Só Lugar.",
+                subtitle: "O Bravvo Binder é o sistema que organiza toda a estratégia de marketing da sua empresa: da identidade da marca ao calendário de publicações, com aprovações e geração de artes incluídas.",
+                cta_primary: "COMEÇAR AGORA",
+                cta_secondary: "VER COMO FUNCIONA"
             },
             stats: {
                 agencies: "Agências Ativas",
@@ -15,31 +15,82 @@ export const translations = {
                 assets: "Assets Gerados",
                 uptime: "Uptime"
             },
-            architecture: {
-                title: "Arquitetura Central",
-                subtitle: "Projetado para times de alta performance que exigem precisão, não apenas participação.",
-                card_command: {
-                    title: "Agency Command Center",
-                    desc: "Interface unificada para controle onisciente. Monitore receita, velocidade de assets e performance."
+            how_it_works: {
+                title: "Como Funciona",
+                subtitle: "4 etapas simples para organizar todo o marketing da sua empresa",
+                step1: {
+                    number: "01",
+                    title: "Preencha os Vaults",
+                    desc: "Cadastre as informações essenciais: DNA da marca (missão, valores, tom de voz), sua oferta principal (produto, preço, diferenciais), canais de tráfego (Instagram, TikTok, Google Ads) e seu time."
                 },
-                card_ai: {
-                    title: "Motor Generativo",
-                    desc: "Briefings criativos automatizados baseados em Vaults históricos. Zero alucinação."
+                step2: {
+                    number: "02",
+                    title: "Monte o Calendário",
+                    desc: "No Dashboard, crie seu roadmap tático: adicione posts, campanhas e ações com data, canal e responsável. Visualize tudo em uma tabela organizada por dia, semana ou mês."
                 },
-                card_gov: {
-                    title: "Governança Imutável",
-                    desc: "Cada aprovação é logada criptograficamente. Histórico auditável para agência e cliente."
+                step3: {
+                    number: "03",
+                    title: "Gere as Artes",
+                    desc: "Para cada item do calendário, clique em 'Gerar Arte'. O Creative Studio cria automaticamente peças visuais usando as cores e identidade da sua marca cadastradas nos Vaults."
+                },
+                step4: {
+                    number: "04",
+                    title: "Aprove e Publique",
+                    desc: "Altere o status de cada item (Rascunho → Em Produção → Agendado → Publicado). Envie links de aprovação pelo WhatsApp. Tudo fica registrado para auditoria."
+                }
+            },
+            features: {
+                title: "O Que Está Incluído",
+                subtitle: "Tudo que você precisa para operar marketing de forma profissional",
+                vaults: {
+                    title: "5 Vaults Estratégicos",
+                    desc: "Organize DNA da Marca, Oferta, Funil de Tráfego, Time e Banco de Ideias em fichas estruturadas que alimentam todo o sistema."
+                },
+                dashboard: {
+                    title: "Dashboard Tático",
+                    desc: "Calendário visual com todas as iniciativas de marketing. Filtre por hoje, amanhã ou semana. Veja KPIs de receita, tráfego e vendas."
+                },
+                creative: {
+                    title: "Creative Studio",
+                    desc: "Gerador de artes automático. Cria posts para Instagram, Stories, Reels, TikTok, YouTube e mais, já com as cores e identidade da sua marca."
+                },
+                governance: {
+                    title: "Governança & Aprovações",
+                    desc: "Fluxo de aprovação com histórico. Envie para aprovação via WhatsApp. Cada mudança de status é registrada para auditoria completa."
+                },
+                multicanal: {
+                    title: "11 Canais Suportados",
+                    desc: "Instagram (Feed, Stories, Reels, Carousel), TikTok, YouTube, LinkedIn, Facebook, Twitter/X, WhatsApp, Email e Blog."
+                },
+                formats: {
+                    title: "11 Formatos de Arte",
+                    desc: "Story 9:16, Feed 4:5, Feed 1:1, Landscape 16:9, YouTube Thumbnail, LinkedIn Post, Display Ads (4 tamanhos), Email Header."
+                }
+            },
+            use_cases: {
+                title: "Para Quem é o Bravvo Binder?",
+                case1: {
+                    title: "Agências de Marketing",
+                    desc: "Gerencie múltiplos clientes em workspaces separados. Cada cliente tem seus Vaults, calendário e artes. Escale operações sem perder qualidade."
+                },
+                case2: {
+                    title: "Times de Marketing In-House",
+                    desc: "Centralize a estratégia da empresa. Alinhe todos do time com a mesma fonte da verdade. Elimine retrabalho e aprovações perdidas em email."
+                },
+                case3: {
+                    title: "Empreendedores e PMEs",
+                    desc: "Mesmo sem time dedicado, organize seu marketing como profissional. Os Vaults guiam você a documentar sua estratégia de forma estruturada."
                 }
             },
             manifesto: {
-                label: "/ O Manifesto",
-                title: "Caos não é uma tática criativa.",
-                p1: "Acreditamos que o marketing falha não por falta de ideias, mas por falta de sistema.",
-                p2: "Quando sua operação vive em planilhas fragmentadas e grupos de WhatsApp, você gera ruído, não sinal.",
+                label: "/ Por Que Criamos Isso",
+                title: "Marketing sem sistema é só ruído.",
+                p1: "A maioria das empresas tem ideias boas, mas perde tempo em planilhas desatualizadas, grupos de WhatsApp caóticos e aprovações que somem no email.",
+                p2: "O Bravvo Binder resolve isso: um único lugar onde sua estratégia, calendário, artes e aprovações vivem juntos e conectados.",
                 agency_title: "Para Agências",
-                agency_desc: "Escale sem adicionar caos. Governança como serviço.",
+                agency_desc: "Gerencie dezenas de clientes com processo replicável. Governança como serviço.",
                 enterprise_title: "Para Empresas",
-                enterprise_desc: "Tenha posse dos seus dados. Descentralize a execução, centralize o controle."
+                enterprise_desc: "Tenha posse dos seus dados. Uma fonte da verdade para todo o time de marketing."
             },
             footer: {
                 platform: "Plataforma",
@@ -360,11 +411,11 @@ export const translations = {
         landing: {
             status: "System Status: Operational",
             hero: {
-                title_line1: "Operating System",
-                title_line2: "for Modern Marketing.",
-                subtitle: "The chaotic era of spreadsheets and fragmented tools is over. Bravvo Binder centralizes strategy, creativity, and governance into a single source of truth.",
-                cta_primary: "START OPERATING",
-                cta_secondary: "BOOK DEMO"
+                title_line1: "Your Marketing Organized",
+                title_line2: "in One Place.",
+                subtitle: "Bravvo Binder is the system that organizes your entire marketing strategy: from brand identity to content calendar, with approvals and art generation included.",
+                cta_primary: "START NOW",
+                cta_secondary: "SEE HOW IT WORKS"
             },
             stats: {
                 agencies: "Active Agencies",
@@ -372,31 +423,82 @@ export const translations = {
                 assets: "Assets Generated",
                 uptime: "Uptime"
             },
-            architecture: {
-                title: "Core Architecture",
-                subtitle: "Designed for high-performance marketing teams that demand precision, not just participation.",
-                card_command: {
-                    title: "Agency Command Center",
-                    desc: "A unified interface for omniscient control. Monitor revenue, asset velocity, and team performance."
+            how_it_works: {
+                title: "How It Works",
+                subtitle: "4 simple steps to organize all your company's marketing",
+                step1: {
+                    number: "01",
+                    title: "Fill the Vaults",
+                    desc: "Register essential info: Brand DNA (mission, values, tone of voice), your main offer (product, price, differentials), traffic channels (Instagram, TikTok, Google Ads) and your team."
                 },
-                card_ai: {
-                    title: "Generative Engine",
-                    desc: "Automated creative briefs based on historical brand vaults. Zero hallucinations."
+                step2: {
+                    number: "02",
+                    title: "Build the Calendar",
+                    desc: "In the Dashboard, create your tactical roadmap: add posts, campaigns and actions with date, channel and owner. View everything in a table organized by day, week or month."
                 },
-                card_gov: {
-                    title: "Immutable Governance",
-                    desc: "Every approval is cryptographically logged. Audit-ready history for agency & client."
+                step3: {
+                    number: "03",
+                    title: "Generate the Arts",
+                    desc: "For each calendar item, click 'Generate Art'. Creative Studio automatically creates visual pieces using your brand colors and identity registered in the Vaults."
+                },
+                step4: {
+                    number: "04",
+                    title: "Approve and Publish",
+                    desc: "Change each item's status (Draft → In Production → Scheduled → Published). Send approval links via WhatsApp. Everything is logged for audit."
+                }
+            },
+            features: {
+                title: "What's Included",
+                subtitle: "Everything you need to operate marketing professionally",
+                vaults: {
+                    title: "5 Strategic Vaults",
+                    desc: "Organize Brand DNA, Offer, Traffic Funnel, Team and Ideas Bank in structured cards that feed the entire system."
+                },
+                dashboard: {
+                    title: "Tactical Dashboard",
+                    desc: "Visual calendar with all marketing initiatives. Filter by today, tomorrow or week. See KPIs for revenue, traffic and sales."
+                },
+                creative: {
+                    title: "Creative Studio",
+                    desc: "Automatic art generator. Creates posts for Instagram, Stories, Reels, TikTok, YouTube and more, already with your brand colors and identity."
+                },
+                governance: {
+                    title: "Governance & Approvals",
+                    desc: "Approval flow with history. Send for approval via WhatsApp. Every status change is logged for complete audit."
+                },
+                multicanal: {
+                    title: "11 Supported Channels",
+                    desc: "Instagram (Feed, Stories, Reels, Carousel), TikTok, YouTube, LinkedIn, Facebook, Twitter/X, WhatsApp, Email and Blog."
+                },
+                formats: {
+                    title: "11 Art Formats",
+                    desc: "Story 9:16, Feed 4:5, Feed 1:1, Landscape 16:9, YouTube Thumbnail, LinkedIn Post, Display Ads (4 sizes), Email Header."
+                }
+            },
+            use_cases: {
+                title: "Who Is Bravvo Binder For?",
+                case1: {
+                    title: "Marketing Agencies",
+                    desc: "Manage multiple clients in separate workspaces. Each client has their own Vaults, calendar and arts. Scale operations without losing quality."
+                },
+                case2: {
+                    title: "In-House Marketing Teams",
+                    desc: "Centralize company strategy. Align everyone on the team with the same source of truth. Eliminate rework and approvals lost in email."
+                },
+                case3: {
+                    title: "Entrepreneurs and SMBs",
+                    desc: "Even without a dedicated team, organize your marketing like a pro. The Vaults guide you to document your strategy in a structured way."
                 }
             },
             manifesto: {
-                label: "/ The Manifesto",
-                title: "Chaos is not a creative strategy.",
-                p1: "We believe that marketing fails not because of a lack of ideas, but because of a lack of system.",
-                p2: "When your operation lives in fragmented spreadsheets and WhatsApp groups, you are generating noise, not signal.",
+                label: "/ Why We Built This",
+                title: "Marketing without system is just noise.",
+                p1: "Most companies have good ideas, but waste time on outdated spreadsheets, chaotic WhatsApp groups and approvals that get lost in email.",
+                p2: "Bravvo Binder solves this: one single place where your strategy, calendar, arts and approvals live together and connected.",
                 agency_title: "For Agencies",
-                agency_desc: "Scale without adding chaos. Governance as a service.",
-                enterprise_title: "For Enterprises",
-                enterprise_desc: "Own your data. Decentralize execution, centralize control."
+                agency_desc: "Manage dozens of clients with replicable process. Governance as a service.",
+                enterprise_title: "For Companies",
+                enterprise_desc: "Own your data. One source of truth for the entire marketing team."
             },
             footer: {
                 platform: "Platform",
