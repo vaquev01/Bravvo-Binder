@@ -31,7 +31,7 @@ export function AgencyDashboard({ onSelectClient, onLogout }) {
     };
 
     return (
-        <div className="min-h-screen bg-[var(--bg-deep)] text-white font-sans selection:bg-white/20">
+        <div className="min-h-screen bg-[var(--bg-deep)] text-white font-sans selection:bg-white/20" data-testid="agency-dashboard">
             {/* Top Navigation - Ultra Minimal */}
             <header className="h-14 border-b border-[var(--border-subtle)] flex items-center justify-between px-6 bg-[var(--bg-deep)] sticky top-0 z-50">
                 <div className="flex items-center gap-4">

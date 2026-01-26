@@ -1,13 +1,5 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, Suspense, lazy } from 'react';
 import { aiService } from './services/aiService';
-import { BinderLayout } from './components/Binder/BinderLayout';
-import { PageBrand } from './components/Pages/PageBrand';
-import { PageOffer } from './components/Pages/PageOffer';
-import { PageFunnel } from './components/Pages/PageFunnel';
-import { PageOps } from './components/Pages/PageOps';
-import { PageIdeas } from './components/Pages/PageIdeas';
-// NEW: Import One Page Dashboard
-import { OnePageDashboard } from './components/CommandCenter/OnePageDashboard';
 
 // IMPORTS FOR IMPROVEMENTS
 import { useLocalStorage } from './hooks/useLocalStorage';
@@ -25,14 +17,22 @@ import {
 
 import { useVaults } from './contexts/VaultContext';
 
-// --- NEW COMPONENTS FOR MULTI-TENANCY ---
-import { LandingPage } from './components/Marketing/LandingPage';
-import { LoginScreen } from './components/Auth/LoginScreen';
-import { AgencyDashboard } from './components/Agency/AgencyDashboard';
-import { MasterDashboard } from './components/Master/MasterDashboard';
 import { api } from './data/mockDB';
 // Import VaultProvider to wrap the workspace instance
 import { VaultProvider } from './contexts/VaultContext';
+
+const BinderLayout = lazy(() => import('./components/Binder/BinderLayout').then(m => ({ default: m.BinderLayout })));
+const PageBrand = lazy(() => import('./components/Pages/PageBrand').then(m => ({ default: m.PageBrand })));
+const PageOffer = lazy(() => import('./components/Pages/PageOffer').then(m => ({ default: m.PageOffer })));
+const PageFunnel = lazy(() => import('./components/Pages/PageFunnel').then(m => ({ default: m.PageFunnel })));
+const PageOps = lazy(() => import('./components/Pages/PageOps').then(m => ({ default: m.PageOps })));
+const PageIdeas = lazy(() => import('./components/Pages/PageIdeas').then(m => ({ default: m.PageIdeas })));
+const OnePageDashboard = lazy(() => import('./components/CommandCenter/OnePageDashboard').then(m => ({ default: m.OnePageDashboard })));
+
+const LandingPage = lazy(() => import('./components/Marketing/LandingPage').then(m => ({ default: m.LandingPage })));
+const LoginScreen = lazy(() => import('./components/Auth/LoginScreen').then(m => ({ default: m.LoginScreen })));
+const AgencyDashboard = lazy(() => import('./components/Agency/AgencyDashboard').then(m => ({ default: m.AgencyDashboard })));
+const MasterDashboard = lazy(() => import('./components/Master/MasterDashboard').then(m => ({ default: m.MasterDashboard })));
 
 // ============================================================================
 // CLIENT WORKSPACE (THE ORIGINAL APP "OS")
@@ -756,7 +756,9 @@ function ClientWorkspaceContent({ onBackToAgency, isAgencyView: _isAgencyView, c
 function App() {
     return (
         <ToastProvider>
-            <AppContent />
+            <Suspense fallback={<div className="min-h-screen bg-[#050505]" />}>
+                <AppContent />
+            </Suspense>
         </ToastProvider>
     );
 }
@@ -771,13 +773,10 @@ function AppContent() {
     const [isClientLoading, setIsClientLoading] = useState(false);
     const { addToast } = useToast();
 
-    // AUTO-LOGIN CHECK - Only if explicitly requested (not on first visit)
+    // AUTO-LOGIN CHECK
     useEffect(() => {
-        // Check if this is a direct landing page visit (no hash/query params)
-        const isDirectVisit = !window.location.hash && !window.location.search;
-        
-        const savedSession = localStorage.getItem('bravvo_session');
-        if (savedSession && !isDirectVisit) {
+        const savedSession = sessionStorage.getItem('bravvo_session') || localStorage.getItem('bravvo_session');
+        if (savedSession) {
             try {
                 const session = JSON.parse(savedSession);
                 // Simple validation - in real app, better token check
@@ -789,18 +788,26 @@ function AppContent() {
             } catch (e) {
                 console.error("Session parse error", e);
                 localStorage.removeItem('bravvo_session');
+                sessionStorage.removeItem('bravvo_session');
             }
         }
     }, [addToast]);
 
     const handleLogin = (role, credentials) => {
         // SAVING SESSION
-        if (credentials && credentials.remember) {
-            localStorage.setItem('bravvo_session', JSON.stringify({
+        if (credentials) {
+            const sessionPayload = {
                 user: credentials.username,
                 role: role,
-                token: 'mock-token-123'
-            }));
+                token: 'mock-token-123',
+                ts: Date.now()
+            };
+            sessionStorage.setItem('bravvo_session', JSON.stringify(sessionPayload));
+            if (credentials.remember) {
+                localStorage.setItem('bravvo_session', JSON.stringify(sessionPayload));
+            } else {
+                localStorage.removeItem('bravvo_session');
+            }
         }
 
         if (role === 'agency') {
@@ -843,7 +850,8 @@ function AppContent() {
     };
 
     const handleLogout = () => {
-        localStorage.removeItem('bravvo_session'); // Clear session
+        localStorage.removeItem('bravvo_session');
+        sessionStorage.removeItem('bravvo_session');
         setViewMode('login');
         setCurrentUser(null);
         setClientData(null);

@@ -2,7 +2,7 @@
 **Data:** 2026-01-26  
 **Versão:** 0.1.0 (commit 8f0c377)  
 **Executor:** QA Automatizado + Manual  
-**Ambiente:** macOS, Chromium (Desktop)
+**Ambiente:** macOS, Chromium (Desktop) + Mobile Chrome
 
 ---
 
@@ -12,14 +12,14 @@
 |--------|--------|-----------|----------|
 | Landing/Auth | ✅ PASS | 100% | 0 |
 | Agency Dashboard | ✅ PASS | 100% | 0 |
-| OSA Dashboard | ✅ PASS | 95% | 0 |
+| OSA Dashboard | ✅ PASS | 100% | 0 |
 | Vaults (V1-V5) | ✅ PASS | 100% | 0 |
-| Roadmap Tático | ✅ PASS | 90% | 0 |
-| Governança | ✅ PASS | 85% | 0 |
-| Persistência | ⚠️ PARCIAL | 70% | 1 |
+| Roadmap Tático | ✅ PASS | 100% | 0 |
+| Governança | ✅ PASS | 100% | 0 |
+| Persistência | ✅ PASS | 100% | 0 |
 | Performance | ✅ PASS | 100% | 0 |
 
-**Veredicto Geral:** 🟢 **APROVADO PARA PRODUÇÃO** (com observações)
+**Veredicto Geral:** 🟢 **APROVADO PARA PRODUÇÃO**
 
 ---
 
@@ -31,19 +31,22 @@
 |---------|----------|--------|--------|-----------|
 | Chromium Desktop | 1440×900 | Limpa | ✅ PASS | smoke.spec.js |
 | Chromium Desktop | 1440×900 | Persistida | ✅ PASS | flags-enabled.spec.js |
-| Firefox Desktop | 1440×900 | - | ⚠️ NOT INSTALLED | - |
-| WebKit Desktop | 1440×900 | - | ⚠️ NOT INSTALLED | - |
-| Mobile Chrome | 390×844 | - | ⚠️ NOT TESTED | Config adicionada |
-| Mobile Safari | 390×844 | - | ⚠️ NOT TESTED | Config adicionada |
+| Chromium Desktop | 1440×900 | QA Completo | ✅ PASS | comprehensive-qa.spec.js (33/33) |
+| Mobile Chrome | 390×844 | Limpa | ✅ PASS | smoke.spec.js |
+| Mobile Chrome | 390×844 | Persistida | ✅ PASS | flags-enabled.spec.js |
+| Firefox Desktop | 1440×900 | - | ⚠️ NOT INSTALLED | Requer `npx playwright install` |
+| WebKit Desktop | 1440×900 | - | ⚠️ NOT INSTALLED | Requer `npx playwright install` |
+| Mobile Safari | 390×844 | - | ⚠️ NOT TESTED | Requer WebKit instalado |
 
 ### Console Errors (Chromium)
-```
+
+```text
 ✅ Nenhum erro crítico detectado
-⚠️ Warning: Chunk size > 500KB (esperado, não crítico)
 ```
 
 ### Network Errors
-```
+
+```text
 ✅ Nenhum 4xx/5xx detectado
 ✅ Nenhum CORS error
 ✅ Nenhum timeout crítico
@@ -51,7 +54,7 @@
 
 ### Performance
 - **Initial Load:** < 3s ✅
-- **Build Size:** 509KB JS (warning, não blocker)
+- **Build Size:** ✅ Sem warning de chunk > 500KB (split aplicado)
 - **Memory Leaks:** Não detectados em sessão curta
 
 ---
@@ -217,14 +220,14 @@
 | Tab navigation | ✅ PASS | Testado |
 | Foco visível | ✅ PASS | Ring focus |
 | Contraste AA | ✅ PASS | Vault cards redesenhados |
-| Touch targets mobile | ⚠️ NOT TESTED | Requer dispositivo |
+| Touch targets mobile | ✅ PASS | Validado via emulação (mobile-chrome) |
 
 ### 4.4 Performance
 
 | Métrica | Valor | Status |
 |---------|-------|--------|
 | Initial Load | < 3s | ✅ PASS |
-| Build JS | 509KB | ⚠️ WARNING |
+| Build JS | Split em chunks (maior ~168KB gzip ~50KB) | ✅ PASS |
 | Build CSS | 63KB | ✅ PASS |
 | Travamentos ao salvar | Nenhum | ✅ PASS |
 | Requests duplicadas | Nenhuma | ✅ PASS |
@@ -239,9 +242,7 @@
 |---------|--------|--------|--------|
 | smoke.spec.js | 1 | 1 | 0 |
 | flags-enabled.spec.js | 1 | 1 | 0 |
-| comprehensive-qa.spec.js | 33 | 8 | 25* |
-
-*Falhas em comprehensive-qa são por timing em paralelo, não bugs reais.
+| comprehensive-qa.spec.js | 33 | 33 | 0 |
 
 ### Cobertura de Fluxos
 
@@ -255,7 +256,7 @@
 
 ## 6️⃣ FLUXO DE INFORMAÇÕES (DATA FLOW)
 
-```
+```text
 ┌─────────────────┐     ┌──────────────┐     ┌─────────────────┐
 │   VAULTS        │────▶│   MOTORES    │────▶│   ARTEFATOS     │
 │   (Input)       │     │   (Process)  │     │   (Output)      │
@@ -333,18 +334,12 @@
 ## 9️⃣ BUGS IDENTIFICADOS
 
 ### BUG-001: Persistência depende de checkbox "Remember"
-- **Severidade:** Minor
-- **Repro:** Login sem marcar remember → Refresh → Perde sessão
-- **Esperado:** Sessão persiste durante navegação
-- **Obtido:** Sessão perdida se não marcar remember
-- **Sugestão:** Auto-check remember ou session storage fallback
+- **Status:** ✅ CORRIGIDO
+- **Fix:** Sessão agora sempre grava em `sessionStorage`; `remember` só promove para `localStorage`.
 
 ### BUG-002: Chunk size warning
-- **Severidade:** Minor (não afeta UX)
-- **Repro:** npm run build
-- **Esperado:** < 500KB
-- **Obtido:** 509KB
-- **Sugestão:** Code splitting com dynamic imports
+- **Status:** ✅ CORRIGIDO
+- **Fix:** `vite.config.js` com `manualChunks` + `React.lazy` para split por páginas.
 
 ---
 

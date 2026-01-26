@@ -1,5 +1,14 @@
 import { defineConfig, devices } from '@playwright/test';
 
+const PW_HOST = '127.0.0.1';
+if (!process.env.PW_PORT) {
+    process.env.PW_PORT = process.env.CI
+        ? '4174'
+        : String(40000 + Math.floor(Math.random() * 10000));
+}
+const PW_PORT = parseInt(process.env.PW_PORT, 10);
+const PW_BASE_URL = `http://${PW_HOST}:${PW_PORT}/BravvoOS/`;
+
 export default defineConfig({
     testDir: './tests/e2e',
     timeout: 60_000,
@@ -10,7 +19,7 @@ export default defineConfig({
     retries: process.env.CI ? 2 : 0,
     reporter: process.env.CI ? [['list'], ['html', { open: 'never' }]] : [['list'], ['html']],
     use: {
-        baseURL: 'http://127.0.0.1:4173/BravvoOS/',
+        baseURL: PW_BASE_URL,
         trace: 'on-first-retry',
         screenshot: 'only-on-failure',
         video: 'retain-on-failure'
@@ -38,8 +47,8 @@ export default defineConfig({
         }
     ],
     webServer: {
-        command: 'npm run build && npx vite preview --host 127.0.0.1 --port 4173',
-        url: 'http://127.0.0.1:4173/BravvoOS/',
+        command: `npm run build && npx vite preview --host ${PW_HOST} --port ${PW_PORT} --strictPort`,
+        url: PW_BASE_URL,
         reuseExistingServer: !process.env.CI,
         timeout: 120_000
     }

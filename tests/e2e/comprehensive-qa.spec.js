@@ -12,6 +12,7 @@ import { test, expect } from '@playwright/test';
 
 test.describe('1. Environment Validation', () => {
     test('1.1 App loads without console errors', async ({ page }) => {
+        /** @type {string[]} */
         const consoleErrors = [];
         page.on('console', msg => {
             if (msg.type() === 'error') consoleErrors.push(msg.text());
@@ -33,6 +34,7 @@ test.describe('1. Environment Validation', () => {
     });
 
     test('1.2 No network errors on initial load', async ({ page }) => {
+        /** @type {{ url: string, failure: (string | null | undefined) }[]} */
         const failedRequests = [];
         page.on('requestfailed', request => {
             failedRequests.push({
@@ -310,7 +312,9 @@ test.describe('6. Tactical Roadmap', () => {
             await statusTrigger.click();
             
             // Status options should appear
-            await expect(page.locator('[data-testid$="-opt-draft"]').or(page.locator('[data-testid$="-opt-scheduled"]'))).toBeVisible();
+            const statusOptions = page.locator('[data-testid^="d2-status-"][data-testid*="-opt-"]');
+            await expect(statusOptions).toHaveCount(5);
+            await expect(statusOptions.first()).toBeVisible();
         }
     });
 
