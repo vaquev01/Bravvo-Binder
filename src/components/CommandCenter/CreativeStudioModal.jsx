@@ -2,6 +2,15 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { X, Download, CheckCircle2, Wand2 } from 'lucide-react';
 import { listCreativeFormats } from '../../services/creativeFormatCatalog';
 import { generateCreativeAssets } from '../../services/creativeProviderRegistry';
+import {
+    listChannels,
+    listSubchannels,
+    getDefaultSubchannelId,
+    toLegacyChannelLabel,
+    getAllowedCreativeFormats,
+    getDefaultCreativeFormatId,
+    parseLegacyChannelLabel
+} from '../../services/channelTaxonomy';
 
 function downloadUrl(url, filename) {
     const a = document.createElement('a');
@@ -32,10 +41,12 @@ async function svgUrlToPngDataUrl(svgUrl, width, height) {
 }
 
 export function CreativeStudioModal({ open, onClose, item, vaults, onSave }) {
-    const formats = useMemo(() => listCreativeFormats(), []);
+    const allFormats = useMemo(() => listCreativeFormats(), []);
 
     const [providerId, setProviderId] = useState('template');
-    const [formatId, setFormatId] = useState(formats[0]?.id || 'story_9_16');
+    const [channelId, setChannelId] = useState('instagram');
+    const [subchannelId, setSubchannelId] = useState('feed');
+    const [formatId, setFormatId] = useState(allFormats[0]?.id || 'story_9_16');
     const [loading, setLoading] = useState(false);
     const [assets, setAssets] = useState([]);
     const [selectedId, setSelectedId] = useState(null);
@@ -47,18 +58,45 @@ export function CreativeStudioModal({ open, onClose, item, vaults, onSave }) {
         }
     }, [open]);
 
+    useEffect(() => {
+        if (!open || !item) return;
+        const parsed = parseLegacyChannelLabel(item.channel || 'Instagram Feed');
+        const nextChannelId = item.channelId || parsed.channelId || 'instagram';
+        const nextSubchannelId = item.subchannelId || parsed.subchannelId || getDefaultSubchannelId(nextChannelId) || 'feed';
+        setChannelId(nextChannelId);
+        setSubchannelId(nextSubchannelId);
+        setFormatId(prev => {
+            const allowed = getAllowedCreativeFormats(nextChannelId, nextSubchannelId);
+            if (allowed.includes(prev)) return prev;
+            return getDefaultCreativeFormatId(nextChannelId, nextSubchannelId);
+        });
+    }, [open, item]);
+
     if (!open || !item) return null;
+
+    const allowedFormatIds = getAllowedCreativeFormats(channelId, subchannelId);
+    const formats = allowedFormatIds.length > 0
+        ? allFormats.filter(f => allowedFormatIds.includes(f.id))
+        : allFormats;
+
+    const safeFormatId = formats.some(f => f.id === formatId) ? formatId : (formats[0]?.id || 'story_9_16');
 
     const selected = assets.find(a => a.id === selectedId) || assets[0] || null;
 
     const handleGenerate = async () => {
         setLoading(true);
         try {
+            const itemWithTaxonomy = {
+                ...item,
+                channelId,
+                subchannelId,
+                channel: toLegacyChannelLabel(channelId, subchannelId)
+            };
             const generated = await generateCreativeAssets({
                 providerId,
-                item,
+                item: itemWithTaxonomy,
                 vaults,
-                formatId,
+                formatId: safeFormatId,
                 variants: 3
             });
             setAssets(generated);
@@ -82,6 +120,9 @@ export function CreativeStudioModal({ open, onClose, item, vaults, onSave }) {
             id: `${selected.id}`,
             itemId: item.id,
             provider: selected.provider,
+            channelId,
+            subchannelId,
+            channel: toLegacyChannelLabel(channelId, subchannelId),
             formatId: selected.formatId,
             width: selected.width,
             height: selected.height,
@@ -125,7 +166,7 @@ export function CreativeStudioModal({ open, onClose, item, vaults, onSave }) {
                                 <label className="text-label">Formato</label>
                                 <select
                                     className="premium-input bg-[#111]"
-                                    value={formatId}
+                                    value={safeFormatId}
                                     onChange={e => setFormatId(e.target.value)}
                                     data-testid="creative-format"
                                 >
@@ -133,6 +174,42 @@ export function CreativeStudioModal({ open, onClose, item, vaults, onSave }) {
                                         <option key={f.id} value={f.id}>{f.label}</option>
                                     ))}
                                 </select>
+                            </div>
+
+                            <div>
+                                <label className="text-label">Canal</label>
+                                <div className="grid grid-cols-2 gap-2">
+                                    <select
+                                        className="premium-input bg-[#111]"
+                                        value={channelId}
+                                        onChange={e => {
+                                            const nextChannelId = e.target.value;
+                                            const nextSub = getDefaultSubchannelId(nextChannelId) || '';
+                                            setChannelId(nextChannelId);
+                                            setSubchannelId(nextSub);
+                                            setFormatId(getDefaultCreativeFormatId(nextChannelId, nextSub));
+                                        }}
+                                        data-testid="creative-channel"
+                                    >
+                                        {listChannels().map(c => (
+                                            <option key={c.id} value={c.id}>{c.label}</option>
+                                        ))}
+                                    </select>
+                                    <select
+                                        className="premium-input bg-[#111]"
+                                        value={subchannelId}
+                                        onChange={e => {
+                                            const nextSub = e.target.value;
+                                            setSubchannelId(nextSub);
+                                            setFormatId(getDefaultCreativeFormatId(channelId, nextSub));
+                                        }}
+                                        data-testid="creative-subchannel"
+                                    >
+                                        {listSubchannels(channelId).map(sc => (
+                                            <option key={sc.id} value={sc.id}>{sc.label}</option>
+                                        ))}
+                                    </select>
+                                </div>
                             </div>
 
                             <button

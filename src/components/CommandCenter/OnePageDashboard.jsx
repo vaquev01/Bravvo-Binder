@@ -20,6 +20,14 @@ import { ImportDataModal } from './ImportDataModal';
 import { PlaybookModal } from './PlaybookModal';
 import { CreativeStudioModal } from './CreativeStudioModal';
 import { useToast } from '../../contexts/ToastContext';
+import {
+    listChannels,
+    listSubchannels,
+    getDefaultSubchannelId,
+    toLegacyChannelLabel,
+    getDefaultContentType,
+    parseLegacyChannelLabel
+} from '../../services/channelTaxonomy';
 
 // Inline Editable Component
 function InlineEdit({ value, onSave, type = 'text', prefix = '', suffix = '', className = '', disabled = false }) {
@@ -135,7 +143,19 @@ function DetailEditModal({ open, onClose, item, onSave }) {
     const [form, setForm] = useState(item || {});
 
     useEffect(() => {
-        if (item) setForm(item);
+        if (!item) return;
+        const parsed = parseLegacyChannelLabel(item.channel || 'Instagram Feed');
+        const channelId = item.channelId || parsed.channelId;
+        const subchannelId = item.subchannelId || parsed.subchannelId || getDefaultSubchannelId(channelId);
+        const nextChannel = item.channel || toLegacyChannelLabel(channelId, subchannelId);
+        const nextFormat = item.format || getDefaultContentType(channelId, subchannelId);
+        setForm({
+            ...item,
+            channelId,
+            subchannelId,
+            channel: nextChannel,
+            format: nextFormat
+        });
     }, [item]);
 
     if (!open || !item) return null;
@@ -182,18 +202,45 @@ function DetailEditModal({ open, onClose, item, onSave }) {
                             </div>
                             <div>
                                 <label className="text-label">{t('os.detail_edit.channel_label')}</label>
-                                <select
-                                    className="premium-input bg-[#111]"
-                                    value={form.channel || 'Instagram Feed'}
-                                    onChange={e => setForm({ ...form, channel: e.target.value })}
-                                >
-                                    <option value="Instagram Feed">Instagram Feed</option>
-                                    <option value="Instagram Reels">Instagram Reels</option>
-                                    <option value="Instagram Stories">Instagram Stories</option>
-                                    <option value="TikTok">TikTok</option>
-                                    <option value="WhatsApp Status">WhatsApp Status</option>
-                                    <option value="Google Ads">Google Ads</option>
-                                </select>
+                                <div className="grid grid-cols-2 gap-2">
+                                    <select
+                                        className="premium-input bg-[#111]"
+                                        value={form.channelId || 'instagram'}
+                                        onChange={e => {
+                                            const nextChannelId = e.target.value;
+                                            const nextSubchannelId = getDefaultSubchannelId(nextChannelId);
+                                            setForm(prev => ({
+                                                ...prev,
+                                                channelId: nextChannelId,
+                                                subchannelId: nextSubchannelId,
+                                                channel: toLegacyChannelLabel(nextChannelId, nextSubchannelId),
+                                                format: getDefaultContentType(nextChannelId, nextSubchannelId)
+                                            }));
+                                        }}
+                                    >
+                                        {listChannels().map(c => (
+                                            <option key={c.id} value={c.id}>{c.label}</option>
+                                        ))}
+                                    </select>
+                                    <select
+                                        className="premium-input bg-[#111]"
+                                        value={form.subchannelId || getDefaultSubchannelId(form.channelId || 'instagram') || ''}
+                                        onChange={e => {
+                                            const nextSub = e.target.value;
+                                            const nextChannelId = form.channelId || 'instagram';
+                                            setForm(prev => ({
+                                                ...prev,
+                                                subchannelId: nextSub,
+                                                channel: toLegacyChannelLabel(nextChannelId, nextSub),
+                                                format: getDefaultContentType(nextChannelId, nextSub)
+                                            }));
+                                        }}
+                                    >
+                                        {listSubchannels(form.channelId || 'instagram').map(sc => (
+                                            <option key={sc.id} value={sc.id}>{sc.label}</option>
+                                        ))}
+                                    </select>
+                                </div>
                             </div>
                         </div>
                         <div>
@@ -222,6 +269,8 @@ function QuickAddModal({ open, onClose, onAdd }) {
     const { t } = useLanguage();
     const [form, setForm] = useState({
         initiative: '',
+        channelId: 'instagram',
+        subchannelId: 'feed',
         channel: 'Instagram Feed',
         format: 'post',
         date: new Date().toISOString().split('T')[0],
@@ -240,6 +289,8 @@ function QuickAddModal({ open, onClose, onAdd }) {
         onClose();
         setForm({
             initiative: '',
+            channelId: 'instagram',
+            subchannelId: 'feed',
             channel: 'Instagram Feed',
             format: 'post',
             date: new Date().toISOString().split('T')[0],
@@ -280,16 +331,45 @@ function QuickAddModal({ open, onClose, onAdd }) {
                         </div>
                         <div>
                             <label className="text-label">{t('os.quick_add.channel_label')}</label>
-                            <select
-                                className="premium-input"
-                                value={form.channel}
-                                onChange={e => setForm({ ...form, channel: e.target.value })}
-                            >
-                                <option>Instagram Feed</option>
-                                <option>Instagram Reels</option>
-                                <option>TikTok</option>
-                                <option>WhatsApp</option>
-                            </select>
+                            <div className="grid grid-cols-2 gap-2">
+                                <select
+                                    className="premium-input"
+                                    value={form.channelId}
+                                    onChange={e => {
+                                        const nextChannelId = e.target.value;
+                                        const nextSubchannelId = getDefaultSubchannelId(nextChannelId);
+                                        setForm(prev => ({
+                                            ...prev,
+                                            channelId: nextChannelId,
+                                            subchannelId: nextSubchannelId,
+                                            channel: toLegacyChannelLabel(nextChannelId, nextSubchannelId),
+                                            format: getDefaultContentType(nextChannelId, nextSubchannelId)
+                                        }));
+                                    }}
+                                >
+                                    {listChannels().map(c => (
+                                        <option key={c.id} value={c.id}>{c.label}</option>
+                                    ))}
+                                </select>
+                                <select
+                                    className="premium-input"
+                                    value={form.subchannelId}
+                                    onChange={e => {
+                                        const nextSub = e.target.value;
+                                        const nextChannelId = form.channelId;
+                                        setForm(prev => ({
+                                            ...prev,
+                                            subchannelId: nextSub,
+                                            channel: toLegacyChannelLabel(nextChannelId, nextSub),
+                                            format: getDefaultContentType(nextChannelId, nextSub)
+                                        }));
+                                    }}
+                                >
+                                    {listSubchannels(form.channelId).map(sc => (
+                                        <option key={sc.id} value={sc.id}>{sc.label}</option>
+                                    ))}
+                                </select>
+                            </div>
                         </div>
                     </div>
                     <div className="pt-4 flex justify-end gap-2">
