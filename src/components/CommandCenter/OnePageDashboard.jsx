@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useMemo, useState, useRef, useEffect } from 'react';
 import { useLanguage } from '../../contexts/LanguageContext';
 import {
     Calendar as CalendarIcon,
@@ -233,8 +233,10 @@ function StatusDropdown({ value, onChange, options, testId }) {
     const statusColors = {
         scheduled: 'bg-green-500',
         draft: 'bg-gray-500',
+        pending: 'bg-yellow-500',
         in_production: 'bg-yellow-500',
         done: 'bg-blue-500',
+        delayed: 'bg-red-500',
         cancelled: 'bg-red-500',
     };
 
@@ -318,6 +320,46 @@ function DetailEditForm({ item, onSave, onClose }) {
                         onChange={e => setForm({ ...form, microDescription: e.target.value })}
                         placeholder="1 linha: objetivo / CTA / detalhe"
                     />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                    <div>
+                        <label className="text-label">Objetivo</label>
+                        <input
+                            className="premium-input bg-[#111]"
+                            value={form.objective || ''}
+                            onChange={e => setForm({ ...form, objective: e.target.value })}
+                            placeholder="Qual é o objetivo desta atividade?"
+                        />
+                    </div>
+                    <div>
+                        <label className="text-label">CTA</label>
+                        <input
+                            className="premium-input bg-[#111]"
+                            value={form.ctaText || ''}
+                            onChange={e => setForm({ ...form, ctaText: e.target.value })}
+                            placeholder="Ex: Chamar no WhatsApp"
+                        />
+                    </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                    <div>
+                        <label className="text-label">Dependências</label>
+                        <input
+                            className="premium-input bg-[#111]"
+                            value={form.dependencies || ''}
+                            onChange={e => setForm({ ...form, dependencies: e.target.value })}
+                            placeholder="Ex: aprovação do dono / fotos"
+                        />
+                    </div>
+                    <div>
+                        <label className="text-label">Critério de sucesso</label>
+                        <input
+                            className="premium-input bg-[#111]"
+                            value={form.successCriteria || ''}
+                            onChange={e => setForm({ ...form, successCriteria: e.target.value })}
+                            placeholder="Ex: 30 cliques / 5 reservas"
+                        />
+                    </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                     <div>
@@ -450,6 +492,28 @@ export function OnePageDashboard({
 }) {
     const { t } = useLanguage();
     const { addToast } = useToast();
+
+    const governanceHistory = useMemo(() => {
+        if (Array.isArray(appData?.governanceHistory) && appData.governanceHistory.length > 0) {
+            return appData.governanceHistory;
+        }
+        if (Array.isArray(formData?.governanceHistory)) {
+            return formData.governanceHistory;
+        }
+        return [];
+    }, [appData?.governanceHistory, formData?.governanceHistory]);
+
+    const ataEntries = useMemo(() => {
+        return governanceHistory.filter(h => h?.signature?.closedAt && h?.kpis);
+    }, [governanceHistory]);
+
+    const latestAta = useMemo(() => {
+        return appData?.lastGovernanceATA || ataEntries[0] || null;
+    }, [appData?.lastGovernanceATA, ataEntries]);
+
+    const previousAta = useMemo(() => {
+        return ataEntries[1] || null;
+    }, [ataEntries]);
 
     const FLAG_DASH_ONBOARDING = getFeatureFlag('DASH_ONBOARDING', false);
     const FLAG_DASH_INSIGHTS = getFeatureFlag('DASH_INSIGHTS', false);
@@ -753,9 +817,11 @@ export function OnePageDashboard({
 
     const statusOptions = [
         { value: 'draft', label: 'Draft', color: 'bg-gray-500' },
+        { value: 'pending', label: 'Pending', color: 'bg-yellow-500' },
         { value: 'in_production', label: 'In Prod', color: 'bg-yellow-500' },
         { value: 'scheduled', label: 'Scheduled', color: 'bg-green-500' },
         { value: 'done', label: 'Published', color: 'bg-blue-500' },
+        { value: 'delayed', label: 'Delayed', color: 'bg-red-500' },
         { value: 'cancelled', label: 'Cancelled', color: 'bg-red-500' },
     ];
 
@@ -1187,31 +1253,82 @@ export function OnePageDashboard({
                     onChangeFrequency={handleFrequencyChange}
                 />
 
-                {(() => {
-                    const history = Array.isArray(appData?.governanceHistory) ? appData.governanceHistory : (Array.isArray(formData?.governanceHistory) ? formData.governanceHistory : []);
-                    const ata = appData?.lastGovernanceATA || history.find(h => h?.signature?.closedAt && h?.kpis);
-                    if (!ata) return null;
+                {latestAta && (() => {
+                    const rev = parseFloat(latestAta?.kpis?.revenue?.achievement || 0);
+                    const prevRev = parseFloat(previousAta?.kpis?.revenue?.achievement || 0);
+                    const delta = previousAta ? (rev - prevRev) : 0;
+                    const trend = !previousAta ? '→' : delta > 2 ? '↑' : delta < -2 ? '↓' : '→';
 
-                    const revenueAchievement = ata?.kpis?.revenue?.achievement;
-                    const executionRate = ata?.roadmapSummary?.executionRate;
-                    const risksCount = Array.isArray(ata?.risks) ? ata.risks.length : 0;
+                    const executionRate = latestAta?.roadmapSummary?.executionRate;
+                    const risksCount = Array.isArray(latestAta?.risks) ? latestAta.risks.length : 0;
+
+                    const wins = (
+                        (latestAta?.execution?.topPerformers || []).slice(0, 3)
+                        .concat((latestAta?.whatWorked || []).slice(0, 3))
+                    ).filter(Boolean).slice(0, 3);
+
+                    const d2 = Array.isArray(appData?.dashboard?.D2) ? appData.dashboard.D2 : [];
+                    const delayed = d2.filter(i => i?.status === 'delayed').slice(0, 3);
+
+                    const opportunities = (
+                        (latestAta?.nextPriorities || []).slice(0, 3)
+                        .concat((latestAta?.changesToMake || []).slice(0, 3))
+                    ).filter(Boolean).slice(0, 3);
 
                     return (
                         <div className="mb-6 p-4 rounded-xl border border-white/10 bg-[#080808]">
-                            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-                                <div className="min-w-0">
-                                    <div className="text-[10px] text-gray-500 font-mono uppercase tracking-wider">Última Governança (ATA)</div>
-                                    <div className="text-sm font-bold text-white truncate">{ata?.signature?.period || ata?.id}</div>
+                            <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
+                                <div className="min-w-0 flex-1">
+                                    <div className="flex items-center gap-2">
+                                        <div className="text-[10px] text-gray-500 font-mono uppercase tracking-wider">Última Governança</div>
+                                        <div className="text-[10px] font-mono text-gray-400">{trend}</div>
+                                        <div className="text-[10px] text-gray-600 font-mono">{previousAta ? `${delta >= 0 ? '+' : ''}${delta.toFixed(1)}pp` : ''}</div>
+                                    </div>
+                                    <div className="text-sm font-bold text-white truncate">{latestAta?.signature?.period || latestAta?.id}</div>
                                     <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-gray-500">
-                                        <span>Receita: <span className="text-gray-300">{revenueAchievement ? `${revenueAchievement}%` : '—'}</span></span>
+                                        <span>Receita: <span className="text-gray-300">{rev ? `${rev}%` : '—'}</span></span>
                                         <span>Execução: <span className="text-gray-300">{executionRate ? `${executionRate}%` : '—'}</span></span>
                                         <span>Riscos: <span className="text-gray-300">{risksCount}</span></span>
                                     </div>
+
+                                    <div className="mt-3 grid grid-cols-1 md:grid-cols-3 gap-3">
+                                        <div className="bg-white/5 border border-white/10 rounded-lg p-3">
+                                            <div className="text-[10px] text-gray-500 font-mono uppercase tracking-wider mb-2">Wins</div>
+                                            {wins.length > 0 ? (
+                                                <div className="space-y-1 text-[11px] text-gray-300">
+                                                    {wins.map((w, idx) => (<div key={idx} className="truncate">{idx + 1}. {w}</div>))}
+                                                </div>
+                                            ) : (
+                                                <div className="text-[11px] text-gray-600">—</div>
+                                            )}
+                                        </div>
+                                        <div className="bg-white/5 border border-white/10 rounded-lg p-3">
+                                            <div className="text-[10px] text-gray-500 font-mono uppercase tracking-wider mb-2">Atrasos</div>
+                                            {delayed.length > 0 ? (
+                                                <div className="space-y-1 text-[11px] text-gray-300">
+                                                    {delayed.map((it, idx) => (<div key={it.id} className="truncate">{idx + 1}. {it.initiative}</div>))}
+                                                </div>
+                                            ) : (
+                                                <div className="text-[11px] text-gray-600">—</div>
+                                            )}
+                                        </div>
+                                        <div className="bg-white/5 border border-white/10 rounded-lg p-3">
+                                            <div className="text-[10px] text-gray-500 font-mono uppercase tracking-wider mb-2">Oportunidades</div>
+                                            {opportunities.length > 0 ? (
+                                                <div className="space-y-1 text-[11px] text-gray-300">
+                                                    {opportunities.map((o, idx) => (<div key={idx} className="truncate">{idx + 1}. {o}</div>))}
+                                                </div>
+                                            ) : (
+                                                <div className="text-[11px] text-gray-600">—</div>
+                                            )}
+                                        </div>
+                                    </div>
                                 </div>
-                                <div className="flex items-center gap-2">
+
+                                <div className="flex items-center gap-2 shrink-0">
                                     <button
                                         onClick={() => {
-                                            setHistoryFocusEntryId(ata?.id);
+                                            setHistoryFocusEntryId(latestAta?.id);
                                             setShowHistory(true);
                                         }}
                                         className="btn-ghost !h-8 !px-3 !border-purple-500/30 text-purple-300 hover:text-purple-200"
@@ -1223,6 +1340,75 @@ export function OnePageDashboard({
                         </div>
                     );
                 })()}
+
+                {(appData?.recalibration || appData?.nextGovernanceWindow) && (
+                    <div className="mb-6 grid grid-cols-1 lg:grid-cols-3 gap-4">
+                        {appData?.nextGovernanceWindow && (
+                            <div className="bento-grid p-4">
+                                <div className="text-label mb-2">Próxima Janela</div>
+                                <div className="text-sm text-white font-bold">
+                                    {appData.nextGovernanceWindow.startDate} → {appData.nextGovernanceWindow.endDate}
+                                </div>
+                                <div className="mt-2 text-[11px] text-gray-500">
+                                    Foco: <span className="text-gray-300">{appData.nextGovernanceWindow.periodGoals?.focus || '—'}</span>
+                                </div>
+                                <div className="mt-3 space-y-1 text-[11px] text-gray-400">
+                                    <div>Receita: <span className="text-gray-200">R$ {(appData.nextGovernanceWindow.periodGoals?.kpiTargets?.revenue || 0).toLocaleString('pt-BR')}</span></div>
+                                    <div>Tráfego: <span className="text-gray-200">R$ {(appData.nextGovernanceWindow.periodGoals?.kpiTargets?.traffic || 0).toLocaleString('pt-BR')}</span></div>
+                                    <div>Vendas: <span className="text-gray-200">{(appData.nextGovernanceWindow.periodGoals?.kpiTargets?.sales || 0).toLocaleString('pt-BR')}</span></div>
+                                </div>
+                            </div>
+                        )}
+
+                        {appData?.recalibration && (
+                            <div className="bento-grid p-4">
+                                <div className="text-label mb-2">Ordens do Ciclo</div>
+                                {Array.isArray(appData.recalibration.dailyOrders) && appData.recalibration.dailyOrders.length > 0 ? (
+                                    <div className="space-y-2">
+                                        {appData.recalibration.dailyOrders.slice(0, 5).map(order => (
+                                            <div key={order.id} className="flex items-start justify-between gap-3 bg-white/5 border border-white/10 rounded-lg p-2">
+                                                <div className="min-w-0">
+                                                    <div className="text-[11px] text-white font-medium truncate">{order.priority}. {order.title}</div>
+                                                    <div className="text-[10px] text-gray-600 font-mono">{order.source}</div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className="text-[11px] text-gray-600">—</div>
+                                )}
+                            </div>
+                        )}
+
+                        {appData?.recalibration && (
+                            <div className="bento-grid p-4">
+                                <div className="text-label mb-2">Foco + Alertas</div>
+                                {Array.isArray(appData.recalibration.executionFocus) && appData.recalibration.executionFocus.length > 0 ? (
+                                    <div className="space-y-2">
+                                        {appData.recalibration.executionFocus.slice(0, 3).map((f, idx) => (
+                                            <div key={idx} className="text-[11px] text-gray-300 bg-white/5 border border-white/10 rounded-lg p-2">
+                                                {f.message}
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className="text-[11px] text-gray-600">—</div>
+                                )}
+
+                                {Array.isArray(appData.recalibration.alerts) && appData.recalibration.alerts.length > 0 && (
+                                    <div className="mt-3 space-y-2">
+                                        {appData.recalibration.alerts.slice(0, 3).map((a, idx) => (
+                                            <div key={idx} className="text-[11px] text-gray-400 bg-white/5 border border-white/10 rounded-lg p-2">
+                                                <div className="text-gray-300">{a.title}</div>
+                                                <div className="text-gray-600">{a.action}</div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                    </div>
+                )}
 
                 {/* 1. DAY SUMMARY AI - PRD 3.2 */}
                 <DaySummaryAI 
@@ -1309,7 +1495,18 @@ export function OnePageDashboard({
                                         <div className="text-mono-data text-gray-400 group-hover:text-white transition-colors">
                                             {formatHumanDate(item.date)}
                                         </div>
-                                        <div className="min-w-0 pr-4" data-testid={`d2-initiative-${item.id}`}>
+                                        <div
+                                            className="min-w-0 pr-4"
+                                            data-testid={`d2-initiative-${item.id}`}
+                                            title={[
+                                                item.microDescription,
+                                                item.objective,
+                                                item.ctaText,
+                                                item.dependencies,
+                                                item.successCriteria
+                                            ].filter(Boolean).join(' | ')}
+                                            onClick={() => setEditingItem(item)}
+                                        >
                                             <div className="text-sm font-medium text-white truncate group-hover:translate-x-1 transition-transform">
                                                 {item.initiative}
                                             </div>
