@@ -6,9 +6,9 @@ const ToastContext = createContext(null);
 export function ToastProvider({ children }) {
     const [toasts, setToasts] = useState([]);
 
-    const addToast = useCallback(({ title, description, type = 'success', duration = 3000 }) => {
+    const addToast = useCallback(({ title, description, type = 'success', duration = 3000, action = null }) => {
         const id = Date.now();
-        setToasts(prev => [...prev, { id, title, description, type, duration }]);
+        setToasts(prev => [...prev, { id, title, description, type, duration, action }]);
 
         if (duration > 0) {
             setTimeout(() => {
@@ -47,6 +47,18 @@ export function ToastProvider({ children }) {
                             <h4 className="font-bold text-sm text-white">{toast.title}</h4>
                             {toast.description && (
                                 <p className="text-xs text-gray-400 mt-1">{toast.description}</p>
+                            )}
+                            {/* ONDA 2.3 - Botão de ação (Undo) */}
+                            {toast.action && (
+                                <button
+                                    onClick={() => {
+                                        toast.action.onClick?.();
+                                        removeToast(toast.id);
+                                    }}
+                                    className="mt-2 text-xs font-bold text-white bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-lg transition-colors"
+                                >
+                                    {toast.action.label}
+                                </button>
                             )}
                         </div>
 
