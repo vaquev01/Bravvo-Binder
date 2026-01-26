@@ -12,10 +12,12 @@ import {
     History,
     Share2,
     MessageCircle,
-    Upload
+    Upload,
+    Book
 } from 'lucide-react';
 import { GovernanceHistory } from './GovernanceHistory';
 import { ImportDataModal } from './ImportDataModal';
+import { PlaybookModal } from './PlaybookModal';
 import { useToast } from '../../contexts/ToastContext';
 
 // Inline Editable Component
@@ -319,6 +321,7 @@ export function OnePageDashboard({
     const [editingItem, setEditingItem] = useState(null);
     const [showHistory, setShowHistory] = useState(false);
     const [showImport, setShowImport] = useState(false);
+    const [showPlaybooks, setShowPlaybooks] = useState(false);
 
     // Editable KPI State - Linked to Global Data
     const [kpis, setKpis] = useState(appData.kpis || {
@@ -528,6 +531,54 @@ export function OnePageDashboard({
         }));
 
         addToast({ title: 'Importação Concluída', description: `${logEntries.length} métricas atualizadas.`, type: 'success' });
+    };
+
+    const handleApplyPlaybook = (playbook) => {
+        // Generate tasks starting from tomorrow
+        const newTasks = playbook.tasks.map((task, idx) => {
+            const date = new Date();
+            date.setDate(date.getDate() + task.dayOffset + 1); // Start D+1
+            
+            return {
+                id: `PB-${Date.now()}-${idx}`,
+                date: date.toISOString().split('T')[0],
+                initiative: task.title,
+                channel: playbook.channels[idx % playbook.channels.length], // Cycle through channels
+                format: 'feed', // Default
+                offerId: 'hero', // Default to hero
+                ctaId: 'whatsapp',
+                responsible: task.role,
+                status: 'draft',
+                visual_output: 'Pending',
+                origin: `Playbook: ${playbook.name}`
+            };
+        });
+
+        // Add to D2 (Roadmap)
+        setAppData(prev => ({
+            ...prev,
+            dashboard: {
+                ...prev.dashboard,
+                D2: [...(prev.dashboard.D2 || []), ...newTasks]
+            },
+            // Log the action
+            measurementContract: {
+                ...(prev.measurementContract || {}),
+                auditLog: [
+                    {
+                        id: Date.now(),
+                        ts: new Date().toISOString(),
+                        actor: currentUser?.role ? `${currentUser.role} (${currentUser.client?.name || 'System'})` : 'System',
+                        action: 'APPLY_PLAYBOOK',
+                        target: 'Roadmap',
+                        details: `Applied: ${playbook.name}`
+                    },
+                    ...(prev.measurementContract?.auditLog || [])
+                ]
+            }
+        }));
+
+        addToast({ title: 'Plano Gerado', description: `${newTasks.length} tarefas criadas a partir do playbook.`, type: 'success' });
     };
 
     // Helper for Data Freshness
@@ -784,6 +835,7 @@ export function OnePageDashboard({
                 <DetailEditModal open={!!editingItem} onClose={() => setEditingItem(null)} item={editingItem || {}} onSave={handleSaveItem} />
                 <GovernanceHistory open={showHistory} onClose={() => setShowHistory(false)} history={formData?.governanceHistory || []} />
                 <ImportDataModal open={showImport} onClose={() => setShowImport(false)} contract={appData.measurementContract} onImport={handleImport} />
+                <PlaybookModal open={showPlaybooks} onClose={() => setShowPlaybooks(false)} onApply={handleApplyPlaybook} />
             </div>
         </div>
     );
