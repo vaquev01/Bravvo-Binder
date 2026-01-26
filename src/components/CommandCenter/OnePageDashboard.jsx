@@ -665,6 +665,8 @@ export function OnePageDashboard({
         if (newActive) {
             addToast({ title: 'Governance Mode Active', type: 'info' });
             setShowGovernanceModeModal(true);
+        } else {
+            setShowGovernanceModeModal(false);
         }
     };
 
@@ -1248,11 +1250,31 @@ export function OnePageDashboard({
                     frequency={governanceFrequency}
                     lastGovernance={appData.lastGovernance}
                     isGovernanceActive={meetingState.active}
-                    onOpenGovernance={() => setShowGovernanceModal(true)}
+                    onOpenGovernance={() => setShowGovernanceModeModal(true)}
                     onToggleGovernance={toggleGovernanceMode}
                     onChangeFrequency={handleFrequencyChange}
                 />
 
+                {/* MEETING MODE (embedded) */}
+                {meetingState.active ? (
+                    <div className="mb-6">
+                        <GovernanceModeModal
+                            open={meetingState.active && showGovernanceModeModal}
+                            variant="embedded"
+                            onClose={() => {
+                                setShowGovernanceModeModal(false);
+                                setMeetingState({ active: false, comments: { general: '', revenue: '', traffic: '', sales: '' } });
+                            }}
+                            onComplete={handleGovernanceModeComplete}
+                            kpis={kpis}
+                            roadmapItems={appData?.dashboard?.D2 || []}
+                            vaults={appData?.vaults}
+                            governanceFrequency={governanceFrequency}
+                            currentUser={currentUser}
+                        />
+                    </div>
+                ) : (
+                    <>
                 {latestAta && (() => {
                     const rev = parseFloat(latestAta?.kpis?.revenue?.achievement || 0);
                     const prevRev = parseFloat(previousAta?.kpis?.revenue?.achievement || 0);
@@ -1416,6 +1438,9 @@ export function OnePageDashboard({
                     kpis={kpis}
                     clientName={appData?.clientName}
                 />
+
+                    </>
+                )}
 
                 {/* PHASE 1 (read-only): Onboarding */}
                 {FLAG_DASH_ONBOARDING && (
@@ -1664,16 +1689,7 @@ export function OnePageDashboard({
                     kpis={kpis}
                 />
                 {/* GOVERNANCE MODE MODAL - Enhanced Ritual */}
-                <GovernanceModeModal
-                    open={meetingState.active && showGovernanceModeModal}
-                    onClose={() => setShowGovernanceModeModal(false)}
-                    onComplete={handleGovernanceModeComplete}
-                    kpis={kpis}
-                    roadmapItems={appData?.dashboard?.D2 || []}
-                    vaults={appData?.vaults}
-                    governanceFrequency={governanceFrequency}
-                    currentUser={currentUser}
-                />
+                {/* Rendered embedded inside scroll area when active */}
             </div>
         </div>
     );

@@ -31,6 +31,7 @@ export function GovernanceModeModal({
     vaults,
     governanceFrequency = 'weekly',
     currentUser,
+    variant = 'modal',
 }) {
     const [currentStep, setCurrentStep] = useState(0);
     const [isProcessing, setIsProcessing] = useState(false);
@@ -228,12 +229,14 @@ export function GovernanceModeModal({
 
     if (!open) return null;
 
+    const isEmbedded = variant === 'embedded';
+
     // Show ATA after processing
     if (generatedATA) {
         const displayATA = formatATAForDisplay(generatedATA);
         return (
-            <div className="fixed inset-0 z-[100] bg-[#050508] flex items-center justify-center p-4">
-                <div className="bg-[#0A0A0A] border border-green-500/30 rounded-xl w-full max-w-3xl max-h-[90vh] flex flex-col shadow-2xl animate-fadeIn">
+            <div className={isEmbedded ? "bg-[#050508] border border-green-500/30 rounded-xl w-full flex flex-col shadow-2xl animate-fadeIn" : "fixed inset-0 z-[100] bg-[#050508] flex items-center justify-center p-4"}>
+                <div className={isEmbedded ? "bg-[#0A0A0A] rounded-xl w-full flex flex-col" : "bg-[#0A0A0A] border border-green-500/30 rounded-xl w-full max-w-3xl max-h-[90vh] flex flex-col shadow-2xl animate-fadeIn"}>
                     <div className="flex items-center justify-between p-6 border-b border-green-500/20 bg-green-500/5">
                         <div className="flex items-center gap-3">
                             <div className="w-10 h-10 bg-green-500/20 rounded-xl flex items-center justify-center">
@@ -249,7 +252,7 @@ export function GovernanceModeModal({
                         </button>
                     </div>
 
-                    <div className="flex-1 overflow-y-auto p-6 space-y-6">
+                    <div className={isEmbedded ? "flex-1 overflow-y-auto p-6 space-y-6 max-h-[70vh]" : "flex-1 overflow-y-auto p-6 space-y-6"}>
                         <div className="text-center mb-6">
                             <h3 className="text-xl font-bold text-white">{displayATA.title}</h3>
                             <p className="text-sm text-gray-400">{displayATA.subtitle}</p>
@@ -286,7 +289,7 @@ export function GovernanceModeModal({
 
     // Main Governance Modal
     return (
-        <div className="fixed inset-0 z-[100] bg-[#050508] flex flex-col">
+        <div className={isEmbedded ? "bg-[#050508] border border-purple-500/30 rounded-xl flex flex-col" : "fixed inset-0 z-[100] bg-[#050508] flex flex-col"}>
             {/* Header */}
             <div className="h-14 border-b border-purple-500/30 bg-purple-500/5 flex items-center justify-between px-6 shrink-0">
                 <div className="flex items-center gap-4">
@@ -332,8 +335,8 @@ export function GovernanceModeModal({
             </div>
 
             {/* Content */}
-            <div className="flex-1 overflow-y-auto p-6">
-                <div className="max-w-4xl mx-auto">
+            <div className={isEmbedded ? "flex-1 overflow-y-auto p-6 max-h-[70vh]" : "flex-1 overflow-y-auto p-6"}>
+                <div className={isEmbedded ? "w-full" : "max-w-4xl mx-auto"}>
                     
                     {/* Step 1: Period Summary */}
                     {currentStep === 0 && (
