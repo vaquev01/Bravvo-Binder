@@ -139,15 +139,15 @@ export function BinderLayout({ activeTab, setActiveTab, completedTabs, children,
                 </header>
 
                 {/* Page Content Container */}
-                <div className="flex-1 overflow-y-auto custom-scrollbar relative bg-[var(--bg-deep)]">
+                <div className="flex-1 overflow-y-auto custom-scrollbar relative bg-[var(--bg-deep)] vault-canvas">
                     {/* Clean Background (Pattern removed for professional look) */}
 
                     {/* Conditional Wrapper: Dashboard gets full width, others get focused document view */}
-                    <div className={`${activeTab === 'OS' ? 'w-full h-full' : 'max-w-5xl mx-auto w-full min-h-full p-4 sm:p-8'}`}>
+                    <div className={`${activeTab === 'OS' ? 'w-full h-full' : 'max-w-5xl mx-auto w-full min-h-full p-6 sm:p-10'}`}>
                         {/* The "Sheet" Effect */}
                         <div className={`
                             relative overflow-hidden animate-fadeIn h-full
-                            ${activeTab === 'OS' ? 'bg-[var(--bg-deep)] p-0' : 'bg-[var(--bg-panel)] border border-[var(--border-subtle)] rounded-2xl shadow-2xl p-8'}
+                            ${activeTab === 'OS' ? 'bg-[var(--bg-deep)] p-0' : 'bg-[var(--bg-panel)] border border-[var(--border-subtle)] rounded-2xl shadow-2xl vault-sheet p-8 sm:p-10'}
                         `}>
                             {/* Top Accent Line (Only for non-OS) */}
                             {activeTab !== 'OS' && <div className={`absolute top-0 left-0 right-0 h-1 ${tabs.find(t => t.id === activeTab)?.bg.replace('/10', '')}`} />}
