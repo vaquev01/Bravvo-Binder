@@ -8,6 +8,7 @@ import {
     X,
     Plus,
     Zap,
+    Wand2,
     TrendingUp,
     History,
     MessageCircle,
@@ -17,6 +18,7 @@ import {
 import { GovernanceHistory } from './GovernanceHistory';
 import { ImportDataModal } from './ImportDataModal';
 import { PlaybookModal } from './PlaybookModal';
+import { CreativeStudioModal } from './CreativeStudioModal';
 import { useToast } from '../../contexts/ToastContext';
 
 // Inline Editable Component
@@ -321,6 +323,8 @@ export function OnePageDashboard({
     const [showHistory, setShowHistory] = useState(false);
     const [showImport, setShowImport] = useState(false);
     const [showPlaybooks, setShowPlaybooks] = useState(false);
+    const [showCreativeStudio, setShowCreativeStudio] = useState(false);
+    const [creativeItem, setCreativeItem] = useState(null);
 
     // Editable KPI State - Linked to Global Data
     const [kpis, setKpis] = useState(appData.kpis || {
@@ -435,6 +439,31 @@ export function OnePageDashboard({
         );
         setAppData({ ...appData, dashboard: { ...appData.dashboard, D2: updatedD2 } });
         addToast({ title: 'Item Saved', type: 'success' });
+    };
+
+    const handleOpenCreativeStudio = (item) => {
+        setCreativeItem(item);
+        setShowCreativeStudio(true);
+    };
+
+    const handleSaveCreativeAsset = (asset) => {
+        setAppData(prev => {
+            const prevAssets = Array.isArray(prev?.creativeAssets) ? prev.creativeAssets : [];
+            const nextAssets = [asset, ...prevAssets];
+            const prevD2 = Array.isArray(prev?.dashboard?.D2) ? prev.dashboard.D2 : [];
+            const nextD2 = prevD2.map(it => (it.id === asset.itemId ? { ...it, visual_output: asset.id } : it));
+
+            return {
+                ...prev,
+                creativeAssets: nextAssets,
+                dashboard: {
+                    ...(prev?.dashboard || {}),
+                    D2: nextD2
+                }
+            };
+        });
+
+        addToast({ title: 'Arte salva', type: 'success' });
     };
 
     const handleAddItem = (newItem) => {
@@ -756,7 +785,7 @@ export function OnePageDashboard({
                     <div className="overflow-x-auto custom-scrollbar">
                         <div className="min-w-[800px]">
                             {/* Table Header */}
-                            <div className="grid grid-cols-[100px_1fr_150px_120px_120px_100px] gap-4 px-4 py-2 border-b border-[var(--border-subtle)] bg-[#080808]">
+                            <div className="grid grid-cols-[100px_1fr_150px_120px_120px_120px] gap-4 px-4 py-2 border-b border-[var(--border-subtle)] bg-[#080808]">
                                 <div className="text-label">{t('os.table.date')}</div>
                                 <div className="text-label">{t('os.table.initiative')}</div>
                                 <div className="text-label">{t('os.table.channel')}</div>
@@ -768,7 +797,7 @@ export function OnePageDashboard({
                             {/* Table Body */}
                             <div className="bg-[var(--bg-deep)]">
                                 {filteredCalendar.map((item) => (
-                                    <div key={item.id} className="grid grid-cols-[100px_1fr_150px_120px_120px_100px] gap-4 px-4 py-3 border-b border-[var(--border-subtle)] hover:bg-[var(--bg-surface)] group transition-all duration-200 items-center hover:pl-5">
+                                    <div key={item.id} className="grid grid-cols-[100px_1fr_150px_120px_120px_120px] gap-4 px-4 py-3 border-b border-[var(--border-subtle)] hover:bg-[var(--bg-surface)] group transition-all duration-200 items-center hover:pl-5">
                                         <div className="text-mono-data text-gray-400 group-hover:text-white transition-colors">
                                             {new Date(item.date).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}
                                         </div>
@@ -797,6 +826,15 @@ export function OnePageDashboard({
                                                 title="Solicitar Aprovação (WhatsApp)"
                                             >
                                                 <MessageCircle size={12} />
+                                            </button>
+
+                                            <button
+                                                onClick={() => handleOpenCreativeStudio(item)}
+                                                className="p-1.5 hover:bg-purple-500/20 rounded text-gray-400 hover:text-purple-300 transform hover:scale-110 transition-all"
+                                                title="Gerar Arte"
+                                                data-testid={`d2-generate-art-${item.id}`}
+                                            >
+                                                <Wand2 size={12} />
                                             </button>
                                             
                                             <button 
@@ -853,6 +891,16 @@ export function OnePageDashboard({
                 <GovernanceHistory open={showHistory} onClose={() => setShowHistory(false)} history={formData?.governanceHistory || []} />
                 <ImportDataModal open={showImport} onClose={() => setShowImport(false)} contract={appData.measurementContract} onImport={handleImport} />
                 <PlaybookModal open={showPlaybooks} onClose={() => setShowPlaybooks(false)} onApply={handleApplyPlaybook} />
+                <CreativeStudioModal
+                    open={showCreativeStudio}
+                    onClose={() => {
+                        setShowCreativeStudio(false);
+                        setCreativeItem(null);
+                    }}
+                    item={creativeItem}
+                    vaults={appData?.vaults}
+                    onSave={handleSaveCreativeAsset}
+                />
             </div>
         </div>
     );

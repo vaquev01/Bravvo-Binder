@@ -83,6 +83,7 @@ class StorageService {
             ...base,
             ...migrated,
             schemaVersion: CURRENT_SCHEMA_VERSION,
+            creativeAssets: ensureArray(migrated.creativeAssets || base.creativeAssets),
             vaults: {
                 ...ensureObject(base.vaults),
                 ...ensureObject(migrated.vaults)
