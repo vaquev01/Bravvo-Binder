@@ -192,12 +192,23 @@ export function GovernanceHeader({
                     <button
                         onClick={onToggleGovernance}
                         className={isGovernanceActive
-                            ? "px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold rounded-lg transition-colors flex items-center gap-2"
-                            : "px-4 py-2 bg-purple-500/20 hover:bg-purple-500/30 text-purple-400 text-xs font-bold rounded-lg transition-colors border border-purple-500/30 flex items-center gap-2"
+                            ? "relative px-4 py-2 rounded-lg text-xs font-bold text-white flex items-center gap-2 border border-purple-500/40 bg-gradient-to-r from-purple-600 via-fuchsia-600 to-purple-600 shadow-lg shadow-purple-500/20 hover:shadow-purple-500/30 transition-all"
+                            : "relative px-4 py-2 rounded-lg text-xs font-bold text-purple-200 flex items-center gap-2 border border-purple-500/40 bg-gradient-to-r from-purple-500/20 via-fuchsia-500/10 to-purple-500/20 hover:from-purple-500/25 hover:via-fuchsia-500/20 hover:to-purple-500/25 hover:shadow-md hover:shadow-purple-500/10 transition-all"
                         }
                     >
-                        <Shield size={14} />
-                        {isGovernanceActive ? 'Encerrar Reunião' : 'Iniciar Reunião'}
+                        <span className={isGovernanceActive ? "absolute -inset-[1px] rounded-lg bg-gradient-to-r from-purple-500/30 via-fuchsia-500/10 to-purple-500/30 blur-sm" : "absolute -inset-[1px] rounded-lg bg-gradient-to-r from-purple-500/15 via-fuchsia-500/5 to-purple-500/15 blur-sm"} />
+                        <span className="relative flex items-center gap-2">
+                            <Shield size={14} />
+                            {isGovernanceActive ? (
+                                <span className="flex items-center gap-2">
+                                    <span>Encerrar Reunião</span>
+                                    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-black/30 border border-white/10 text-[10px] font-mono">
+                                        <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
+                                        LIVE
+                                    </span>
+                                </span>
+                            ) : 'Iniciar Reunião'}
+                        </span>
                     </button>
                 </div>
             </div>

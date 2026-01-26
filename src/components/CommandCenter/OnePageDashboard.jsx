@@ -556,6 +556,7 @@ export function OnePageDashboard({
     const [creativeItem, setCreativeItem] = useState(null);
     const [highlightedRowId, setHighlightedRowId] = useState(null);
     const highlightTimeoutRef = useRef(null);
+    const [roadmapNoteDrafts, setRoadmapNoteDrafts] = useState({});
     const [showGovernanceModal, setShowGovernanceModal] = useState(false);
     const [showGovernanceModeModal, setShowGovernanceModeModal] = useState(false);
     const [historyFocusEntryId, setHistoryFocusEntryId] = useState(null);
@@ -1548,7 +1549,12 @@ export function OnePageDashboard({
 
                             {/* Table Body */}
                             <div className="bg-[var(--bg-deep)]">
-                                {filteredCalendar.map((item) => (
+                                {filteredCalendar.map((item) => {
+                                    const noteDraft = roadmapNoteDrafts?.[item.id];
+                                    const noteValue = typeof noteDraft === 'string' ? noteDraft : (item.governanceNote || '');
+                                    const previewText = item.microDescription || item.governanceNote || item.origin || String(item.caption || '').split('\n')[0];
+
+                                    return (
                                     <div
                                         key={item.id}
                                         data-testid={`d2-row-${item.id}`}
@@ -1572,9 +1578,37 @@ export function OnePageDashboard({
                                             <div className="text-sm font-medium text-white truncate group-hover:translate-x-1 transition-transform">
                                                 {item.initiative}
                                             </div>
-                                            {(item.microDescription || item.governanceNote || item.origin || item.caption) && (
-                                                <div className="text-[11px] text-gray-500 truncate mt-0.5">
-                                                    {item.microDescription || item.governanceNote || item.origin || String(item.caption).split('\n')[0]}
+                                            {!!previewText && (
+                                                <div className="text-[11px] text-gray-500 truncate mt-0.5 group-hover:hidden">
+                                                    {previewText}
+                                                </div>
+                                            )}
+
+                                            {meetingState.active && (
+                                                <div className="mt-1 hidden group-hover:block">
+                                                    <input
+                                                        value={noteValue}
+                                                        placeholder="Comentário rápido (somente na Governança)"
+                                                        className="bg-black/30 border border-white/10 rounded px-2 py-1 w-full text-[11px] text-gray-200 focus:outline-none focus:border-purple-500/50"
+                                                        onClick={(e) => e.stopPropagation()}
+                                                        onChange={(e) => {
+                                                            const v = e.target.value;
+                                                            setRoadmapNoteDrafts(prev => ({ ...prev, [item.id]: v }));
+                                                        }}
+                                                        onBlur={(e) => {
+                                                            const finalValue = String(e.target.value || '');
+                                                            setAppData(prev => {
+                                                                const prevD2 = Array.isArray(prev?.dashboard?.D2) ? prev.dashboard.D2 : [];
+                                                                const nextD2 = prevD2.map(it => (String(it.id) === String(item.id) ? { ...it, governanceNote: finalValue } : it));
+                                                                return { ...prev, dashboard: { ...(prev?.dashboard || {}), D2: nextD2 } };
+                                                            });
+                                                            setRoadmapNoteDrafts(prev => {
+                                                                const next = { ...(prev || {}) };
+                                                                delete next[item.id];
+                                                                return next;
+                                                            });
+                                                        }}
+                                                    />
                                                 </div>
                                             )}
                                         </div>
@@ -1622,7 +1656,8 @@ export function OnePageDashboard({
                                             </button>
                                         </div>
                                     </div>
-                                ))}
+                                );
+                                })}
                                 {filteredCalendar.length === 0 && (
                                     FLAG_DASH_EMPTY_STATES ? (
                                         <EmptyState

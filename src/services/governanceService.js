@@ -36,6 +36,8 @@ export function generateATA(governanceData) {
         type,
         kpiSnapshot,
         goalChanges,
+        meetingTimer,
+        kpiNotes,
         roadmapReview,
         productionAnalysis,
         executionAnalysis,
@@ -83,6 +85,9 @@ export function generateATA(governanceData) {
         },
 
         goalChanges: Array.isArray(goalChanges) ? goalChanges : [],
+
+        meetingTimer: meetingTimer || null,
+        kpiNotes: kpiNotes || {},
 
         // Resumo do Roadmap
         roadmapSummary: {
@@ -389,9 +394,24 @@ function reprioritizeRoadmap(ata, currentRoadmap) {
  */
 export function formatATAForDisplay(ata) {
     const goalChanges = Array.isArray(ata?.goalChanges) ? ata.goalChanges : [];
+    const kpiNotes = ata?.kpiNotes && typeof ata.kpiNotes === 'object' ? ata.kpiNotes : {};
+    const meetingTimer = ata?.meetingTimer && typeof ata.meetingTimer === 'object' ? ata.meetingTimer : null;
+
+    const formatDuration = (seconds) => {
+        const s = Number(seconds) || 0;
+        const mm = String(Math.floor(s / 60)).padStart(2, '0');
+        const ss = String(Math.floor(s % 60)).padStart(2, '0');
+        return `${mm}:${ss}`;
+    };
+
+    const kpiNotesItems = [
+        kpiNotes?.revenue ? `Receita: ${kpiNotes.revenue}` : null,
+        kpiNotes?.traffic ? `Tráfego: ${kpiNotes.traffic}` : null,
+        kpiNotes?.sales ? `Vendas: ${kpiNotes.sales}` : null,
+    ].filter(Boolean);
     return {
         title: `ATA de Governança - ${ata.signature.period}`,
-        subtitle: `${ata.signature.type === 'weekly' ? 'Semanal' : ata.signature.type === 'daily' ? 'Diária' : 'Mensal'} | ${new Date(ata.signature.closedAt).toLocaleString('pt-BR')}`,
+        subtitle: `${ata.signature.type === 'weekly' ? 'Semanal' : ata.signature.type === 'daily' ? 'Diária' : 'Mensal'} | ${new Date(ata.signature.closedAt).toLocaleString('pt-BR')}${meetingTimer?.durationSeconds ? ` | Duração: ${formatDuration(meetingTimer.durationSeconds)}` : ''}`,
         sections: [
             {
                 title: 'KPIs do Período',
@@ -401,6 +421,10 @@ export function formatATAForDisplay(ata) {
                     `Tráfego: R$ ${ata.kpis.traffic.value} investido`,
                 ],
             },
+            ...(kpiNotesItems.length > 0 ? [{
+                title: 'Notas por KPI',
+                items: kpiNotesItems
+            }] : []),
             ...(goalChanges.length > 0 ? [{
                 title: 'Metas Alteradas',
                 items: goalChanges.map(ch => {

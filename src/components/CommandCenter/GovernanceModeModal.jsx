@@ -3,7 +3,11 @@ import {
     X, CheckCircle2, AlertTriangle, Target,
     ArrowUpRight, BarChart3, Calendar, FileText, Zap,
     TrendingUp, TrendingDown, ChevronRight,
-    Plus, Trash2, Save
+    Plus, Trash2, Save,
+    Timer,
+    Pause,
+    Play,
+    RotateCcw
 } from 'lucide-react';
 import { 
     generateATA, 
@@ -39,6 +43,10 @@ export function GovernanceModeModal({
     const [isProcessing, setIsProcessing] = useState(false);
     const [generatedATA, setGeneratedATA] = useState(null);
 
+    const [meetingStartedAt, setMeetingStartedAt] = useState(null);
+    const [meetingElapsedSeconds, setMeetingElapsedSeconds] = useState(0);
+    const [meetingTimerRunning, setMeetingTimerRunning] = useState(true);
+
     // Form State
     const [periodData, setPeriodData] = useState({
         startDate: '',
@@ -55,6 +63,29 @@ export function GovernanceModeModal({
     const initialGoalsRef = useRef(null);
     const [goalDraft, setGoalDraft] = useState({});
     const [goalChangedAt, setGoalChangedAt] = useState({});
+
+    const [kpiNotes, setKpiNotes] = useState({
+        revenue: '',
+        traffic: '',
+        sales: ''
+    });
+    const [openKpiNoteId, setOpenKpiNoteId] = useState(null);
+
+    useEffect(() => {
+        if (!open) return;
+        setMeetingStartedAt(new Date().toISOString());
+        setMeetingElapsedSeconds(0);
+        setMeetingTimerRunning(true);
+    }, [open]);
+
+    useEffect(() => {
+        if (!open) return;
+        if (!meetingTimerRunning) return;
+        const id = setInterval(() => {
+            setMeetingElapsedSeconds(s => s + 1);
+        }, 1000);
+        return () => clearInterval(id);
+    }, [open, meetingTimerRunning]);
 
     useEffect(() => {
         if (!open) return;
@@ -287,6 +318,12 @@ export function GovernanceModeModal({
             type: governanceFrequency,
             kpiSnapshot: kpiSnapshotWithGoals,
             goalChanges,
+            meetingTimer: {
+                startedAt: meetingStartedAt,
+                durationSeconds: meetingElapsedSeconds,
+                paused: !meetingTimerRunning
+            },
+            kpiNotes,
             roadmapReview: roadmapStats,
             productionAnalysis: productionData,
             executionAnalysis: {
@@ -441,6 +478,34 @@ export function GovernanceModeModal({
                     })}
                 </div>
 
+                <div className="hidden lg:flex items-center gap-2">
+                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-black/30 border border-white/10">
+                        <Timer size={14} className="text-purple-300" />
+                        <span className="text-[11px] font-mono text-gray-200">
+                            {String(Math.floor(meetingElapsedSeconds / 60)).padStart(2, '0')}:{String(meetingElapsedSeconds % 60).padStart(2, '0')}
+                        </span>
+                        <button
+                            type="button"
+                            onClick={() => setMeetingTimerRunning(v => !v)}
+                            className="p-1 rounded hover:bg-white/10 text-gray-300"
+                            title={meetingTimerRunning ? 'Pausar' : 'Continuar'}
+                        >
+                            {meetingTimerRunning ? <Pause size={12} /> : <Play size={12} />}
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => {
+                                setMeetingElapsedSeconds(0);
+                                setMeetingTimerRunning(true);
+                            }}
+                            className="p-1 rounded hover:bg-white/10 text-gray-400"
+                            title="Reset"
+                        >
+                            <RotateCcw size={12} />
+                        </button>
+                    </div>
+                </div>
+
                 <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-lg">
                     <X size={18} className="text-gray-400" />
                 </button>
@@ -528,6 +593,40 @@ export function GovernanceModeModal({
                                 </div>
                             </div>
 
+                            <div>
+                                <h4 className="text-sm font-bold text-white mb-3">Comentários por KPI</h4>
+                                <div className="space-y-2">
+                                    {[
+                                        { id: 'revenue', label: 'Receita' },
+                                        { id: 'traffic', label: 'Tráfego' },
+                                        { id: 'sales', label: 'Vendas' }
+                                    ].map(k => (
+                                        <div key={k.id} className="bg-white/5 border border-white/10 rounded-lg overflow-hidden">
+                                            <button
+                                                type="button"
+                                                onClick={() => setOpenKpiNoteId(prev => (prev === k.id ? null : k.id))}
+                                                className="w-full px-3 py-2 flex items-center justify-between text-left"
+                                            >
+                                                <span className="text-[11px] font-bold text-gray-200 uppercase tracking-wider">{k.label}</span>
+                                                <span className="text-[10px] text-gray-500 truncate max-w-[240px]">
+                                                    {kpiNotes?.[k.id] ? kpiNotes[k.id] : 'Adicionar comentário'}
+                                                </span>
+                                            </button>
+                                            {openKpiNoteId === k.id && (
+                                                <div className="px-3 pb-3">
+                                                    <textarea
+                                                        className="input-field min-h-[70px]"
+                                                        placeholder="Observação do KPI (contexto/decisão)..."
+                                                        value={kpiNotes?.[k.id] || ''}
+                                                        onChange={e => setKpiNotes(prev => ({ ...prev, [k.id]: e.target.value }))}
+                                                    />
+                                                </div>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
                             {/* Production Stats */}
                             <div>
                                 <h4 className="text-sm font-bold text-white mb-3 flex items-center gap-2">
@@ -584,7 +683,7 @@ export function GovernanceModeModal({
 
                             <div className="space-y-3">
                                 {roadmapReview.map((item, idx) => (
-                                    <div key={item.id || idx} className="card-elevated p-4">
+                                    <div key={item.id || idx} className="card-elevated p-4 group hover:shadow-lg hover:shadow-black/30 transition-shadow">
                                         <div className="flex items-start justify-between gap-4">
                                             <div className="flex-1">
                                                 <p className="text-subtitle mb-1">{item.initiative}</p>
@@ -604,16 +703,21 @@ export function GovernanceModeModal({
                                                 ))}
                                             </select>
                                         </div>
-                                        <input
-                                            placeholder="Observação rápida (opcional)"
-                                            value={item.observation}
-                                            onChange={e => {
-                                                const newReview = [...roadmapReview];
-                                                newReview[idx].observation = e.target.value;
-                                                setRoadmapReview(newReview);
-                                            }}
-                                            className="input-field mt-3 text-sm"
-                                        />
+                                        <div className="mt-3">
+                                            <div className="text-[10px] text-gray-500 group-hover:hidden">
+                                                {item.observation ? `Comentário: ${item.observation}` : 'Sem comentário'}
+                                            </div>
+                                            <input
+                                                placeholder="Comentário (passar o mouse para editar)"
+                                                value={item.observation}
+                                                onChange={e => {
+                                                    const newReview = [...roadmapReview];
+                                                    newReview[idx].observation = e.target.value;
+                                                    setRoadmapReview(newReview);
+                                                }}
+                                                className="input-field text-sm hidden group-hover:block"
+                                            />
+                                        </div>
                                     </div>
                                 ))}
 
