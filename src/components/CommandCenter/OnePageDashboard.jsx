@@ -16,11 +16,15 @@ import {
     Book
 } from 'lucide-react';
 import { DaySummary, formatHumanDate } from './DaySummary';
+import { OnboardingChecklist } from '../ui/OnboardingChecklist';
+import { InsightCards } from '../ui/InsightCards';
+import { EmptyState } from '../ui/EmptyState';
 import { GovernanceHistory } from './GovernanceHistory';
 import { ImportDataModal } from './ImportDataModal';
 import { PlaybookModal } from './PlaybookModal';
 import { CreativeStudioModal } from './CreativeStudioModal';
 import { useToast } from '../../contexts/ToastContext';
+import { getFeatureFlag } from '../../utils/featureFlags';
 import {
     listChannels,
     listSubchannels,
@@ -407,6 +411,10 @@ export function OnePageDashboard({
 }) {
     const { t } = useLanguage();
     const { addToast } = useToast();
+
+    const FLAG_DASH_ONBOARDING = getFeatureFlag('DASH_ONBOARDING', false);
+    const FLAG_DASH_INSIGHTS = getFeatureFlag('DASH_INSIGHTS', false);
+    const FLAG_DASH_EMPTY_STATES = getFeatureFlag('DASH_EMPTY_STATES', false);
 
     // UI State
     const [, setCycleProcessing] = useState(false);
@@ -807,6 +815,31 @@ export function OnePageDashboard({
                     onPriorityClick={(item) => setEditingItem(item)}
                 />
 
+                {/* PHASE 1 (read-only): Onboarding */}
+                {FLAG_DASH_ONBOARDING && (
+                    <div className="mb-6">
+                        <OnboardingChecklist
+                            appData={appData}
+                            onNavigate={setActiveTab}
+                            variant="compact"
+                        />
+                    </div>
+                )}
+
+                {/* PHASE 1 (read-only): Insights */}
+                {FLAG_DASH_INSIGHTS && (
+                    <div className="mb-6">
+                        <InsightCards
+                            items={appData?.dashboard?.D2 || []}
+                            vaults={appData?.vaults}
+                            onInsightAction={() => {
+                                // read-only in Phase 1
+                            }}
+                            maxItems={3}
+                        />
+                    </div>
+                )}
+
                 {/* 1. KPIs - Responsive Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
                     <div className="bento-grid p-4 bento-cell">
@@ -838,7 +871,7 @@ export function OnePageDashboard({
                             prefix="R$ "
                             disabled={!meetingState.active}
                         />
-                        <div className="mt-2 text-[10px] text-gray-500 font-mono">
+                        <div className="mt-2 text-[10px] text-gray-600 font-mono">
                             Goal: R$ {kpis.traffic.goal}
                         </div>
                     </div>
@@ -962,15 +995,23 @@ export function OnePageDashboard({
                                     </div>
                                 ))}
                                 {filteredCalendar.length === 0 && (
-                                    <div className="py-12 flex flex-col items-center justify-center text-gray-600 animate-fadeInUp">
-                                        <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center mb-4">
-                                            <CalendarIcon size={20} opacity={0.5} />
+                                    FLAG_DASH_EMPTY_STATES ? (
+                                        <EmptyState
+                                            type="roadmap"
+                                            onAction={() => setShowQuickAdd(true)}
+                                            size="md"
+                                        />
+                                    ) : (
+                                        <div className="py-12 flex flex-col items-center justify-center text-gray-600 animate-fadeInUp">
+                                            <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center mb-4">
+                                                <CalendarIcon size={20} opacity={0.5} />
+                                            </div>
+                                            <p className="text-xs">{t('os.roadmap.no_items')}</p>
+                                            <button onClick={() => setShowQuickAdd(true)} className="mt-4 text-xs font-bold text-gray-400 hover:text-white transition-colors flex items-center gap-1">
+                                                <Plus size={10} /> {t('os.roadmap.add_item')}
+                                            </button>
                                         </div>
-                                        <p className="text-xs">{t('os.roadmap.no_items')}</p>
-                                        <button onClick={() => setShowQuickAdd(true)} className="mt-4 text-xs font-bold text-gray-400 hover:text-white transition-colors flex items-center gap-1">
-                                            <Plus size={10} /> {t('os.roadmap.add_item')}
-                                        </button>
-                                    </div>
+                                    )
                                 )}
                             </div>
                         </div>
