@@ -11,9 +11,9 @@ export const CREATIVE_PROVIDERS = {
     }
 };
 
-export async function generateCreativeAssets({ providerId, item, vaults, formatId, variants }) {
+export async function generateCreativeAssets({ providerId, item, vaults, formatId, variants, overrides }) {
     if (providerId === 'template') {
-        return generateTemplateVariants({ item, vaults, formatId, variants });
+        return generateTemplateVariants({ item, vaults, formatId, variants, overrides });
     }
 
     if (providerId === 'ai') {

@@ -51,4 +51,20 @@ test('smoke: binder sync and persistence basics', async ({ page }) => {
 
     await page.getByTestId('v5-complete').click();
     await expect(page.getByTestId('os-vault-card-V5')).toContainText(ideaTitle);
+
+    await page.getByTestId('binder-tab-OS').click();
+
+    const generateArtBtn = page.locator('[data-testid^="d2-generate-art-"]').first();
+    await expect(generateArtBtn).toBeVisible();
+    await generateArtBtn.click();
+
+    await page.getByTestId('creative-advanced-toggle').click();
+    await page.getByTestId('creative-override-headline').fill('E2E Override Headline');
+    await page.getByTestId('creative-override-subheadline').fill('E2E Override Subheadline');
+    await page.getByTestId('creative-override-cta').fill('CTA');
+
+    await page.getByTestId('creative-generate').click();
+    await expect(page.locator('img[alt="variant"]').first()).toBeVisible();
+    await page.getByTestId('creative-save').click();
+    await expect(page.getByTestId('creative-save')).toHaveCount(0);
 });

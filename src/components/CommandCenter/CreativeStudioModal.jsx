@@ -42,11 +42,14 @@ async function svgUrlToPngDataUrl(svgUrl, width, height) {
 
 export function CreativeStudioModal({ open, onClose, item, vaults, onSave }) {
     const allFormats = useMemo(() => listCreativeFormats(), []);
+    const brandPromise = vaults?.S1?.fields?.promise || '';
 
     const [providerId, setProviderId] = useState('template');
     const [channelId, setChannelId] = useState('instagram');
     const [subchannelId, setSubchannelId] = useState('feed');
     const [formatId, setFormatId] = useState(allFormats[0]?.id || 'story_9_16');
+    const [showAdvanced, setShowAdvanced] = useState(false);
+    const [overrides, setOverrides] = useState({ headline: '', subheadline: '', cta: '' });
     const [loading, setLoading] = useState(false);
     const [assets, setAssets] = useState([]);
     const [selectedId, setSelectedId] = useState(null);
@@ -55,6 +58,7 @@ export function CreativeStudioModal({ open, onClose, item, vaults, onSave }) {
         if (!open) {
             setAssets([]);
             setSelectedId(null);
+            setShowAdvanced(false);
         }
     }, [open]);
 
@@ -70,7 +74,13 @@ export function CreativeStudioModal({ open, onClose, item, vaults, onSave }) {
             if (allowed.includes(prev)) return prev;
             return getDefaultCreativeFormatId(nextChannelId, nextSubchannelId);
         });
-    }, [open, item]);
+
+        setOverrides({
+            headline: item.initiative || '',
+            subheadline: item.caption || brandPromise,
+            cta: 'Saiba mais'
+        });
+    }, [open, item, brandPromise]);
 
     if (!open || !item) return null;
 
@@ -80,6 +90,16 @@ export function CreativeStudioModal({ open, onClose, item, vaults, onSave }) {
         : allFormats;
 
     const safeFormatId = formats.some(f => f.id === formatId) ? formatId : (formats[0]?.id || 'story_9_16');
+
+    const cleanOverrides = {
+        headline: (overrides.headline || '').trim(),
+        subheadline: (overrides.subheadline || '').trim(),
+        cta: (overrides.cta || '').trim()
+    };
+
+    const overridesToSend = Object.values(cleanOverrides).some(v => Boolean(v))
+        ? cleanOverrides
+        : null;
 
     const selected = assets.find(a => a.id === selectedId) || assets[0] || null;
 
@@ -97,7 +117,8 @@ export function CreativeStudioModal({ open, onClose, item, vaults, onSave }) {
                 item: itemWithTaxonomy,
                 vaults,
                 formatId: safeFormatId,
-                variants: 3
+                variants: 3,
+                overrides: overridesToSend
             });
             setAssets(generated);
             setSelectedId(generated[0]?.id || null);
@@ -128,7 +149,8 @@ export function CreativeStudioModal({ open, onClose, item, vaults, onSave }) {
             height: selected.height,
             createdAt: new Date().toISOString(),
             previewUrl: selected.previewUrl,
-            svg: selected.svg
+            svg: selected.svg,
+            overrides: overridesToSend
         });
         onClose();
     };
@@ -210,6 +232,49 @@ export function CreativeStudioModal({ open, onClose, item, vaults, onSave }) {
                                         ))}
                                     </select>
                                 </div>
+                            </div>
+
+                            <div className="bento-grid p-3">
+                                <button
+                                    type="button"
+                                    onClick={() => setShowAdvanced(v => !v)}
+                                    className="w-full text-left text-[10px] font-bold uppercase tracking-wider text-gray-400 hover:text-white transition-colors"
+                                    data-testid="creative-advanced-toggle"
+                                >
+                                    {showAdvanced ? 'Editor Avançado: ON' : 'Editor Avançado: OFF'}
+                                </button>
+
+                                {showAdvanced && (
+                                    <div className="mt-3 space-y-3">
+                                        <div>
+                                            <label className="text-label">Headline</label>
+                                            <input
+                                                className="premium-input bg-[#111]"
+                                                value={overrides.headline}
+                                                onChange={e => setOverrides(prev => ({ ...prev, headline: e.target.value }))}
+                                                data-testid="creative-override-headline"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="text-label">Subheadline</label>
+                                            <textarea
+                                                className="premium-input bg-[#111] min-h-[90px]"
+                                                value={overrides.subheadline}
+                                                onChange={e => setOverrides(prev => ({ ...prev, subheadline: e.target.value }))}
+                                                data-testid="creative-override-subheadline"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="text-label">CTA</label>
+                                            <input
+                                                className="premium-input bg-[#111]"
+                                                value={overrides.cta}
+                                                onChange={e => setOverrides(prev => ({ ...prev, cta: e.target.value }))}
+                                                data-testid="creative-override-cta"
+                                            />
+                                        </div>
+                                    </div>
+                                )}
                             </div>
 
                             <button

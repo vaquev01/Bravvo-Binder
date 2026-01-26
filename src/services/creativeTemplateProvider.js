@@ -99,14 +99,15 @@ export async function generateTemplateVariants({
     item,
     vaults,
     formatId,
-    variants = 3
+    variants = 3,
+    overrides = null
 }) {
     const format = getCreativeFormat(formatId);
     const palette = vaults?.S5?.palette || {};
 
-    const baseHeadline = item?.initiative || 'Nova Iniciativa';
-    const subheadline = item?.caption || vaults?.S1?.fields?.promise || 'Plano tático do Bravvo OS';
-    const cta = 'Saiba mais';
+    const baseHeadline = overrides?.headline || item?.initiative || 'Nova Iniciativa';
+    const subheadline = overrides?.subheadline || item?.caption || vaults?.S1?.fields?.promise || 'Plano tático do Bravvo OS';
+    const cta = overrides?.cta || 'Saiba mais';
 
     const out = [];
     for (let i = 0; i < Math.max(1, variants); i += 1) {
