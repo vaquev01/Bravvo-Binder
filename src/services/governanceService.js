@@ -28,6 +28,8 @@ export const ROADMAP_STATUS = {
 export function generateATA(governanceData) {
     const {
         period,
+        periodStartDate,
+        periodEndDate,
         closedAt,
         timezone,
         responsible,
@@ -36,6 +38,7 @@ export function generateATA(governanceData) {
         roadmapReview,
         productionAnalysis,
         executionAnalysis,
+        blockNotes,
         observations,
         decisions,
         learnings,
@@ -50,6 +53,8 @@ export function generateATA(governanceData) {
         // Assinatura Temporal
         signature: {
             period: period || `${new Date().toLocaleDateString('pt-BR')}`,
+            periodStartDate: periodStartDate || '',
+            periodEndDate: periodEndDate || '',
             closedAt: closedAt || new Date().toISOString(),
             timezone: timezone || Intl.DateTimeFormat().resolvedOptions().timeZone,
             responsible: responsible || 'Sistema',
@@ -122,6 +127,9 @@ export function generateATA(governanceData) {
         // Observações categorizadas
         observations: observations || [],
 
+        // Notas por bloco (contexto / comentários)
+        blockNotes: blockNotes || {},
+
         // Prioridades do próximo ciclo
         nextPriorities: priorities || [],
 
@@ -181,35 +189,55 @@ export function recalibrateSystem(ata, vaults, currentRoadmap) {
  * Gera nova janela de governança
  */
 export function generateNextGovernanceWindow(ata, frequency = 'weekly') {
+    const toDateStr = (d) => d.toISOString().split('T')[0];
+    const baseEndRaw = ata?.signature?.periodEndDate;
     const now = new Date();
-    let nextDate = new Date(now);
-    let windowEnd = new Date(now);
+
+    const baseEnd = (() => {
+        if (baseEndRaw) {
+            const d = new Date(baseEndRaw);
+            if (!Number.isNaN(d.getTime())) {
+                d.setHours(0, 0, 0, 0);
+                return d;
+            }
+        }
+        const d = new Date(now);
+        d.setHours(0, 0, 0, 0);
+        return d;
+    })();
+
+    let nextDate = new Date(baseEnd);
+    nextDate.setDate(nextDate.getDate() + 1);
+    let windowEnd = new Date(nextDate);
 
     if (frequency === 'daily') {
-        nextDate.setDate(nextDate.getDate() + 1);
         windowEnd = new Date(nextDate);
         windowEnd.setHours(23, 59, 59);
     } else if (frequency === 'weekly') {
-        const daysUntilFriday = (5 - now.getDay() + 7) % 7 || 7;
-        nextDate.setDate(nextDate.getDate() + daysUntilFriday);
+        // Align to calendar week: Monday -> Sunday
+        const dow = nextDate.getDay();
+        const daysToMonday = (1 - dow + 7) % 7;
+        nextDate.setDate(nextDate.getDate() + daysToMonday);
         windowEnd = new Date(nextDate);
         windowEnd.setDate(windowEnd.getDate() + 6);
+        windowEnd.setHours(23, 59, 59);
     } else if (frequency === 'monthly') {
-        nextDate.setMonth(nextDate.getMonth() + 1);
-        nextDate.setDate(1);
-        windowEnd = new Date(nextDate);
-        windowEnd.setMonth(windowEnd.getMonth() + 1);
-        windowEnd.setDate(0);
+        const start = new Date(nextDate.getFullYear(), nextDate.getMonth() + 1, 1);
+        const end = new Date(nextDate.getFullYear(), nextDate.getMonth() + 2, 0);
+        nextDate = start;
+        windowEnd = end;
+        windowEnd.setHours(23, 59, 59);
     } else {
-        nextDate.setDate(nextDate.getDate() + 7);
-        windowEnd.setDate(windowEnd.getDate() + 13);
+        windowEnd = new Date(nextDate);
+        windowEnd.setDate(windowEnd.getDate() + 6);
+        windowEnd.setHours(23, 59, 59);
     }
 
     return {
         id: `GOV-WINDOW-${Date.now()}`,
         frequency,
-        startDate: nextDate.toISOString().split('T')[0],
-        endDate: windowEnd.toISOString().split('T')[0],
+        startDate: toDateStr(nextDate),
+        endDate: toDateStr(windowEnd),
         scheduledGovernance: nextDate.toISOString(),
         
         // Metas do período (baseadas na recalibração)

@@ -58,9 +58,9 @@ export function GovernanceHeader({
     frequency = 'weekly', 
     lastGovernance,
     isGovernanceActive,
-    onOpenGovernance,
     onToggleGovernance,
-    onChangeFrequency
+    onChangeFrequency,
+    nextWindow
 }) {
     const nextMeeting = getNextMeetingDate(frequency);
     const status = getGovernanceStatus(lastGovernance, frequency);
@@ -116,31 +116,16 @@ export function GovernanceHeader({
 
                 {/* Right: Actions */}
                 <div className="flex items-center gap-2">
-                    {isGovernanceActive ? (
-                        <>
-                            <button
-                                onClick={onOpenGovernance}
-                                className="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold rounded-lg transition-colors flex items-center gap-2"
-                            >
-                                <CheckCircle2 size={14} />
-                                Abrir Governança
-                            </button>
-                            <button
-                                onClick={onToggleGovernance}
-                                className="px-3 py-2 bg-white/5 hover:bg-white/10 text-gray-400 text-xs font-medium rounded-lg transition-colors"
-                            >
-                                Sair do Modo
-                            </button>
-                        </>
-                    ) : (
-                        <button
-                            onClick={onToggleGovernance}
-                            className="px-4 py-2 bg-purple-500/20 hover:bg-purple-500/30 text-purple-400 text-xs font-bold rounded-lg transition-colors border border-purple-500/30 flex items-center gap-2"
-                        >
-                            <Shield size={14} />
-                            Iniciar Governança
-                        </button>
-                    )}
+                    <button
+                        onClick={onToggleGovernance}
+                        className={isGovernanceActive
+                            ? "px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold rounded-lg transition-colors flex items-center gap-2"
+                            : "px-4 py-2 bg-purple-500/20 hover:bg-purple-500/30 text-purple-400 text-xs font-bold rounded-lg transition-colors border border-purple-500/30 flex items-center gap-2"
+                        }
+                    >
+                        <Shield size={14} />
+                        {isGovernanceActive ? 'Encerrar Reunião' : 'Iniciar Reunião'}
+                    </button>
                 </div>
             </div>
 
@@ -151,6 +136,12 @@ export function GovernanceHeader({
                         <div className="w-2 h-2 rounded-full bg-purple-500 animate-pulse" />
                         <span>Modo Governança ativo — edições de KPIs habilitadas</span>
                     </div>
+                </div>
+            )}
+
+            {nextWindow?.startDate && nextWindow?.endDate && (
+                <div className="mt-3 text-[11px] text-gray-500">
+                    Período do ciclo: <span className="text-gray-300 font-medium">{nextWindow.startDate} → {nextWindow.endDate}</span>
                 </div>
             )}
         </div>

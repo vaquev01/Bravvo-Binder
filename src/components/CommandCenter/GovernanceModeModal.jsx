@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { 
     X, CheckCircle2, AlertTriangle, Target,
     ArrowUpRight, BarChart3, Calendar, FileText, Zap,
@@ -30,6 +30,7 @@ export function GovernanceModeModal({
     roadmapItems = [],
     vaults,
     governanceFrequency = 'weekly',
+    currentWindow,
     currentUser,
     variant = 'modal',
 }) {
@@ -43,6 +44,62 @@ export function GovernanceModeModal({
         endDate: '',
         notes: '',
     });
+
+    const [blockNotes, setBlockNotes] = useState({
+        roadmap: '',
+        production: '',
+        execution: '',
+    });
+
+    useEffect(() => {
+        if (!open) return;
+        if (periodData.startDate && periodData.endDate) return;
+
+        const toDateStr = (d) => d.toISOString().split('T')[0];
+        const now = new Date();
+        const today = new Date(now);
+        today.setHours(0, 0, 0, 0);
+
+        if (currentWindow?.startDate && currentWindow?.endDate) {
+            setPeriodData(p => ({
+                ...p,
+                startDate: p.startDate || currentWindow.startDate,
+                endDate: p.endDate || currentWindow.endDate,
+            }));
+            return;
+        }
+
+        if (governanceFrequency === 'daily') {
+            const s = toDateStr(today);
+            setPeriodData(p => ({ ...p, startDate: p.startDate || s, endDate: p.endDate || s }));
+            return;
+        }
+
+        if (governanceFrequency === 'weekly') {
+            const day = today.getDay();
+            const daysSinceMonday = (day + 6) % 7;
+            const start = new Date(today);
+            start.setDate(start.getDate() - daysSinceMonday);
+            const end = new Date(start);
+            end.setDate(end.getDate() + 6);
+            setPeriodData(p => ({
+                ...p,
+                startDate: p.startDate || toDateStr(start),
+                endDate: p.endDate || toDateStr(end)
+            }));
+            return;
+        }
+
+        if (governanceFrequency === 'monthly') {
+            const start = new Date(today.getFullYear(), today.getMonth(), 1);
+            const end = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+            setPeriodData(p => ({
+                ...p,
+                startDate: p.startDate || toDateStr(start),
+                endDate: p.endDate || toDateStr(end)
+            }));
+        }
+    }, [open, currentWindow, governanceFrequency, periodData.startDate, periodData.endDate]);
 
     const [roadmapReview, setRoadmapReview] = useState(
         roadmapItems.map(item => ({
@@ -177,6 +234,8 @@ export function GovernanceModeModal({
         // Build governance data
         const governanceData = {
             period: `${periodData.startDate} - ${periodData.endDate}`,
+            periodStartDate: periodData.startDate,
+            periodEndDate: periodData.endDate,
             closedAt: new Date().toISOString(),
             timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
             responsible: currentUser?.name || currentUser?.role || 'Operador',
@@ -188,6 +247,12 @@ export function GovernanceModeModal({
                 ...executionData,
                 topPerformers: executionData.topPerformers.filter(p => p.trim()),
                 lowPerformers: executionData.lowPerformers.filter(p => p.trim()),
+            },
+            blockNotes: {
+                period: periodData.notes,
+                roadmap: blockNotes.roadmap,
+                production: blockNotes.production,
+                execution: blockNotes.execution,
             },
             observations: allObservations,
             decisions: decisions.filter(d => d.trim()),
@@ -368,6 +433,16 @@ export function GovernanceModeModal({
                                 </div>
                             </div>
 
+                            <div>
+                                <label className="text-label">Comentários do bloco</label>
+                                <textarea
+                                    className="input-field min-h-[90px]"
+                                    placeholder="Resumo do período: contexto, leitura rápida, anomalias..."
+                                    value={periodData.notes}
+                                    onChange={e => setPeriodData(p => ({ ...p, notes: e.target.value }))}
+                                />
+                            </div>
+
                             {/* KPIs vs Metas */}
                             <div>
                                 <h4 className="text-sm font-bold text-white mb-3 flex items-center gap-2">
@@ -436,6 +511,16 @@ export function GovernanceModeModal({
                             </div>
 
                             <p className="text-body mb-4">Revise cada atividade e atualize o status final.</p>
+
+                            <div>
+                                <label className="text-label">Comentários do bloco</label>
+                                <textarea
+                                    className="input-field min-h-[80px]"
+                                    placeholder="Observações gerais do roadmap (bloqueios, decisões de execução, replanejamento)..."
+                                    value={blockNotes.roadmap}
+                                    onChange={e => setBlockNotes(p => ({ ...p, roadmap: e.target.value }))}
+                                />
+                            </div>
 
                             <div className="space-y-3">
                                 {roadmapReview.map((item, idx) => (
@@ -529,6 +614,16 @@ export function GovernanceModeModal({
                                 </div>
                             </div>
 
+                            <div>
+                                <label className="text-label">Comentários do bloco</label>
+                                <textarea
+                                    className="input-field min-h-[80px]"
+                                    placeholder="Observações gerais da produção (onde travou, qualidade, dependências)..."
+                                    value={blockNotes.production}
+                                    onChange={e => setBlockNotes(p => ({ ...p, production: e.target.value }))}
+                                />
+                            </div>
+
                             {/* Production Funnel Visualization */}
                             <div className="card-elevated p-6">
                                 <h4 className="text-sm font-bold text-white mb-4">Funil de Produção</h4>
@@ -587,6 +682,16 @@ export function GovernanceModeModal({
                                         <option value="negative">↓ Negativo</option>
                                     </select>
                                 </div>
+                            </div>
+
+                            <div>
+                                <label className="text-label">Comentários do bloco</label>
+                                <textarea
+                                    className="input-field min-h-[80px]"
+                                    placeholder="Observações gerais da execução (o que funcionou, por quê, próximos testes)..."
+                                    value={blockNotes.execution}
+                                    onChange={e => setBlockNotes(p => ({ ...p, execution: e.target.value }))}
+                                />
                             </div>
 
                             {/* Top Performers */}

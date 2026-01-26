@@ -9,8 +9,7 @@ import {
     History,
     MessageCircle,
     Upload,
-    Book,
-    Terminal
+    Book
 } from 'lucide-react';
 import { formatHumanDate } from './DaySummary';
 import { OnboardingChecklist } from '../ui/OnboardingChecklist';
@@ -206,6 +205,15 @@ function QuickAddForm({ onAdd, onClose }) {
                     </div>
                 </div>
             </div>
+            <div>
+                <label className="text-label">Responsável</label>
+                <input
+                    className="premium-input"
+                    value={form.responsible}
+                    onChange={e => setForm({ ...form, responsible: e.target.value })}
+                    placeholder="Quem executa?"
+                />
+            </div>
             <div className="pt-4 flex justify-end gap-2">
                 <button type="button" onClick={onClose} className="btn-ghost">{t('common.cancel')}</button>
                 <button type="submit" className="btn-primary" data-testid="quickadd-submit">{t('os.quick_add.create_button')}</button>
@@ -370,6 +378,17 @@ function DetailEditForm({ item, onSave, onClose }) {
                             onChange={e => setForm({ ...form, date: e.target.value })}
                         />
                     </div>
+                    <div>
+                        <label className="text-label">Responsável</label>
+                        <input
+                            className="premium-input bg-[#111]"
+                            value={form.responsible || ''}
+                            onChange={e => setForm({ ...form, responsible: e.target.value })}
+                            placeholder="Quem executa?"
+                        />
+                    </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
                     <div>
                         <label className="text-label">{t('os.detail_edit.channel_label')}</label>
                         <div className="grid grid-cols-2 gap-2">
@@ -662,10 +681,13 @@ export function OnePageDashboard({
         const newActive = !meetingState.active;
         setMeetingState(prev => ({ ...prev, active: newActive }));
         if (newActive) {
-            addToast({ title: 'Governance Mode Active', type: 'info' });
+            addToast({ title: 'Modo Governança', description: 'Reunião iniciada. Edite KPIs e registre decisões.', type: 'info' });
+            setShowGovernanceModal(false);
             setShowGovernanceModeModal(true);
         } else {
+            setShowGovernanceModal(false);
             setShowGovernanceModeModal(false);
+            addToast({ title: 'Modo Governança', description: 'Reunião encerrada.', type: 'success' });
         }
     };
 
@@ -1214,13 +1236,6 @@ export function OnePageDashboard({
                     <button onClick={() => setShowQuickAdd(true)} className="btn-primary !h-7 !px-3" data-testid="os-quick-add">
                         <Plus size={14} /> <span className="hidden md:inline ml-1">{t('os.actions.new')}</span>
                     </button>
-                    <button
-                        onClick={meetingState.active ? () => setShowGovernanceModeModal(true) : toggleGovernanceMode}
-                        className="ml-2 btn-ghost !h-7 !px-3 !border-purple-500/30 text-purple-400 hover:text-purple-300"
-                    >
-                        <Terminal size={12} className="md:mr-1" />
-                        <span className="hidden md:inline">{meetingState.active ? 'Reunião' : t('os.actions.run_gov')}</span>
-                    </button>
                 </div>
             </div>
 
@@ -1232,9 +1247,9 @@ export function OnePageDashboard({
                     frequency={governanceFrequency}
                     lastGovernance={appData.lastGovernance}
                     isGovernanceActive={meetingState.active}
-                    onOpenGovernance={() => setShowGovernanceModeModal(true)}
                     onToggleGovernance={toggleGovernanceMode}
                     onChangeFrequency={handleFrequencyChange}
+                    nextWindow={appData?.nextGovernanceWindow}
                 />
 
                 {/* MEETING MODE (embedded) */}
@@ -1253,6 +1268,7 @@ export function OnePageDashboard({
                             vaults={appData?.vaults}
                             governanceFrequency={governanceFrequency}
                             currentUser={currentUser}
+                            currentWindow={appData?.nextGovernanceWindow}
                         />
                     </div>
                 ) : (
