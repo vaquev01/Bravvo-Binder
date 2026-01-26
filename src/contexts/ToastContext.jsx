@@ -25,11 +25,13 @@ export function ToastProvider({ children }) {
         <ToastContext.Provider value={{ addToast }}>
             {children}
             {/* Toast Container */}
-            <div className="fixed bottom-4 right-4 z-[200] flex flex-col gap-2 pointer-events-none">
-                {toasts.map(toast => (
+            <div className="fixed bottom-4 right-4 z-[200] flex flex-col gap-2 pointer-events-none" data-testid="toast-container">
+                {toasts.map((toast, index) => (
                     <div
                         key={toast.id}
-                        data-testid={`toast-${toast.type}`}
+                        data-testid={`toast-${toast.type}-${toast.id}`}
+                        data-toast-type={toast.type}
+                        data-toast-index={index}
                         className={`
                             pointer-events-auto min-w-[300px] max-w-sm rounded-xl p-4 shadow-2xl border flex items-start gap-3 animate-slideUp
                             ${toast.type === 'success' ? 'bg-[#111] border-green-500/30 text-green-400' :
