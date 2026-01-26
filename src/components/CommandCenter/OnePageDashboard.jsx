@@ -26,6 +26,7 @@ import { PlaybookModal } from './PlaybookModal';
 import { CreativeStudioModal } from './CreativeStudioModal';
 import { useToast } from '../../contexts/ToastContext';
 import { getFeatureFlag } from '../../utils/featureFlags';
+import { useUndo } from '../../hooks/useUndo';
 import {
     listChannels,
     listSubchannels,
@@ -426,6 +427,7 @@ export function OnePageDashboard({
     const FLAG_DASH_INSIGHTS_ACTIONS = getFeatureFlag('DASH_INSIGHTS_ACTIONS', false);
     const FLAG_DASH_EDIT_DRAWER = getFeatureFlag('DASH_EDIT_DRAWER', false);
     const FLAG_DASH_QUICKADD_DRAWER = getFeatureFlag('DASH_QUICKADD_DRAWER', false);
+    const FLAG_DASH_UNDO = getFeatureFlag('DASH_UNDO', false);
     const FLAG_DASH_EMPTY_STATES = getFeatureFlag('DASH_EMPTY_STATES', false);
 
     // UI State
@@ -440,6 +442,8 @@ export function OnePageDashboard({
     const [creativeItem, setCreativeItem] = useState(null);
     const [highlightedRowId, setHighlightedRowId] = useState(null);
     const highlightTimeoutRef = useRef(null);
+
+    const { executeWithUndo } = useUndo();
 
     // Editable KPI State - Linked to Global Data
     const [kpis, setKpis] = useState(appData.kpis || {
@@ -579,18 +583,76 @@ export function OnePageDashboard({
     const filteredCalendar = getFilteredData();
 
     const handleStatusChange = (itemId, newStatus) => {
-        const updatedD2 = appData.dashboard.D2.map(item =>
-            item.id === itemId ? { ...item, status: newStatus } : item
-        );
-        setAppData({ ...appData, dashboard: { ...appData.dashboard, D2: updatedD2 } });
+        if (!FLAG_DASH_UNDO) {
+            const updatedD2 = appData.dashboard.D2.map(item =>
+                item.id === itemId ? { ...item, status: newStatus } : item
+            );
+            setAppData({ ...appData, dashboard: { ...appData.dashboard, D2: updatedD2 } });
+            return;
+        }
+
+        const prevItem = appData.dashboard?.D2?.find(it => it.id === itemId);
+        if (!prevItem) return;
+
+        executeWithUndo({
+            description: 'Status atualizado',
+            type: 'info',
+            action: () => {
+                setAppData(prev => {
+                    const prevD2 = Array.isArray(prev?.dashboard?.D2) ? prev.dashboard.D2 : [];
+                    const nextD2 = prevD2.map(item =>
+                        item.id === itemId ? { ...item, status: newStatus } : item
+                    );
+                    return { ...prev, dashboard: { ...(prev?.dashboard || {}), D2: nextD2 } };
+                });
+            },
+            undoAction: () => {
+                setAppData(prev => {
+                    const prevD2 = Array.isArray(prev?.dashboard?.D2) ? prev.dashboard.D2 : [];
+                    const nextD2 = prevD2.map(item =>
+                        item.id === itemId ? { ...item, status: prevItem.status } : item
+                    );
+                    return { ...prev, dashboard: { ...(prev?.dashboard || {}), D2: nextD2 } };
+                });
+            }
+        });
     };
 
     const handleSaveItem = (updatedItem) => {
-        const updatedD2 = appData.dashboard.D2.map(item =>
-            item.id === updatedItem.id ? updatedItem : item
-        );
-        setAppData({ ...appData, dashboard: { ...appData.dashboard, D2: updatedD2 } });
-        addToast({ title: 'Item Saved', type: 'success' });
+        if (!FLAG_DASH_UNDO) {
+            const updatedD2 = appData.dashboard.D2.map(item =>
+                item.id === updatedItem.id ? updatedItem : item
+            );
+            setAppData({ ...appData, dashboard: { ...appData.dashboard, D2: updatedD2 } });
+            addToast({ title: 'Item Saved', type: 'success' });
+            return;
+        }
+
+        const prevItem = appData.dashboard?.D2?.find(it => it.id === updatedItem?.id);
+        if (!prevItem) return;
+
+        executeWithUndo({
+            description: 'Item atualizado',
+            type: 'info',
+            action: () => {
+                setAppData(prev => {
+                    const prevD2 = Array.isArray(prev?.dashboard?.D2) ? prev.dashboard.D2 : [];
+                    const nextD2 = prevD2.map(item =>
+                        item.id === updatedItem.id ? updatedItem : item
+                    );
+                    return { ...prev, dashboard: { ...(prev?.dashboard || {}), D2: nextD2 } };
+                });
+            },
+            undoAction: () => {
+                setAppData(prev => {
+                    const prevD2 = Array.isArray(prev?.dashboard?.D2) ? prev.dashboard.D2 : [];
+                    const nextD2 = prevD2.map(item =>
+                        item.id === prevItem.id ? prevItem : item
+                    );
+                    return { ...prev, dashboard: { ...(prev?.dashboard || {}), D2: nextD2 } };
+                });
+            }
+        });
     };
 
     const handleOpenCreativeStudio = (item) => {
@@ -623,11 +685,36 @@ export function OnePageDashboard({
             ...newItem,
             id: newItem.id || `NEW-${Date.now()}`
         };
-        setAppData({
-            ...appData,
-            dashboard: { ...appData.dashboard, D2: [...(appData.dashboard.D2 || []), safeItem] }
+
+        if (!FLAG_DASH_UNDO) {
+            setAppData({
+                ...appData,
+                dashboard: { ...appData.dashboard, D2: [...(appData.dashboard.D2 || []), safeItem] }
+            });
+            addToast({ title: 'Item Created', type: 'success' });
+            return;
+        }
+
+        executeWithUndo({
+            description: 'Item criado',
+            type: 'success',
+            action: () => {
+                setAppData(prev => {
+                    const prevD2 = Array.isArray(prev?.dashboard?.D2) ? prev.dashboard.D2 : [];
+                    return {
+                        ...prev,
+                        dashboard: { ...(prev?.dashboard || {}), D2: [...prevD2, safeItem] }
+                    };
+                });
+            },
+            undoAction: () => {
+                setAppData(prev => {
+                    const prevD2 = Array.isArray(prev?.dashboard?.D2) ? prev.dashboard.D2 : [];
+                    const nextD2 = prevD2.filter(it => it.id !== safeItem.id);
+                    return { ...prev, dashboard: { ...(prev?.dashboard || {}), D2: nextD2 } };
+                });
+            }
         });
-        addToast({ title: 'Item Created', type: 'success' });
     };
 
     const handleSaveMeeting = () => {
