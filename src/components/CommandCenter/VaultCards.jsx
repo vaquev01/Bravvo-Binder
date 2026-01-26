@@ -166,12 +166,12 @@ function VaultCard({ config, vault, label, onClick }) {
             </div>
 
             {/* Label */}
-            <div className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1">
+            <div className="text-label mb-1">
                 {label}
             </div>
 
             {/* Preview */}
-            <div className="text-sm font-medium text-white truncate mb-2 pr-4">
+            <div className="text-small text-[var(--text-primary)] truncate mb-2 pr-4">
                 {preview}
             </div>
 
@@ -203,10 +203,10 @@ export function VaultCards({ vaults, labels, onVaultClick }) {
     return (
         <div className="mb-6">
             <div className="flex items-center justify-between mb-4">
-                <h3 className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">
+                <h3 className="text-label">
                     Vaults Estratégicos
                 </h3>
-                <span className="text-[10px] text-gray-600">
+                <span className="text-caption">
                     Fonte de dados para IA
                 </span>
             </div>

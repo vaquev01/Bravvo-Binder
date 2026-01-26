@@ -112,17 +112,17 @@ export function EmptyState({
     return (
         <div className={`flex flex-col items-center justify-center text-center ${sizeClasses[size]} animate-fadeIn`}>
             {/* Icon */}
-            <div className="w-16 h-16 rounded-2xl bg-[var(--bg-panel)] border border-[var(--border-subtle)] flex items-center justify-center mb-4">
-                <Icon size={iconSizes[size]} className="text-gray-500" />
+            <div className="w-16 h-16 rounded-2xl card-elevated flex items-center justify-center mb-4">
+                <Icon size={iconSizes[size]} className="text-[var(--text-tertiary)]" />
             </div>
             
             {/* Title */}
-            <h3 className="text-lg font-semibold text-white mb-2">
+            <h3 className="text-section mb-2">
                 {customTitle || config.title}
             </h3>
             
             {/* Description */}
-            <p className="text-sm text-gray-500 max-w-xs mb-6">
+            <p className="text-body max-w-xs mb-6">
                 {customDescription || config.description}
             </p>
             
@@ -130,7 +130,7 @@ export function EmptyState({
             {onAction && (
                 <button
                     onClick={onAction}
-                    className="inline-flex items-center gap-2 px-5 py-2.5 bg-[var(--brand-accent)] text-white text-sm font-bold rounded-lg hover:brightness-110 transition-colors"
+                    className="btn-primary"
                 >
                     <ActionIcon size={16} />
                     {customAction?.label || config.action.label}
@@ -139,7 +139,7 @@ export function EmptyState({
             
             {/* Tip */}
             {showTip && config.tip && (
-                <p className="mt-6 text-xs text-gray-600 flex items-center gap-1.5">
+                <p className="mt-6 text-caption flex items-center gap-1.5">
                     <Sparkles size={12} className="text-purple-500" />
                     {config.tip}
                 </p>
@@ -160,17 +160,17 @@ export function EmptyStateInline({
     const Icon = config.icon;
 
     return (
-        <div className="flex items-center justify-between p-4 bg-[var(--bg-panel)] border border-dashed border-[var(--border-subtle)] rounded-lg">
+        <div className="flex items-center justify-between p-4 card-elevated border-dashed">
             <div className="flex items-center gap-3">
-                <Icon size={18} className="text-gray-600" />
-                <span className="text-sm text-gray-500">
+                <Icon size={18} className="text-[var(--text-tertiary)]" />
+                <span className="text-body">
                     {customMessage || config.description}
                 </span>
             </div>
             {onAction && (
                 <button
                     onClick={onAction}
-                    className="text-xs font-bold text-gray-400 hover:text-white transition-colors flex items-center gap-1"
+                    className="btn-ghost btn-sm"
                 >
                     <Plus size={12} />
                     Adicionar

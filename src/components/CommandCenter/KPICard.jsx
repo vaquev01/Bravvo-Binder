@@ -63,7 +63,7 @@ function InlineKPIEdit({ value, onSave, prefix = '', suffix = '', disabled = fal
     return (
         <span
             onClick={() => !disabled && setEditing(true)}
-            className={`${disabled ? 'cursor-default' : 'cursor-pointer hover:bg-white/10'} px-1 py-0.5 rounded transition-colors text-2xl font-mono font-bold text-white`}
+            className={`${disabled ? 'cursor-default' : 'cursor-pointer hover:bg-white/10'} px-1 py-0.5 rounded transition-colors text-metric font-mono`}
             title={disabled ? "Ative Governança para editar" : "Clique para editar"}
         >
             {prefix}{typeof value === 'number' ? value.toLocaleString('pt-BR') : value}{suffix}
@@ -111,7 +111,7 @@ export function KPICard({
             {/* Header */}
             <div className="flex items-center gap-2 mb-3">
                 {Icon && <Icon size={14} className={iconColor} />}
-                <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">{label}</span>
+                <span className="text-label">{label}</span>
             </div>
 
             {/* Value (Realizado) */}

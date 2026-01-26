@@ -62,8 +62,8 @@ export function PageOps({ formData: externalFormData, setFormData: externalSetFo
                     <div className="absolute inset-0 bg-purple-500 blur-3xl opacity-20 animate-pulse"></div>
                     <Sparkles size={80} className="text-purple-400 animate-pulse relative z-10" />
                 </div>
-                <h2 className="text-3xl font-bold text-white">Processando Estratégia...</h2>
-                <div className="space-y-2 text-center text-gray-400 font-mono text-sm">
+                <h2 className="text-title text-2xl">Processando Estratégia...</h2>
+                <div className="space-y-2 text-center text-mono-data">
                     <p>Compilando Vaults S1, S2, S3, S4...</p>
                     <p>Gerando Dashboards D1, D2, D3...</p>
                     <p>Aplicando Identidade Visual...</p>
@@ -76,12 +76,12 @@ export function PageOps({ formData: externalFormData, setFormData: externalSetFo
         <form onSubmit={handleSubmit} className="space-y-10">
             {/* Header */}
             <div className="space-y-2">
-                <div className="flex items-center gap-2 text-green-500 mb-2">
+                <div className="flex items-center gap-2 text-success mb-2">
                     <Users size={24} />
-                    <span className="font-mono text-sm tracking-widest uppercase">VAULT 4 • OPS</span>
+                    <span className="text-mono-data uppercase">VAULT 4 • OPS</span>
                 </div>
-                <h2 className="text-3xl font-display font-black text-white">Operação & Governança</h2>
-                <p className="text-gray-400 max-w-xl">
+                <h2 className="text-title text-2xl">Operação & Governança</h2>
+                <p className="text-body max-w-xl">
                     Quem faz o quê e quando. Configure o <strong>S4 (Ops Vault)</strong> para organizar a execução.
                 </p>
             </div>

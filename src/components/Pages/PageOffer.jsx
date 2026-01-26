@@ -31,21 +31,21 @@ export function PageOffer({ formData: externalFormData, setFormData: externalSet
         <form onSubmit={handleSubmit} className="space-y-10">
             {/* Header */}
             <div className="space-y-2">
-                <div className="flex items-center gap-2 text-orange-500 mb-2">
+                <div className="flex items-center gap-2 text-warning mb-2">
                     <ShoppingBag size={24} />
-                    <span className="font-mono text-sm tracking-widest uppercase">VAULT 2 • COMMERCE</span>
+                    <span className="text-mono-data uppercase">VAULT 2 • COMMERCE</span>
                 </div>
-                <h2 className="text-3xl font-display font-black text-white">Economia & Oferta</h2>
-                <p className="text-gray-400 max-w-xl">
+                <h2 className="text-title text-2xl">Economia & Oferta</h2>
+                <p className="text-body max-w-xl">
                     O que vamos vender e como? Estruture seu catálogo para o <strong>S2 (Commerce Vault)</strong>.
                 </p>
             </div>
 
             {/* Section 1: Catálogo de Produtos */}
             <section className="space-y-6">
-                <h3 className="text-sm font-bold text-gray-300 uppercase tracking-wider flex items-center gap-2">
-                    <span className="w-6 h-6 bg-orange-500/20 text-orange-400 rounded flex items-center justify-center text-xs">1</span>
-                    <ShoppingBag size={16} className="text-orange-400" />
+                <h3 className="text-subtitle flex items-center gap-2">
+                    <span className="w-6 h-6 bg-warning/20 text-warning rounded flex items-center justify-center text-xs">1</span>
+                    <ShoppingBag size={16} className="text-warning" />
                     Catálogo de Produtos
                     <button
                         type="button"
@@ -86,12 +86,12 @@ export function PageOffer({ formData: externalFormData, setFormData: externalSet
                                 updateField('products', suggestedProducts);
                             }
                         }}
-                        className="ml-auto text-xs bg-[var(--bg-panel)] border border-[var(--border-subtle)] hover:border-[var(--border-active)] hover:bg-white/5 px-3 py-1 rounded flex items-center gap-1 transition-colors"
+                        className="btn-ghost btn-sm ml-auto"
                     >
                         🎲 Inspirar-me
                     </button>
                 </h3>
-                <p className="text-xs text-gray-500">
+                <p className="text-caption">
                     Adicione seus principais produtos. O primeiro é automaticamente marcado como "Carro-Chefe" (usado em campanhas).
                 </p>
 

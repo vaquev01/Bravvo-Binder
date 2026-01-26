@@ -79,12 +79,12 @@ export function PageIdeas({ formData: externalFormData, setFormData: externalSet
             {/* Header */}
             <div className="space-y-2">
                 <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-yellow-500/20 rounded-xl flex items-center justify-center">
-                        <Lightbulb size={20} className="text-yellow-400" />
+                    <div className="w-10 h-10 bg-warning/20 rounded-xl flex items-center justify-center">
+                        <Lightbulb size={20} className="text-warning" />
                     </div>
                     <div>
-                        <h2 className="text-2xl font-bold text-white">V5 • Ideas Vault</h2>
-                        <p className="text-sm text-gray-400">Banco de ideias, referências e anotações rápidas</p>
+                        <h2 className="text-title text-2xl">V5 • Ideas Vault</h2>
+                        <p className="text-body">Banco de ideias, referências e anotações rápidas</p>
                     </div>
                 </div>
             </div>
@@ -93,20 +93,20 @@ export function PageIdeas({ formData: externalFormData, setFormData: externalSet
             {/* SECTION 1: IDEAS BANK */}
             {/* ═══════════════════════════════════════════════════════════════════ */}
             <section className="space-y-6">
-                <h3 className="text-lg font-semibold text-white flex items-center gap-2">
-                    <Lightbulb size={16} className="text-yellow-400" />
+                <h3 className="text-section flex items-center gap-2">
+                    <Lightbulb size={16} className="text-warning" />
                     Banco de Ideias
                 </h3>
-                <p className="text-sm text-gray-500 -mt-4">
+                <p className="text-caption -mt-4">
                     Deposite aqui suas ideias de conteúdo para usar depois
                 </p>
 
                 {/* Ideas List */}
                 <div className="space-y-3">
                     {(formData.ideas || []).length === 0 && !showIdeaForm && (
-                        <div className="bg-[var(--bg-panel)] border border-dashed border-[var(--border-subtle)] rounded-xl p-8 text-center">
-                            <Lightbulb size={32} className="text-gray-600 mx-auto mb-3" />
-                            <p className="text-gray-500">Nenhuma ideia cadastrada ainda</p>
+                        <div className="card-elevated border-dashed p-8 text-center">
+                            <Lightbulb size={32} className="text-[var(--text-tertiary)] mx-auto mb-3" />
+                            <p className="text-caption">Nenhuma ideia cadastrada ainda</p>
                         </div>
                     )}
 
@@ -114,25 +114,25 @@ export function PageIdeas({ formData: externalFormData, setFormData: externalSet
                         <div
                             key={idea.id}
                             data-testid={`v5-idea-${idea.id}`}
-                            className="bg-[var(--bg-panel)] border border-[var(--border-subtle)] rounded-xl p-4 group hover:border-yellow-500/30 transition-colors"
+                            className="card-elevated p-4 group hover:border-warning/30 transition-colors"
                         >
                             <div className="flex items-start justify-between">
                                 <div className="flex-1">
                                     <div className="flex items-center gap-2 mb-1">
-                                        <h4 className="font-medium text-white">{idea.title}</h4>
+                                        <h4 className="text-subtitle">{idea.title}</h4>
                                         {idea.url && (
                                             <a
                                                 href={idea.url.startsWith('http') ? idea.url : `https://${idea.url}`}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
-                                                className="text-yellow-400 hover:text-yellow-300"
+                                                className="text-warning hover:text-warning/80"
                                             >
                                                 <ExternalLink size={14} />
                                             </a>
                                         )}
                                     </div>
                                     {idea.description && (
-                                        <p className="text-sm text-gray-400 mb-2">{idea.description}</p>
+                                        <p className="text-body mb-2">{idea.description}</p>
                                     )}
                                     <div className="flex items-center gap-2 flex-wrap">
                                         {idea.tags?.map(tag => (

@@ -157,20 +157,20 @@ export function PageBrand({ formData: externalFormData, setFormData: externalSet
         <form onSubmit={handleSubmit} className="space-y-10">
             {/* Header */}
             <div className="space-y-2">
-                <div className="flex items-center gap-2 text-red-500 mb-2">
+                <div className="flex items-center gap-2 text-accent mb-2">
                     <Target size={24} />
-                    <span className="font-mono text-sm tracking-widest uppercase">VAULT 1 • BRAND</span>
+                    <span className="text-mono-data uppercase">VAULT 1 • BRAND</span>
                 </div>
-                <h2 className="text-3xl font-display font-black text-white">Identidade da Marca</h2>
-                <p className="text-gray-400 max-w-xl">
+                <h2 className="text-title text-2xl">Identidade da Marca</h2>
+                <p className="text-body max-w-xl">
                     Defina a alma do negócio. Esses dados alimentam o <strong>S1 (Brand Vault)</strong> e guiam toda a comunicação da IA.
                 </p>
             </div>
 
             {/* Section 1: Dados Básicos */}
             <section className="space-y-6">
-                <h3 className="text-sm font-bold text-gray-300 uppercase tracking-wider flex items-center gap-2">
-                    <span className="w-6 h-6 bg-red-500/20 text-red-400 rounded flex items-center justify-center text-xs">1</span>
+                <h3 className="text-subtitle flex items-center gap-2">
+                    <span className="w-6 h-6 bg-accent/20 text-accent rounded flex items-center justify-center text-xs">1</span>
                     Dados Básicos
                 </h3>
 
@@ -201,7 +201,7 @@ export function PageBrand({ formData: externalFormData, setFormData: externalSet
 
                 <div>
                     <label className="input-label">Tagline / Slogan</label>
-                    <p className="text-xs text-gray-500 mb-2">Uma frase curta que resume a essência da marca</p>
+                    <p className="text-caption mb-2">Uma frase curta que resume a essência da marca</p>
                     <input
                         className="input-field"
                         placeholder="Ex: A cerveja mais gelada do bairro"
@@ -213,15 +213,15 @@ export function PageBrand({ formData: externalFormData, setFormData: externalSet
 
             {/* Section 2: Posicionamento */}
             <section className="space-y-6">
-                <h3 className="text-sm font-bold text-gray-300 uppercase tracking-wider flex items-center gap-2">
-                    <span className="w-6 h-6 bg-red-500/20 text-red-400 rounded flex items-center justify-center text-xs">2</span>
+                <h3 className="text-subtitle flex items-center gap-2">
+                    <span className="w-6 h-6 bg-accent/20 text-accent rounded flex items-center justify-center text-xs">2</span>
                     Posicionamento Estratégico
                 </h3>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                         <label className="input-label">A Promessa</label>
-                        <p className="text-xs text-gray-500 mb-2">Qual a transformação única que você oferece?</p>
+                        <p className="text-caption mb-2">Qual a transformação única que você oferece?</p>
                         <input
                             required
                             className="input-field"
@@ -232,7 +232,7 @@ export function PageBrand({ formData: externalFormData, setFormData: externalSet
                     </div>
                     <div>
                         <label className="input-label">O Inimigo</label>
-                        <p className="text-xs text-gray-500 mb-2">Contra o que você luta?</p>
+                        <p className="text-caption mb-2">Contra o que você luta?</p>
                         <input
                             required
                             className="input-field"
@@ -245,7 +245,7 @@ export function PageBrand({ formData: externalFormData, setFormData: externalSet
 
                 <div>
                     <label className="input-label">Valores da Marca</label>
-                    <p className="text-xs text-gray-500 mb-2">Selecione ou digite até 5 valores que definem sua marca</p>
+                    <p className="text-caption mb-2">Selecione ou digite até 5 valores que definem sua marca</p>
                     <TagInput
                         value={formData.brandValues || []}
                         onChange={(values) => updateField('brandValues', values)}
@@ -258,9 +258,9 @@ export function PageBrand({ formData: externalFormData, setFormData: externalSet
 
             {/* Section 3: Público */}
             <section className="space-y-6">
-                <h3 className="text-sm font-bold text-gray-300 uppercase tracking-wider flex items-center gap-2">
-                    <span className="w-6 h-6 bg-red-500/20 text-red-400 rounded flex items-center justify-center text-xs">3</span>
-                    <Users size={16} className="text-red-400" />
+                <h3 className="text-subtitle flex items-center gap-2">
+                    <span className="w-6 h-6 bg-accent/20 text-accent rounded flex items-center justify-center text-xs">3</span>
+                    <Users size={16} className="text-accent" />
                     Público-Alvo
                 </h3>
 

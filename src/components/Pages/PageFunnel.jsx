@@ -47,23 +47,23 @@ export function PageFunnel({ formData: externalFormData, setFormData: externalSe
         <form onSubmit={handleSubmit} className="space-y-10">
             {/* Header */}
             <div className="space-y-2">
-                <div className="flex items-center gap-2 text-blue-500 mb-2">
+                <div className="flex items-center gap-2 text-info mb-2">
                     <GitBranch size={24} />
-                    <span className="font-mono text-sm tracking-widest uppercase">VAULT 3 • FUNNEL</span>
+                    <span className="text-mono-data uppercase">VAULT 3 • FUNNEL</span>
                 </div>
-                <h2 className="text-3xl font-display font-black text-white">Funil & Conversão</h2>
-                <p className="text-gray-400 max-w-xl">
+                <h2 className="text-title text-2xl">Funil & Conversão</h2>
+                <p className="text-body max-w-xl">
                     Onde você está presente e como converte. Dados para o <strong>S3 (Funnel Vault)</strong>.
                 </p>
             </div>
 
             {/* Section 1: Canais de Marketing */}
             <section className="space-y-6">
-                <h3 className="text-sm font-bold text-gray-300 uppercase tracking-wider flex items-center gap-2">
-                    <span className="w-6 h-6 bg-blue-500/20 text-blue-400 rounded flex items-center justify-center text-xs">1</span>
+                <h3 className="text-subtitle flex items-center gap-2">
+                    <span className="w-6 h-6 bg-info/20 text-info rounded flex items-center justify-center text-xs">1</span>
                     Canais de Marketing
                 </h3>
-                <p className="text-xs text-gray-500">
+                <p className="text-caption">
                     Selecione todos os canais onde sua marca está presente ou planeja estar.
                 </p>
 
@@ -73,16 +73,16 @@ export function PageFunnel({ formData: externalFormData, setFormData: externalSe
                 />
 
                 {/* Selected Channels Count */}
-                <p className="text-xs text-gray-500">
+                <p className="text-caption">
                     {activeChannels.length} canal(is) selecionado(s)
                 </p>
             </section>
 
             {/* Section 2: Links de Conversão */}
             <section className="space-y-6">
-                <h3 className="text-sm font-bold text-gray-300 uppercase tracking-wider flex items-center gap-2">
-                    <span className="w-6 h-6 bg-blue-500/20 text-blue-400 rounded flex items-center justify-center text-xs">2</span>
-                    <LinkIcon size={16} className="text-blue-400" />
+                <h3 className="text-subtitle flex items-center gap-2">
+                    <span className="w-6 h-6 bg-info/20 text-info rounded flex items-center justify-center text-xs">2</span>
+                    <LinkIcon size={16} className="text-info" />
                     Links de Conversão
                 </h3>
 
@@ -140,16 +140,16 @@ export function PageFunnel({ formData: externalFormData, setFormData: externalSe
 
             {/* Section 3: CTAs */}
             <section className="space-y-6">
-                <h3 className="text-sm font-bold text-gray-300 uppercase tracking-wider flex items-center gap-2">
-                    <span className="w-6 h-6 bg-blue-500/20 text-blue-400 rounded flex items-center justify-center text-xs">3</span>
-                    <MousePointer size={16} className="text-blue-400" />
+                <h3 className="text-subtitle flex items-center gap-2">
+                    <span className="w-6 h-6 bg-info/20 text-info rounded flex items-center justify-center text-xs">3</span>
+                    <MousePointer size={16} className="text-info" />
                     Chamadas para Ação (CTAs)
                 </h3>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                         <label className="input-label">CTA Principal</label>
-                        <p className="text-xs text-gray-500 mb-2">Ação mais importante que o cliente deve tomar</p>
+                        <p className="text-caption mb-2">Ação mais importante que o cliente deve tomar</p>
                         <select
                             className="input-field"
                             value={formData.primaryCTA || 'whatsapp'}

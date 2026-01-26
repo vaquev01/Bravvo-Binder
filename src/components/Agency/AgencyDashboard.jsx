@@ -39,8 +39,8 @@ export function AgencyDashboard({ onSelectClient, onLogout }) {
                         <Command size={18} className="text-black" strokeWidth={2.5} />
                     </div>
                     <div className="flex flex-col">
-                        <span className="text-xs font-bold text-gray-500 uppercase tracking-widest">{t('dashboard.agency.command_center')}</span>
-                        <span className="text-sm font-bold text-white">{t('dashboard.agency.bravvo_hq')}</span>
+                        <span className="text-label">{t('dashboard.agency.command_center')}</span>
+                        <span className="text-subtitle">{t('dashboard.agency.bravvo_hq')}</span>
                     </div>
                 </div>
 
@@ -55,7 +55,7 @@ export function AgencyDashboard({ onSelectClient, onLogout }) {
                             <button 
                                 key={tab.id} 
                                 onClick={() => setActiveTab(tab.id)}
-                                className={`px-4 py-1.5 text-[11px] font-bold uppercase tracking-wide rounded ${activeTab === tab.id ? 'bg-white text-black shadow-sm' : 'text-gray-500 hover:text-white hover:bg-white/5'} transition-all`}
+                                className={`px-4 py-1.5 text-[11px] font-semibold uppercase tracking-wide rounded ${activeTab === tab.id ? 'bg-white text-black shadow-sm signature-glow' : 'text-[var(--text-tertiary)] hover:text-[var(--text-primary)] hover:bg-white/5'} transition-all`}
                             >
                                 {tab.label}
                             </button>

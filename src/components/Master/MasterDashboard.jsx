@@ -37,7 +37,7 @@ export function MasterDashboard({ onSelectClient, onLogout }) {
             <header className="h-14 border-b border-[var(--border-subtle)] flex items-center justify-between px-6 bg-[var(--bg-deep)] sticky top-0 z-50">
                 <div className="flex items-center gap-3">
                     <div className="w-8 h-8 rounded bg-blue-600 flex items-center justify-center font-bold text-sm">M</div>
-                    <span className="font-bold text-gray-200 text-sm">{t('dashboard.master.bravvo_master')}</span>
+                    <span className="text-subtitle">{t('dashboard.master.bravvo_master')}</span>
                     <span className="text-[9px] px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20 font-bold uppercase tracking-widest">{t('dashboard.master.admin')}</span>
                 </div>
 
@@ -72,7 +72,7 @@ export function MasterDashboard({ onSelectClient, onLogout }) {
                                 <TrendingUp size={14} />
                             </div>
                         </div>
-                        <h2 className="text-3xl font-mono font-medium tracking-tight text-white group-hover:text-green-400 transition-colors">
+                        <h2 className="text-metric-lg font-mono group-hover:text-success transition-colors">
                             R$ {(totalRevenue || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                         </h2>
                     </div>
@@ -82,7 +82,7 @@ export function MasterDashboard({ onSelectClient, onLogout }) {
                             <span className="text-label">{t('dashboard.master.total_clients')}</span>
                             <DatabaseIcon count={allClients.length} />
                         </div>
-                        <h2 className="text-3xl font-mono font-medium tracking-tight text-white group-hover:text-blue-400 transition-colors">
+                        <h2 className="text-metric-lg font-mono group-hover:text-info transition-colors">
                             {allClients.length}
                         </h2>
                         <p className="text-[10px] text-gray-500 mt-2 font-mono">
@@ -95,7 +95,7 @@ export function MasterDashboard({ onSelectClient, onLogout }) {
                             <span className="text-label">{t('dashboard.master.system_health')}</span>
                             <AlertTriangle className={criticalClients > 0 ? "text-red-500" : "text-green-500"} size={14} />
                         </div>
-                        <h2 className="text-3xl font-mono font-medium tracking-tight text-white">
+                        <h2 className="text-metric-lg font-mono">
                             {criticalClients > 0 ? `${criticalClients} ${t('dashboard.master.risks')}` : '100% OK'}
                         </h2>
                         <p className="text-[10px] text-gray-500 mt-2 font-mono">
