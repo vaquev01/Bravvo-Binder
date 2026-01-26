@@ -315,12 +315,30 @@ export function OnePageDashboard({
     const [editingItem, setEditingItem] = useState(null);
     const [showHistory, setShowHistory] = useState(false);
 
-    // Editable KPI State
-    const [kpis, setKpis] = useState({
+    // Editable KPI State - Linked to Global Data
+    const [kpis, setKpis] = useState(appData.kpis || {
         revenue: { value: 32500, goal: 50000 },
         traffic: { value: 12, goal: 15 },
         sales: { value: 154, goal: 120 },
     });
+
+    // Update local state when appData changes (e.g. client switch)
+    useEffect(() => {
+        if (appData.kpis) {
+            setKpis(appData.kpis);
+        }
+    }, [appData.kpis]);
+
+    const handleKpiUpdate = (key, val) => {
+        const newVal = parseFloat(val) || 0;
+        const updatedKpis = {
+            ...kpis,
+            [key]: { ...kpis[key], value: newVal }
+        };
+        setKpis(updatedKpis);
+        // Persist to global state
+        setAppData({ ...appData, kpis: updatedKpis });
+    };
 
     const toggleGovernanceMode = () => {
         const newActive = !meetingState.active;

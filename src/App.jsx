@@ -1,7 +1,5 @@
 import React, { useState, useCallback, useEffect } from 'react';
-// import { CARACA_BAR_DATA } from './data/mockData'; // REMOVED: Now using Context
-import { generatePrompt } from './utils/promptGenerator';
-// import { OnboardingWizard } from './components/Onboarding/OnboardingWizard'; // REMOVED
+import { aiService } from './services/aiService';
 import { BinderLayout } from './components/Binder/BinderLayout';
 import { PageBrand } from './components/Pages/PageBrand';
 import { PageOffer } from './components/Pages/PageOffer';
