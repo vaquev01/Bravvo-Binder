@@ -138,6 +138,24 @@ export const CARACA_BAR_DATA = {
         traffic: { value: 12, goal: 15 },
         sales: { value: 154, goal: 120 }
     },
+    measurementContract: {
+        lastUpdate: TODAY,
+        cycle: { id: "CYC_2024_03", label: "Março 2024", status: "active" },
+        objectives: [
+            { id: "OBJ_GROWTH", label: "Crescimento Agressivo", priority: 1 },
+            { id: "OBJ_RETENTION", label: "Retenção de Clientes", priority: 2 }
+        ],
+        dashboardLayout: {
+            topKpis: ["revenue", "sales", "traffic"],
+            secondaryKpis: []
+        },
+        kpis: [
+            { id: "revenue", label: "Receita", format: "currency", source: "manual", target: 50000, value: 32500, active: true },
+            { id: "traffic", label: "Tráfego (ROAS)", format: "decimal", source: "manual", target: 15, value: 12, active: true },
+            { id: "sales", label: "Vendas", format: "integer", source: "manual", target: 120, value: 154, active: true }
+        ],
+        auditLog: []
+    },
     promptHistory: []
 };
 
@@ -252,6 +270,29 @@ export const TADA_ASIAN_FOOD_DATA = {
             { id: 403, metric: "Ticket Médio", current: 65.00, target: 85.00, status: "Warning", action: "Implementar cross-sell" },
             { id: 404, metric: "Pedidos/Dia", current: 45, target: 60, status: "Warning", action: "Aumentar frequência posts" }
         ]
+    },
+    kpis: {
+        cpm: { value: 11.80, goal: 12.00 },
+        conversion: { value: 3.2, goal: 4.0 },
+        ticket: { value: 65.00, goal: 85.00 }
+    },
+    measurementContract: {
+        lastUpdate: TODAY,
+        cycle: { id: "CYC_2024_03", label: "Março 2024", status: "active" },
+        objectives: [
+            { id: "OBJ_AWARENESS", label: "Reconhecimento de Marca", priority: 1 },
+            { id: "OBJ_ORDERS", label: "Volume de Pedidos", priority: 2 }
+        ],
+        dashboardLayout: {
+            topKpis: ["cpm", "conversion", "ticket"],
+            secondaryKpis: []
+        },
+        kpis: [
+            { id: "cpm", label: "CPM Instagram", format: "currency", source: "api", target: 12.00, value: 11.80, active: true },
+            { id: "conversion", label: "Taxa Conversão", format: "percentage", source: "manual", target: 4.0, value: 3.2, active: true },
+            { id: "ticket", label: "Ticket Médio", format: "currency", source: "csv", target: 85.00, value: 65.00, active: true }
+        ],
+        auditLog: []
     },
     promptHistory: []
 };

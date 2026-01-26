@@ -410,6 +410,7 @@ function ClientWorkspaceContent({ onBackToAgency, isAgencyView: _isAgencyView })
                     setFormData={setFormData}
                     meetingState={meetingState}
                     setMeetingState={setMeetingState}
+                    currentUser={currentUser}
                 />
             )}
 

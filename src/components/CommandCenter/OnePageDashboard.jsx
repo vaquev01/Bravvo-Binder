@@ -11,13 +11,15 @@ import {
     TrendingUp,
     History,
     Share2,
-    MessageCircle
+    MessageCircle,
+    Upload
 } from 'lucide-react';
 import { GovernanceHistory } from './GovernanceHistory';
+import { ImportDataModal } from './ImportDataModal';
 import { useToast } from '../../contexts/ToastContext';
 
 // Inline Editable Component
-function InlineEdit({ value, onSave, type = 'text', prefix = '', suffix = '', className = '' }) {
+function InlineEdit({ value, onSave, type = 'text', prefix = '', suffix = '', className = '', disabled = false }) {
     const [editing, setEditing] = useState(false);
     const [tempValue, setTempValue] = useState(value);
     const inputRef = useRef(null);
@@ -62,9 +64,9 @@ function InlineEdit({ value, onSave, type = 'text', prefix = '', suffix = '', cl
 
     return (
         <span
-            onClick={() => setEditing(true)}
-            className={`cursor-pointer hover:bg-white/10 px-1 rounded transition-colors group relative ${className}`}
-            title="Clique para editar"
+            onClick={() => !disabled && setEditing(true)}
+            className={`${disabled ? 'cursor-default opacity-90' : 'cursor-pointer hover:bg-white/10'} px-1 rounded transition-colors group relative ${className}`}
+            title={disabled ? "Habilite o Modo Governança para editar" : "Clique para editar"}
         >
             {prefix}{value}{suffix}
         </span>
@@ -302,8 +304,10 @@ export function OnePageDashboard({
     setAppData,
     setActiveTab,
     formData,
+    setFormData,
     meetingState,
-    setMeetingState
+    setMeetingState,
+    currentUser
 }) {
     const { t } = useLanguage();
     const { addToast } = useToast();
@@ -314,6 +318,7 @@ export function OnePageDashboard({
     const [showQuickAdd, setShowQuickAdd] = useState(false);
     const [editingItem, setEditingItem] = useState(null);
     const [showHistory, setShowHistory] = useState(false);
+    const [showImport, setShowImport] = useState(false);
 
     // Editable KPI State - Linked to Global Data
     const [kpis, setKpis] = useState(appData.kpis || {
@@ -330,14 +335,41 @@ export function OnePageDashboard({
     }, [appData.kpis]);
 
     const handleKpiUpdate = (key, val) => {
+        if (!meetingState.active) {
+            addToast({ title: 'Modo Leitura', description: 'Ative a Governança para editar KPIs.', type: 'info' });
+            return;
+        }
+
         const newVal = parseFloat(val) || 0;
+        const oldValue = kpis[key]?.value;
         const updatedKpis = {
             ...kpis,
             [key]: { ...kpis[key], value: newVal }
         };
+        
         setKpis(updatedKpis);
-        // Persist to global state
-        setAppData({ ...appData, kpis: updatedKpis });
+
+        // Audit Log Entry
+        const logEntry = {
+            id: Date.now(),
+            ts: new Date().toISOString(),
+            actor: currentUser?.role ? `${currentUser.role} (${currentUser.client?.name || 'System'})` : 'Unknown',
+            action: 'UPDATE_KPI',
+            target: key,
+            oldValue,
+            newValue: newVal
+        };
+
+        // Persist to global state with Audit Log
+        setAppData(prev => ({
+            ...prev,
+            kpis: updatedKpis,
+            measurementContract: {
+                ...(prev.measurementContract || {}),
+                kpis: prev.measurementContract?.kpis?.map(k => k.id === key ? { ...k, value: newVal } : k) || [],
+                auditLog: [logEntry, ...(prev.measurementContract?.auditLog || [])]
+            }
+        }));
     };
 
     const toggleGovernanceMode = () => {
@@ -417,11 +449,84 @@ export function OnePageDashboard({
 
     const handleSaveMeeting = () => {
         setCycleProcessing(true);
+        
+        // Snapshot creation
+        const snapshot = {
+            id: `GOV-${Date.now()}`,
+            date: new Date().toISOString(),
+            type: 'governance_commit',
+            contractSnapshot: appData.measurementContract,
+            kpiSnapshot: kpis,
+            comments: meetingState.comments
+        };
+
+        const updatedHistory = [snapshot, ...(appData.governanceHistory || [])];
+
         setTimeout(() => {
             setCycleProcessing(false);
+            
+            // Persist History via setAppData
+            setAppData(prev => ({
+                ...prev,
+                governanceHistory: updatedHistory
+            }));
+
+            // Sync with formData if available (since it feeds GovernanceHistory component)
+            if (setFormData) {
+                setFormData(prev => ({
+                    ...prev,
+                    governanceHistory: updatedHistory
+                }));
+            }
+
             setMeetingState({ active: false, comments: { general: '', revenue: '', traffic: '', sales: '' } });
-            addToast({ title: 'Meeting Copied to Chain', type: 'success' });
+            addToast({ title: 'Ciclo Fechado', description: 'Snapshot salvo no histórico de governança.', type: 'success' });
         }, 1000);
+    };
+
+    const handleImport = (importData) => {
+        const newKpis = { ...kpis };
+        const newContractKpis = appData.measurementContract?.kpis ? [...appData.measurementContract.kpis] : [];
+        const logEntries = [];
+
+        if (importData.mode === 'manual') {
+            Object.entries(importData.values).forEach(([id, val]) => {
+                const numVal = parseFloat(val);
+                // Update local state if it matches our core keys
+                if (newKpis[id]) newKpis[id].value = numVal;
+                
+                // Update contract
+                const kpiIndex = newContractKpis.findIndex(k => k.id === id);
+                if (kpiIndex >= 0) {
+                    const oldVal = newContractKpis[kpiIndex].value;
+                    newContractKpis[kpiIndex] = { ...newContractKpis[kpiIndex], value: numVal };
+                    
+                    logEntries.push({
+                        id: Date.now() + Math.random(),
+                        ts: new Date().toISOString(),
+                        actor: currentUser?.role ? `${currentUser.role} (${currentUser.client?.name || 'System'})` : 'Import Tool',
+                        action: 'IMPORT_DATA',
+                        target: id,
+                        oldValue: oldVal,
+                        newValue: numVal,
+                        details: 'Manual Import'
+                    });
+                }
+            });
+        }
+
+        setKpis(newKpis);
+        setAppData(prev => ({
+            ...prev,
+            kpis: newKpis,
+            measurementContract: {
+                ...(prev.measurementContract || {}),
+                kpis: newContractKpis,
+                auditLog: [...logEntries, ...(prev.measurementContract?.auditLog || [])]
+            }
+        }));
+
+        addToast({ title: 'Importação Concluída', description: `${logEntries.length} métricas atualizadas.`, type: 'success' });
     };
 
     // --- INTEGRATIONS: DEEP LINKS ---
@@ -505,6 +610,7 @@ export function OnePageDashboard({
                             onSave={(v) => handleKpiUpdate('revenue', v)}
                             className="text-2xl font-mono font-medium text-white tracking-tight"
                             prefix="R$ "
+                            disabled={!meetingState.active}
                         />
                         <div className="mt-2 h-1 bg-white/5 rounded-full overflow-hidden">
                             <div className="h-full bg-green-500" style={{ width: '65%' }}></div>
@@ -521,6 +627,7 @@ export function OnePageDashboard({
                             onSave={(v) => handleKpiUpdate('traffic', v)}
                             className="text-2xl font-mono font-medium text-white tracking-tight"
                             prefix="R$ "
+                            disabled={!meetingState.active}
                         />
                         <div className="mt-2 text-[10px] text-gray-500 font-mono">
                             Goal: R$ {kpis.traffic.goal}
@@ -536,6 +643,7 @@ export function OnePageDashboard({
                             value={kpis.sales.value}
                             onSave={(v) => handleKpiUpdate('sales', v)}
                             className="text-2xl font-mono font-medium text-white tracking-tight"
+                            disabled={!meetingState.active}
                         />
                         <div className="mt-2 h-1 bg-white/5 rounded-full overflow-hidden">
                             <div className="h-full bg-orange-500" style={{ width: '82%' }}></div>
@@ -663,6 +771,7 @@ export function OnePageDashboard({
                 <QuickAddModal open={showQuickAdd} onClose={() => setShowQuickAdd(false)} onAdd={handleAddItem} />
                 <DetailEditModal open={!!editingItem} onClose={() => setEditingItem(null)} item={editingItem || {}} onSave={handleSaveItem} />
                 <GovernanceHistory open={showHistory} onClose={() => setShowHistory(false)} history={formData?.governanceHistory || []} />
+                <ImportDataModal open={showImport} onClose={() => setShowImport(false)} contract={appData.measurementContract} onImport={handleImport} />
             </div>
         </div>
     );
