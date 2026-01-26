@@ -167,7 +167,7 @@ function DetailEditModal({ open, onClose, item, onSave }) {
     };
 
     return (
-        <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4" data-testid="detail-edit-modal">
             <div className="bg-[#0A0A0A] border border-white/10 rounded-lg w-full max-w-2xl animate-fadeIn flex flex-col max-h-[90vh] shadow-2xl">
                 <div className="flex justify-between items-center p-4 border-b border-white/10 bg-[#0A0A0A]">
                     <div>
@@ -188,6 +188,7 @@ function DetailEditModal({ open, onClose, item, onSave }) {
                                 className="premium-input bg-[#111]"
                                 value={form.initiative || ''}
                                 onChange={e => setForm({ ...form, initiative: e.target.value })}
+                                data-testid="detail-edit-initiative"
                             />
                         </div>
                         <div className="grid grid-cols-2 gap-4">
@@ -250,6 +251,7 @@ function DetailEditModal({ open, onClose, item, onSave }) {
                                 placeholder={t('os.detail_edit.copy_placeholder')}
                                 value={form.caption || ''}
                                 onChange={e => setForm({ ...form, caption: e.target.value })}
+                                data-testid="detail-edit-caption"
                             />
                         </div>
                     </div>
@@ -257,7 +259,16 @@ function DetailEditModal({ open, onClose, item, onSave }) {
 
                 <div className="p-4 border-t border-white/10 bg-[#0A0A0A] flex justify-end gap-2">
                     <button onClick={onClose} className="btn-ghost">{t('common.cancel')}</button>
-                    <button onClick={handleSubmit} className="btn-primary">{t('os.detail_edit.save')}</button>
+                    <button
+                        onClick={() => {
+                            onSave(form);
+                            onClose();
+                        }}
+                        className="btn-primary"
+                        data-testid="detail-edit-save"
+                    >
+                        {t('os.detail_edit.save')}
+                    </button>
                 </div>
             </div>
         </div>
@@ -301,7 +312,7 @@ function QuickAddModal({ open, onClose, onAdd }) {
     if (!open) return null;
 
     return (
-        <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4" data-testid="quickadd-modal">
             <div className="bg-[#0A0A0A] border border-white/10 rounded-lg w-full max-w-lg p-6 shadow-2xl">
                 <div className="flex justify-between items-center mb-6">
                     <h3 className="text-sm font-bold text-white uppercase tracking-widest">{t('os.quick_add.title')}</h3>
@@ -317,6 +328,7 @@ function QuickAddModal({ open, onClose, onAdd }) {
                             value={form.initiative}
                             onChange={e => setForm({ ...form, initiative: e.target.value })}
                             placeholder={t('os.quick_add.placeholder')}
+                            data-testid="quickadd-initiative"
                         />
                     </div>
                     <div className="grid grid-cols-2 gap-4">
@@ -374,7 +386,7 @@ function QuickAddModal({ open, onClose, onAdd }) {
                     </div>
                     <div className="pt-4 flex justify-end gap-2">
                         <button type="button" onClick={onClose} className="btn-ghost">{t('common.cancel')}</button>
-                        <button type="submit" className="btn-primary">{t('os.quick_add.create_button')}</button>
+                        <button type="submit" className="btn-primary" data-testid="quickadd-submit">{t('os.quick_add.create_button')}</button>
                     </div>
                 </form>
             </div>
@@ -647,12 +659,18 @@ export function OnePageDashboard({
             const date = new Date();
             date.setDate(date.getDate() + task.dayOffset + 1); // Start D+1
             
+            const legacyChannel = playbook.channels[idx % playbook.channels.length] || 'Instagram Feed';
+            const parsed = parseLegacyChannelLabel(legacyChannel);
+            const channelId = parsed.channelId || 'instagram';
+            const subchannelId = parsed.subchannelId || getDefaultSubchannelId(channelId) || 'feed';
             return {
                 id: `PB-${Date.now()}-${idx}`,
                 date: date.toISOString().split('T')[0],
                 initiative: task.title,
-                channel: playbook.channels[idx % playbook.channels.length], // Cycle through channels
-                format: 'feed', // Default
+                channelId,
+                subchannelId,
+                channel: toLegacyChannelLabel(channelId, subchannelId),
+                format: getDefaultContentType(channelId, subchannelId),
                 offerId: 'hero', // Default to hero
                 ctaId: 'whatsapp',
                 responsible: task.role,
@@ -763,7 +781,7 @@ export function OnePageDashboard({
                             <Book size={12} className="md:mr-1" /> <span className="hidden md:inline">Gerar Plano</span>
                         </button>
                     )}
-                    <button onClick={() => setShowQuickAdd(true)} className="btn-primary !h-7 !px-3">
+                    <button onClick={() => setShowQuickAdd(true)} className="btn-primary !h-7 !px-3" data-testid="os-quick-add">
                         <Plus size={14} /> <span className="hidden md:inline ml-1">{t('os.actions.new')}</span>
                     </button>
                     {meetingState.active ? (
@@ -877,15 +895,22 @@ export function OnePageDashboard({
                             {/* Table Body */}
                             <div className="bg-[var(--bg-deep)]">
                                 {filteredCalendar.map((item) => (
-                                    <div key={item.id} className="grid grid-cols-[100px_1fr_150px_120px_120px_120px] gap-4 px-4 py-3 border-b border-[var(--border-subtle)] hover:bg-[var(--bg-surface)] group transition-all duration-200 items-center hover:pl-5">
+                                    <div
+                                        key={item.id}
+                                        data-testid={`d2-row-${item.id}`}
+                                        className="grid grid-cols-[100px_1fr_150px_120px_120px_120px] gap-4 px-4 py-3 border-b border-[var(--border-subtle)] hover:bg-[var(--bg-surface)] group transition-all duration-200 items-center hover:pl-5"
+                                    >
                                         <div className="text-mono-data text-gray-400 group-hover:text-white transition-colors">
                                             {new Date(item.date).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}
                                         </div>
-                                        <div className="text-sm font-medium text-white truncate pr-4 group-hover:translate-x-1 transition-transform">
+                                        <div 
+                                            className="text-sm font-medium text-white truncate pr-4 group-hover:translate-x-1 transition-transform"
+                                            data-testid={`d2-initiative-${item.id}`}
+                                        >
                                             {item.initiative}
                                         </div>
                                         <div className="flex items-center gap-2 text-xs text-gray-500 group-hover:text-gray-400 transition-colors">
-                                            <span>{formatIcons[item.format]?.icon}</span>
+                                            <span>{formatIcons[item.format]?.icon || '🧩'}</span>
                                             <span className="truncate">{item.channel}</span>
                                         </div>
                                         <div>
@@ -921,6 +946,7 @@ export function OnePageDashboard({
                                                 onClick={() => setEditingItem(item)} 
                                                 className="p-1.5 hover:bg-white/10 rounded text-gray-400 hover:text-white transform hover:scale-110 transition-all"
                                                 title="Editar"
+                                                data-testid={`d2-edit-${item.id}`}
                                             >
                                                 <Edit3 size={12} />
                                             </button>

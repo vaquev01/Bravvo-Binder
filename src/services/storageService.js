@@ -19,9 +19,53 @@ const STORAGE_KEYS = {
     AUTH: 'bravvo_auth_session'
 };
 
+const resolveTestMode = () => {
+    const envFlag = typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_TEST_MODE === '1';
+    const windowFlag = typeof window !== 'undefined' && window.__BRAVVO_TEST_MODE__ === true;
+    return Boolean(envFlag || windowFlag);
+};
+
 class StorageService {
     constructor() {
         this.driver = 'local_storage'; // 'local_storage' | 'supabase' | 'firebase'
+        this.pendingSaves = 0;
+        this.lastSaveAt = 0;
+        this.saveSequence = 0;
+        this.saveQueue = Promise.resolve();
+        this.testMode = resolveTestMode();
+        if (this.testMode && typeof window !== 'undefined') {
+            window.__PENDING_SAVES__ = this.pendingSaves;
+            window.__LAST_SAVE_AT__ = this.lastSaveAt;
+            window.__SAVE_SEQ__ = this.saveSequence;
+            window.__flushPersistence__ = () => this.flush();
+        }
+    }
+
+    updateDebugState() {
+        if (!this.testMode || typeof window === 'undefined') return;
+        window.__PENDING_SAVES__ = this.pendingSaves;
+        window.__LAST_SAVE_AT__ = this.lastSaveAt;
+        window.__SAVE_SEQ__ = this.saveSequence;
+    }
+
+    markSaveStart() {
+        this.pendingSaves += 1;
+        this.updateDebugState();
+    }
+
+    markSaveEnd() {
+        this.pendingSaves = Math.max(0, this.pendingSaves - 1);
+        this.lastSaveAt = Date.now();
+        this.saveSequence += 1;
+        this.updateDebugState();
+    }
+
+    enqueueSaveCompletion() {
+        this.saveQueue = this.saveQueue.then(() => Promise.resolve().then(() => this.markSaveEnd()));
+    }
+
+    flush() {
+        return this.saveQueue;
     }
 
     // --- GENERIC METHODS ---
@@ -275,10 +319,12 @@ class StorageService {
      */
     saveClientData(data) {
         const normalized = this.normalizeClientData(data);
+        this.markSaveStart();
         const ok = this.save(STORAGE_KEYS.APP_DATA, normalized);
         if (normalized?.id) {
             this.save(`${STORAGE_KEYS.APP_DATA}:${normalized.id}`, normalized);
         }
+        this.enqueueSaveCompletion();
         return ok;
     }
 

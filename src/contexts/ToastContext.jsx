@@ -29,6 +29,7 @@ export function ToastProvider({ children }) {
                 {toasts.map(toast => (
                     <div
                         key={toast.id}
+                        data-testid={`toast-${toast.type}`}
                         className={`
                             pointer-events-auto min-w-[300px] max-w-sm rounded-xl p-4 shadow-2xl border flex items-start gap-3 animate-slideUp
                             ${toast.type === 'success' ? 'bg-[#111] border-green-500/30 text-green-400' :

@@ -11,7 +11,7 @@ export default defineConfig({
     reporter: process.env.CI ? [['list'], ['html', { open: 'never' }]] : [['list'], ['html']],
     use: {
         baseURL: process.env.PLAYWRIGHT_BASE_URL || 'http://127.0.0.1:5173',
-        trace: 'retain-on-failure',
+        trace: 'on-first-retry',
         screenshot: 'only-on-failure',
         video: 'retain-on-failure'
     },
@@ -22,7 +22,7 @@ export default defineConfig({
         }
     ],
     webServer: {
-        command: 'npm run dev -- --host 127.0.0.1 --port 5173',
+        command: 'VITE_TEST_MODE=1 npm run dev -- --host 127.0.0.1 --port 5173',
         url: 'http://127.0.0.1:5173',
         reuseExistingServer: !process.env.CI,
         timeout: 120_000

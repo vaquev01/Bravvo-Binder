@@ -105,6 +105,7 @@ export function PageIdeas({ formData, setFormData, onComplete }) {
                     {(formData.ideas || []).map((idea) => (
                         <div
                             key={idea.id}
+                            data-testid={`v5-idea-${idea.id}`}
                             className="bg-white/5 border border-white/10 rounded-xl p-4 group hover:border-yellow-500/30 transition-colors"
                         >
                             <div className="flex items-start justify-between">

@@ -70,6 +70,7 @@ export function BinderLayout({ activeTab, setActiveTab, completedTabs, children,
                         {onBack && (
                             <button
                                 onClick={onBack}
+                                data-testid="binder-back-to-agency"
                                 className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/10 transition-colors"
                                 title={t('binder.actions.back_to_agency')}
                             >

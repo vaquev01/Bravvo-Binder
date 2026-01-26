@@ -6,12 +6,12 @@ export default defineConfig(({ mode }) => ({
   plugins: [react()],
   base: mode === 'production' ? '/BravvoOS/' : '/',
   server: {
-    host: '0.0.0.0',
+    host: process.env.VITE_HOST || '127.0.0.1',
     port: parseInt(process.env.PORT) || 5173,
     strictPort: true,
   },
   preview: {
-    host: '0.0.0.0',
+    host: process.env.VITE_HOST || '127.0.0.1',
     port: parseInt(process.env.PORT) || 4173,
     strictPort: true,
   }
