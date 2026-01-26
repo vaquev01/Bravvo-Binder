@@ -78,7 +78,26 @@ function ActionCard({ action, index, onActionClick }) {
     );
 }
 
-export function PriorityActionsCard({ items, kpis, onActionClick }) {
+function ActionPill({ action, index, onActionClick }) {
+    const colors = getPriorityColor(action.risk);
+    return (
+        <button
+            type="button"
+            onClick={() => onActionClick?.(action)}
+            className={`flex items-center gap-2 px-3 py-2 rounded-lg border ${colors.border} ${colors.bg} text-left min-w-[220px] hover:scale-[1.01] transition-all`}
+        >
+            <div className={`w-5 h-5 ${colors.badge} rounded flex items-center justify-center text-white text-[10px] font-bold shrink-0`}>
+                {index + 1}
+            </div>
+            <div className="min-w-0">
+                <div className="text-[11px] font-bold text-white truncate">{action.name}</div>
+                <div className="text-[10px] text-gray-500 truncate">{action.impact}</div>
+            </div>
+        </button>
+    );
+}
+
+export function PriorityActionsCard({ items, kpis, onActionClick, variant = 'grid' }) {
     // Generate priority actions from items and KPIs
     const generatePriorityActions = () => {
         const today = new Date();
@@ -192,6 +211,7 @@ export function PriorityActionsCard({ items, kpis, onActionClick }) {
     const priorityActions = generatePriorityActions();
 
     if (priorityActions.length === 0) {
+        if (variant === 'strip') return null;
         return (
             <div className="bento-grid p-6 mb-6">
                 <div className="flex items-center gap-2 mb-4">
@@ -205,6 +225,37 @@ export function PriorityActionsCard({ items, kpis, onActionClick }) {
                 </div>
                 <div className="flex items-center justify-center py-8 text-gray-500 text-sm">
                     ✅ Tudo em dia! Nenhuma ação crítica pendente.
+                </div>
+            </div>
+        );
+    }
+
+    if (variant === 'strip') {
+        return (
+            <div className="mb-4">
+                <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                        <div className="w-7 h-7 rounded-lg bg-orange-500/10 flex items-center justify-center">
+                            <AlertTriangle size={14} className="text-orange-500" />
+                        </div>
+                        <div>
+                            <h3 className="text-[11px] font-bold text-white">Ações Prioritárias</h3>
+                            <p className="text-[10px] text-gray-600">Top 3 críticas do dia</p>
+                        </div>
+                    </div>
+                    <span className="text-[10px] font-mono text-gray-500">
+                        {priorityActions.filter(a => a.risk === 'high').length} críticas
+                    </span>
+                </div>
+                <div className="flex gap-2 overflow-x-auto custom-scrollbar pb-1">
+                    {priorityActions.map((action, index) => (
+                        <ActionPill
+                            key={action.id}
+                            action={action}
+                            index={index}
+                            onActionClick={onActionClick}
+                        />
+                    ))}
                 </div>
             </div>
         );

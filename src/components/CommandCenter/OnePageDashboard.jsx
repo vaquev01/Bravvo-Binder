@@ -25,7 +25,6 @@ import { CreativeStudioModal } from './CreativeStudioModal';
 import { GovernanceModal } from './GovernanceModal';
 import { GovernanceModeModal } from './GovernanceModeModal';
 import { GovernanceHeader } from './GovernanceHeader';
-import { DaySummaryAI } from './DaySummaryAI';
 import { KPIGrid } from './KPICard';
 import { PriorityActionsCard } from './PriorityActionsCard';
 import { VaultCards } from './VaultCards';
@@ -525,8 +524,8 @@ export function OnePageDashboard({
     const FLAG_DASH_EMPTY_STATES = getFeatureFlag('DASH_EMPTY_STATES', false);
 
     // UI State
-    const [, setCycleProcessing] = useState(false);
     const [dateFilter, setDateFilter] = useState('week');
+    const [roadmapStatusFilter, setRoadmapStatusFilter] = useState(null);
     const [showQuickAdd, setShowQuickAdd] = useState(false);
     const [editingItem, setEditingItem] = useState(null);
     const [showHistory, setShowHistory] = useState(false);
@@ -835,7 +834,7 @@ export function OnePageDashboard({
         ad: { icon: '💰', label: 'Ad' },
     };
 
-    const getFilteredData = () => {
+    const getFilteredData = (ignoreStatusFilter = false) => {
         const d2Items = appData.dashboard?.D2 || [];
         const today = new Date();
         today.setHours(0, 0, 0, 0);
@@ -844,7 +843,7 @@ export function OnePageDashboard({
         const nextWeek = new Date(today);
         nextWeek.setDate(nextWeek.getDate() + 7);
 
-        return d2Items.filter(item => {
+        const dateFiltered = d2Items.filter(item => {
             if (!item.date) return false;
             const itemDateStr = item.date;
             const todayStr = today.toISOString().split('T')[0];
@@ -857,9 +856,29 @@ export function OnePageDashboard({
             if (dateFilter === 'week') return itemDate <= nextWeek && itemDate >= today;
             return true;
         });
+
+        if (ignoreStatusFilter) return dateFiltered;
+        if (!roadmapStatusFilter) return dateFiltered;
+        return dateFiltered.filter(item => item.status === roadmapStatusFilter);
     };
 
+    const calendarForStats = getFilteredData(true);
     const filteredCalendar = getFilteredData();
+
+    const roadmapStatusStats = (() => {
+        const statuses = ['draft', 'pending', 'in_production', 'scheduled', 'done', 'delayed', 'cancelled'];
+        const base = statuses.reduce((acc, s) => ({ ...acc, [s]: 0 }), {});
+        const total = Array.isArray(calendarForStats) ? calendarForStats.length : 0;
+        (calendarForStats || []).forEach(item => {
+            const s = item?.status || 'draft';
+            if (base[s] !== undefined) base[s] += 1;
+        });
+        const pct = statuses.reduce((acc, s) => ({
+            ...acc,
+            [s]: total > 0 ? Math.round((base[s] / total) * 100) : 0
+        }), {});
+        return { total, counts: base, pct };
+    })();
 
     const handleStatusChange = (itemId, newStatus) => {
         if (!FLAG_DASH_UNDO) {
@@ -996,42 +1015,7 @@ export function OnePageDashboard({
         });
     };
 
-    const handleSaveMeeting = () => {
-        setCycleProcessing(true);
-        
-        // Snapshot creation
-        const snapshot = {
-            id: `GOV-${Date.now()}`,
-            date: new Date().toISOString(),
-            type: 'governance_commit',
-            contractSnapshot: appData.measurementContract,
-            kpiSnapshot: kpis,
-            comments: meetingState.comments
-        };
-
-        const updatedHistory = [snapshot, ...(appData.governanceHistory || [])];
-
-        setTimeout(() => {
-            setCycleProcessing(false);
-            
-            // Persist History via setAppData
-            setAppData(prev => ({
-                ...prev,
-                governanceHistory: updatedHistory
-            }));
-
-            // Sync with formData if available (since it feeds GovernanceHistory component)
-            if (setFormData) {
-                setFormData(prev => ({
-                    ...prev,
-                    governanceHistory: updatedHistory
-                }));
-            }
-
-            setMeetingState({ active: false, comments: { general: '', revenue: '', traffic: '', sales: '' } });
-            addToast({ title: 'Ciclo Fechado', description: 'Snapshot salvo no histórico de governança.', type: 'success' });
-        }, 1000);
-    };
+    // (legacy) handleSaveMeeting removed: governance now happens only through the meeting panel
 
     const handleImport = (importData) => {
         const newKpis = { ...kpis };
@@ -1230,15 +1214,13 @@ export function OnePageDashboard({
                     <button onClick={() => setShowQuickAdd(true)} className="btn-primary !h-7 !px-3" data-testid="os-quick-add">
                         <Plus size={14} /> <span className="hidden md:inline ml-1">{t('os.actions.new')}</span>
                     </button>
-                    {meetingState.active ? (
-                        <button onClick={handleSaveMeeting} className="ml-2 h-7 px-3 bg-purple-600 text-white text-[10px] font-bold rounded animate-pulse">
-                            {t('os.actions.commit')}
-                        </button>
-                    ) : (
-                        <button onClick={toggleGovernanceMode} className="ml-2 btn-ghost !h-7 !px-3 !border-purple-500/30 text-purple-400 hover:text-purple-300">
-                            <Terminal size={12} className="md:mr-1" /> <span className="hidden md:inline">{t('os.actions.run_gov')}</span>
-                        </button>
-                    )}
+                    <button
+                        onClick={meetingState.active ? () => setShowGovernanceModeModal(true) : toggleGovernanceMode}
+                        className="ml-2 btn-ghost !h-7 !px-3 !border-purple-500/30 text-purple-400 hover:text-purple-300"
+                    >
+                        <Terminal size={12} className="md:mr-1" />
+                        <span className="hidden md:inline">{meetingState.active ? 'Reunião' : t('os.actions.run_gov')}</span>
+                    </button>
                 </div>
             </div>
 
@@ -1276,92 +1258,47 @@ export function OnePageDashboard({
                 ) : (
                     <>
                 {latestAta && (() => {
+                    const lastClosed = latestAta?.signature?.closedAt;
+                    const lastLabel = lastClosed ? new Date(lastClosed).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : latestAta?.id;
                     const rev = parseFloat(latestAta?.kpis?.revenue?.achievement || 0);
                     const prevRev = parseFloat(previousAta?.kpis?.revenue?.achievement || 0);
                     const delta = previousAta ? (rev - prevRev) : 0;
                     const trend = !previousAta ? '→' : delta > 2 ? '↑' : delta < -2 ? '↓' : '→';
 
-                    const executionRate = latestAta?.roadmapSummary?.executionRate;
-                    const risksCount = Array.isArray(latestAta?.risks) ? latestAta.risks.length : 0;
-
-                    const wins = (
-                        (latestAta?.execution?.topPerformers || []).slice(0, 3)
-                        .concat((latestAta?.whatWorked || []).slice(0, 3))
-                    ).filter(Boolean).slice(0, 3);
-
-                    const d2 = Array.isArray(appData?.dashboard?.D2) ? appData.dashboard.D2 : [];
-                    const delayed = d2.filter(i => i?.status === 'delayed').slice(0, 3);
-
-                    const opportunities = (
-                        (latestAta?.nextPriorities || []).slice(0, 3)
-                        .concat((latestAta?.changesToMake || []).slice(0, 3))
-                    ).filter(Boolean).slice(0, 3);
-
                     return (
-                        <div className="mb-6 p-4 rounded-xl border border-white/10 bg-[#080808]">
-                            <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
-                                <div className="min-w-0 flex-1">
-                                    <div className="flex items-center gap-2">
-                                        <div className="text-[10px] text-gray-500 font-mono uppercase tracking-wider">Última Governança</div>
-                                        <div className="text-[10px] font-mono text-gray-400">{trend}</div>
-                                        <div className="text-[10px] text-gray-600 font-mono">{previousAta ? `${delta >= 0 ? '+' : ''}${delta.toFixed(1)}pp` : ''}</div>
-                                    </div>
-                                    <div className="text-sm font-bold text-white truncate">{latestAta?.signature?.period || latestAta?.id}</div>
-                                    <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-gray-500">
-                                        <span>Receita: <span className="text-gray-300">{rev ? `${rev}%` : '—'}</span></span>
-                                        <span>Execução: <span className="text-gray-300">{executionRate ? `${executionRate}%` : '—'}</span></span>
-                                        <span>Riscos: <span className="text-gray-300">{risksCount}</span></span>
-                                    </div>
-
-                                    <div className="mt-3 grid grid-cols-1 md:grid-cols-3 gap-3">
-                                        <div className="bg-white/5 border border-white/10 rounded-lg p-3">
-                                            <div className="text-[10px] text-gray-500 font-mono uppercase tracking-wider mb-2">Wins</div>
-                                            {wins.length > 0 ? (
-                                                <div className="space-y-1 text-[11px] text-gray-300">
-                                                    {wins.map((w, idx) => (<div key={idx} className="truncate">{idx + 1}. {w}</div>))}
-                                                </div>
-                                            ) : (
-                                                <div className="text-[11px] text-gray-600">—</div>
-                                            )}
-                                        </div>
-                                        <div className="bg-white/5 border border-white/10 rounded-lg p-3">
-                                            <div className="text-[10px] text-gray-500 font-mono uppercase tracking-wider mb-2">Atrasos</div>
-                                            {delayed.length > 0 ? (
-                                                <div className="space-y-1 text-[11px] text-gray-300">
-                                                    {delayed.map((it, idx) => (<div key={it.id} className="truncate">{idx + 1}. {it.initiative}</div>))}
-                                                </div>
-                                            ) : (
-                                                <div className="text-[11px] text-gray-600">—</div>
-                                            )}
-                                        </div>
-                                        <div className="bg-white/5 border border-white/10 rounded-lg p-3">
-                                            <div className="text-[10px] text-gray-500 font-mono uppercase tracking-wider mb-2">Oportunidades</div>
-                                            {opportunities.length > 0 ? (
-                                                <div className="space-y-1 text-[11px] text-gray-300">
-                                                    {opportunities.map((o, idx) => (<div key={idx} className="truncate">{idx + 1}. {o}</div>))}
-                                                </div>
-                                            ) : (
-                                                <div className="text-[11px] text-gray-600">—</div>
-                                            )}
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div className="flex items-center gap-2 shrink-0">
-                                    <button
-                                        onClick={() => {
-                                            setHistoryFocusEntryId(latestAta?.id);
-                                            setShowHistory(true);
-                                        }}
-                                        className="btn-ghost !h-8 !px-3 !border-purple-500/30 text-purple-300 hover:text-purple-200"
-                                    >
-                                        Ver ATA
-                                    </button>
-                                </div>
+                        <div className="mb-4 px-4 py-2 rounded-xl border border-white/10 bg-[#080808] flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+                            <div className="flex items-center gap-3 min-w-0">
+                                <span className="text-[10px] font-mono text-gray-500 uppercase tracking-wider">Última governança</span>
+                                <span className="text-[11px] text-gray-300 font-medium truncate">{lastLabel}</span>
+                                <span className="text-[11px] text-gray-500 font-mono">{trend}{previousAta ? ` ${delta >= 0 ? '+' : ''}${delta.toFixed(1)}pp` : ''}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <button
+                                    onClick={() => {
+                                        setHistoryFocusEntryId(latestAta?.id);
+                                        setShowHistory(true);
+                                    }}
+                                    className="btn-ghost !h-7 !px-3 !border-purple-500/30 text-purple-300 hover:text-purple-200"
+                                >
+                                    Ver ATA
+                                </button>
                             </div>
                         </div>
                     );
                 })()}
+
+                <KPIGrid
+                    kpis={kpis}
+                    onKpiUpdate={handleKpiUpdate}
+                    disabled={!meetingState.active}
+                />
+
+                <PriorityActionsCard
+                    items={appData?.dashboard?.D2 || []}
+                    kpis={kpis}
+                    onActionClick={handlePriorityAction}
+                    variant="strip"
+                />
 
                 {(appData?.recalibration || appData?.nextGovernanceWindow) && (
                     <div className="mb-6 grid grid-cols-1 lg:grid-cols-3 gap-4">
@@ -1432,13 +1369,6 @@ export function OnePageDashboard({
                     </div>
                 )}
 
-                {/* 1. DAY SUMMARY AI - PRD 3.2 */}
-                <DaySummaryAI 
-                    items={appData?.dashboard?.D2 || []}
-                    kpis={kpis}
-                    clientName={appData?.clientName}
-                />
-
                     </>
                 )}
 
@@ -1465,20 +1395,6 @@ export function OnePageDashboard({
                     </div>
                 )}
 
-                {/* 2. KPIs - PRD 3.3 (Meta vs Realizado) */}
-                <KPIGrid
-                    kpis={kpis}
-                    onKpiUpdate={handleKpiUpdate}
-                    disabled={!meetingState.active}
-                />
-
-                {/* 3. PRIORITY ACTIONS - PRD 3.4 (Top 3) */}
-                <PriorityActionsCard
-                    items={appData?.dashboard?.D2 || []}
-                    kpis={kpis}
-                    onActionClick={handlePriorityAction}
-                />
-
                 {/* 2. TACTICAL GRID (The "Linear" List) */}
                 <div className="bento-grid mb-6 overflow-hidden">
                     <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--border-subtle)] bg-[var(--bg-surface)]">
@@ -1493,6 +1409,30 @@ export function OnePageDashboard({
                             <kbd className="hidden sm:inline-flex h-4 items-center gap-1 rounded border border-[var(--border-subtle)] bg-[var(--bg-deep)] px-1.5 font-mono text-[9px] font-medium text-[var(--text-secondary)]">
                                 <span className="text-xs">⌘</span>K
                             </kbd>
+                        </div>
+                    </div>
+
+                    <div className="px-4 py-2 border-b border-[var(--border-subtle)] bg-[#080808]">
+                        <div className="flex flex-wrap items-center gap-2">
+                            {[
+                                { id: null, label: 'Todos', pct: null, color: 'bg-white/10 text-gray-300 border-white/10' },
+                                { id: 'delayed', label: 'Atrasado', pct: roadmapStatusStats.pct.delayed, color: 'bg-red-500/10 text-red-300 border-red-500/30' },
+                                { id: 'in_production', label: 'Em produção', pct: roadmapStatusStats.pct.in_production, color: 'bg-purple-500/10 text-purple-300 border-purple-500/30' },
+                                { id: 'draft', label: 'Em edição', pct: roadmapStatusStats.pct.draft, color: 'bg-gray-500/10 text-gray-300 border-white/10' },
+                                { id: 'scheduled', label: 'Agendado', pct: roadmapStatusStats.pct.scheduled, color: 'bg-green-500/10 text-green-300 border-green-500/30' },
+                                { id: 'done', label: 'Concluído', pct: roadmapStatusStats.pct.done, color: 'bg-blue-500/10 text-blue-300 border-blue-500/30' },
+                            ].map(s => (
+                                <button
+                                    key={String(s.id)}
+                                    type="button"
+                                    onClick={() => setRoadmapStatusFilter(s.id)}
+                                    className={`text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded border ${s.color} ${roadmapStatusFilter === s.id ? 'ring-1 ring-white/20' : ''}`}
+                                >
+                                    {s.label}{s.pct !== null ? (
+                                        <span className="font-mono opacity-70"> {s.pct || 0}%</span>
+                                    ) : null}
+                                </button>
+                            ))}
                         </div>
                     </div>
 
