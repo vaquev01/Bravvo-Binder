@@ -86,7 +86,7 @@ export function PageOffer({ formData: externalFormData, setFormData: externalSet
                                 updateField('products', suggestedProducts);
                             }
                         }}
-                        className="ml-auto text-xs bg-white/10 hover:bg-white/20 px-3 py-1 rounded flex items-center gap-1 transition-colors"
+                        className="ml-auto text-xs bg-[var(--bg-panel)] border border-[var(--border-subtle)] hover:border-[var(--border-active)] hover:bg-white/5 px-3 py-1 rounded flex items-center gap-1 transition-colors"
                     >
                         🎲 Inspirar-me
                     </button>
@@ -110,7 +110,7 @@ export function PageOffer({ formData: externalFormData, setFormData: externalSet
                     Métricas Financeiras
                 </h3>
 
-                <div className="bg-white/5 border border-white/10 rounded-xl p-6">
+                <div className="vault-room vault-room-body">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <div>
                             <label className="input-label">Ticket Médio Atual</label>
@@ -158,7 +158,7 @@ export function PageOffer({ formData: externalFormData, setFormData: externalSet
 
                     {/* Delta Indicator */}
                     {formData.currentTicket && formData.targetTicket && (
-                        <div className="mt-4 pt-4 border-t border-white/10">
+                        <div className="mt-4 pt-4 border-t border-[var(--border-subtle)]">
                             <div className="flex items-center gap-2">
                                 <Zap size={16} className={Number(formData.targetTicket) > Number(formData.currentTicket) ? 'text-green-400' : 'text-red-400'} />
                                 <span className="text-sm text-gray-400">
@@ -287,7 +287,7 @@ export function PageOffer({ formData: externalFormData, setFormData: externalSet
             </section>
 
             {/* Submit */}
-            <div className="pt-6 border-t border-white/5 flex justify-between items-center sticky bottom-0 bg-[#050505] pb-6 z-10 shadow-[0_-10px_20px_rgba(0,0,0,0.5)]">
+            <div className="vault-footer">
                 <div className="flex items-center gap-2 text-sm">
                     {isSynced ? (
                         <span className="flex items-center gap-1.5 text-green-400">
@@ -302,7 +302,7 @@ export function PageOffer({ formData: externalFormData, setFormData: externalSet
                 <button
                     type="submit"
                     data-testid="v2-save-next"
-                    className="bg-orange-500 hover:bg-orange-600 text-white px-8 py-4 rounded-xl font-bold flex items-center gap-3 transition-all hover:scale-105 shadow-lg shadow-orange-500/20"
+                    className="btn-primary-lg"
                 >
                     Salvar e Avançar para V3 <ArrowRight size={20} />
                 </button>

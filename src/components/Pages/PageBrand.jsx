@@ -264,7 +264,7 @@ export function PageBrand({ formData: externalFormData, setFormData: externalSet
                     Público-Alvo
                 </h3>
 
-                <div className="bg-white/5 border border-white/10 rounded-xl p-6 space-y-4">
+                <div className="vault-room vault-room-body space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div>
                             <label className="input-label">Faixa Etária</label>
@@ -348,13 +348,13 @@ export function PageBrand({ formData: externalFormData, setFormData: externalSet
                     <button
                         type="button"
                         onClick={handleRandomMood}
-                        className="ml-auto text-xs bg-white/10 hover:bg-white/20 px-3 py-1 rounded flex items-center gap-1 transition-colors"
+                        className="ml-auto text-xs bg-[var(--bg-panel)] border border-[var(--border-subtle)] hover:border-[var(--border-active)] hover:bg-white/5 px-3 py-1 rounded flex items-center gap-1 transition-colors"
                     >
                         🎲 Inspirar-me
                     </button>
                 </h3>
 
-                <div className="bg-white/5 border border-white/10 rounded-xl p-6">
+                <div className="vault-room vault-room-body">
                     {/* Colors & Tone (Original V1) */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
@@ -393,7 +393,7 @@ export function PageBrand({ formData: externalFormData, setFormData: externalSet
                     <div className="grid grid-cols-3 gap-4 mt-6">
                         <div>
                             <label className="input-label">Cor Primária</label>
-                            <div className="flex items-center gap-3 bg-black/30 p-3 rounded-lg border border-white/10">
+                            <div className="flex items-center gap-3 bg-[var(--bg-panel)] p-3 rounded-lg border border-[var(--border-subtle)]">
                                 <input
                                     type="color"
                                     className="h-10 w-10 rounded bg-transparent cursor-pointer border-0"
@@ -405,7 +405,7 @@ export function PageBrand({ formData: externalFormData, setFormData: externalSet
                         </div>
                         <div>
                             <label className="input-label">Cor Secundária</label>
-                            <div className="flex items-center gap-3 bg-black/30 p-3 rounded-lg border border-white/10">
+                            <div className="flex items-center gap-3 bg-[var(--bg-panel)] p-3 rounded-lg border border-[var(--border-subtle)]">
                                 <input
                                     type="color"
                                     className="h-10 w-10 rounded bg-transparent cursor-pointer border-0"
@@ -417,7 +417,7 @@ export function PageBrand({ formData: externalFormData, setFormData: externalSet
                         </div>
                         <div>
                             <label className="input-label">Cor de Acento</label>
-                            <div className="flex items-center gap-3 bg-black/30 p-3 rounded-lg border border-white/10">
+                            <div className="flex items-center gap-3 bg-[var(--bg-panel)] p-3 rounded-lg border border-[var(--border-subtle)]">
                                 <input
                                     type="color"
                                     className="h-10 w-10 rounded bg-transparent cursor-pointer border-0"
@@ -430,7 +430,7 @@ export function PageBrand({ formData: externalFormData, setFormData: externalSet
                     </div>
 
                     {/* NEW: Brand Assets Upload (Moved from V5) */}
-                    <div className="mt-8 pt-8 border-t border-white/10">
+                    <div className="mt-8 pt-8 border-t border-[var(--border-subtle)]">
                         <label className="input-label flex items-center gap-2 mb-4">
                             <Upload size={14} className="text-purple-400" />
                             Brand Assets (Logos, Ícones, Texturas)
@@ -445,7 +445,7 @@ export function PageBrand({ formData: externalFormData, setFormData: externalSet
                                     onClick={() => setActiveAssetTab(tab.id)}
                                     className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${activeAssetTab === tab.id
                                             ? 'bg-purple-500 text-white'
-                                            : 'bg-white/5 text-gray-400 hover:bg-white/10'
+                                            : 'bg-[var(--bg-panel)] text-[var(--text-secondary)] border border-[var(--border-subtle)] hover:border-[var(--border-active)] hover:bg-white/5'
                                         }`}
                                 >
                                     <tab.icon size={12} />
@@ -481,7 +481,7 @@ export function PageBrand({ formData: externalFormData, setFormData: externalSet
                     Detalhes finos que ajudam a IA a entender o "mood" exato da marca.
                 </p>
 
-                <div className="bg-white/5 border border-white/10 rounded-xl p-6 space-y-6">
+                <div className="vault-room vault-room-body space-y-6">
                     {/* Musical Style */}
                     <div>
                         <label className="input-label flex items-center gap-2">
@@ -527,7 +527,7 @@ export function PageBrand({ formData: externalFormData, setFormData: externalSet
                                         onClick={() => toggleVibe(vibe)}
                                         className={`px-2 py-1 rounded text-[10px] font-medium border transition-all ${(formData.brandIdentity?.visualVibes || []).includes(vibe)
                                                 ? 'bg-purple-500 text-white border-purple-500'
-                                                : 'bg-white/5 text-gray-400 border-white/10 hover:border-purple-500/50'
+                                                : 'bg-[var(--bg-panel)] text-[var(--text-secondary)] border-[var(--border-subtle)] hover:border-purple-500/50'
                                             }`}
                                     >
                                         {vibe}
@@ -587,7 +587,7 @@ export function PageBrand({ formData: externalFormData, setFormData: externalSet
                         maxLength={500}
                     />
                     <div className="flex justify-between items-center mt-2">
-                        <div className="h-1.5 flex-1 bg-white/10 rounded-full overflow-hidden mr-4">
+                        <div className="h-1.5 flex-1 bg-[var(--bg-panel)] rounded-full overflow-hidden mr-4">
                             <div
                                 className={`h-full transition-all duration-300 ${(formData.bio || '').length < 100 ? 'bg-red-500' :
                                         (formData.bio || '').length < 200 ? 'bg-yellow-500' :
@@ -607,7 +607,7 @@ export function PageBrand({ formData: externalFormData, setFormData: externalSet
             </section>
 
             {/* Submit */}
-            <div className="pt-6 border-t border-white/5 flex justify-between items-center sticky bottom-0 bg-[#050505] pb-6 z-10 shadow-[0_-10px_20px_rgba(0,0,0,0.5)]">
+            <div className="vault-footer">
                 <div className="flex items-center gap-2 text-sm">
                     {isSynced ? (
                         <span className="flex items-center gap-1.5 text-green-400">
@@ -621,7 +621,7 @@ export function PageBrand({ formData: externalFormData, setFormData: externalSet
                 </div>
                 <button
                     type="submit"
-                    className="bg-red-500 hover:bg-red-600 text-white px-8 py-4 rounded-xl font-bold flex items-center gap-3 transition-all hover:scale-105 shadow-lg shadow-red-500/20"
+                    className="btn-primary-lg"
                 >
                     Salvar e Avançar para V2 <ArrowRight size={20} />
                 </button>

@@ -112,7 +112,7 @@ export function EmptyState({
     return (
         <div className={`flex flex-col items-center justify-center text-center ${sizeClasses[size]} animate-fadeIn`}>
             {/* Icon */}
-            <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mb-4">
+            <div className="w-16 h-16 rounded-2xl bg-[var(--bg-panel)] border border-[var(--border-subtle)] flex items-center justify-center mb-4">
                 <Icon size={iconSizes[size]} className="text-gray-500" />
             </div>
             
@@ -130,7 +130,7 @@ export function EmptyState({
             {onAction && (
                 <button
                     onClick={onAction}
-                    className="inline-flex items-center gap-2 px-5 py-2.5 bg-white text-black text-sm font-bold rounded-lg hover:bg-gray-200 transition-colors"
+                    className="inline-flex items-center gap-2 px-5 py-2.5 bg-[var(--brand-accent)] text-white text-sm font-bold rounded-lg hover:brightness-110 transition-colors"
                 >
                     <ActionIcon size={16} />
                     {customAction?.label || config.action.label}
@@ -160,7 +160,7 @@ export function EmptyStateInline({
     const Icon = config.icon;
 
     return (
-        <div className="flex items-center justify-between p-4 bg-white/5 border border-dashed border-white/10 rounded-lg">
+        <div className="flex items-center justify-between p-4 bg-[var(--bg-panel)] border border-dashed border-[var(--border-subtle)] rounded-lg">
             <div className="flex items-center gap-3">
                 <Icon size={18} className="text-gray-600" />
                 <span className="text-sm text-gray-500">

@@ -123,7 +123,7 @@ export function PageOps({ formData: externalFormData, setFormData: externalSetFo
                         </div>
                     </div>
 
-                    <div className="mt-6 pt-6 border-t border-white/10">
+                    <div className="mt-6 pt-6 border-t border-[var(--border-subtle)]">
                         <label className="input-label">SLA de Aprovação</label>
                         <p className="text-xs text-gray-500 mb-4">Tempo máximo para aprovar conteúdos antes de alertas de atraso</p>
                         <div className="grid grid-cols-4 gap-3">
@@ -136,7 +136,7 @@ export function PageOps({ formData: externalFormData, setFormData: externalSetFo
                                         p-3 rounded-lg border text-center transition-all
                                         ${formData.slaHours === hours
                                             ? 'bg-green-500/20 border-green-500/50 text-green-400'
-                                            : 'bg-white/5 border-white/10 text-gray-400 hover:border-white/20'
+                                            : 'bg-[var(--bg-panel)] border-[var(--border-subtle)] text-[var(--text-secondary)] hover:border-[var(--border-active)]'
                                         }
                                     `}
                                 >
@@ -157,7 +157,7 @@ export function PageOps({ formData: externalFormData, setFormData: externalSetFo
                     Responsáveis
                 </h3>
 
-                <div className="bg-white/5 border border-white/10 rounded-xl p-6">
+                <div className="vault-room vault-room-body">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                             <label className="input-label">Responsável por Conteúdo</label>
@@ -223,7 +223,7 @@ export function PageOps({ formData: externalFormData, setFormData: externalSetFo
                                     p-3 rounded-lg border text-left transition-all
                                     ${formData.postingFrequency === freq.value
                                         ? 'bg-green-500/20 border-green-500/50'
-                                        : 'bg-white/5 border-white/10 hover:border-white/20'
+                                        : 'bg-[var(--bg-panel)] border-[var(--border-subtle)] hover:border-[var(--border-active)]'
                                     }
                                 `}
                             >
@@ -259,7 +259,7 @@ export function PageOps({ formData: externalFormData, setFormData: externalSetFo
                                         w-12 h-12 rounded-lg border font-medium transition-all
                                         ${isSelected
                                             ? 'bg-green-500/20 border-green-500/50 text-green-400'
-                                            : 'bg-white/5 border-white/10 text-gray-500 hover:border-white/20'
+                                            : 'bg-[var(--bg-panel)] border-[var(--border-subtle)] text-[var(--text-secondary)] hover:border-[var(--border-active)]'
                                         }
                                     `}
                                 >
@@ -286,7 +286,7 @@ export function PageOps({ formData: externalFormData, setFormData: externalSetFo
                                         p-3 rounded-lg border text-center transition-all
                                         ${isSelected
                                             ? 'bg-green-500/20 border-green-500/50 text-green-400'
-                                            : 'bg-white/5 border-white/10 text-gray-400 hover:border-white/20'
+                                            : 'bg-[var(--bg-panel)] border-[var(--border-subtle)] text-[var(--text-secondary)] hover:border-[var(--border-active)]'
                                         }
                                     `}
                                 >
@@ -306,7 +306,7 @@ export function PageOps({ formData: externalFormData, setFormData: externalSetFo
                     Ciclo de Planejamento
                 </h3>
 
-                <div className="bg-white/5 border border-white/10 rounded-xl p-6">
+                <div className="vault-room vault-room-body">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                             <label className="input-label">Data de Início</label>
@@ -379,7 +379,7 @@ export function PageOps({ formData: externalFormData, setFormData: externalSetFo
             </section>
 
             {/* Submit */}
-            <div className="pt-6 border-t border-white/5 flex justify-between items-center sticky bottom-0 bg-[#050505] pb-6 z-10 shadow-[0_-10px_20px_rgba(0,0,0,0.5)]">
+            <div className="vault-footer">
                 <div className="flex items-center gap-2 text-sm">
                     {isSynced ? (
                         <span className="flex items-center gap-1.5 text-green-400">
@@ -394,7 +394,7 @@ export function PageOps({ formData: externalFormData, setFormData: externalSetFo
                 <button
                     type="submit"
                     disabled={isProcessing}
-                    className="bg-purple-600 hover:bg-purple-700 text-white px-8 py-4 rounded-xl font-bold flex items-center gap-3 transition-all hover:scale-105 shadow-lg shadow-purple-600/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="btn-primary-lg disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                     <Sparkles size={20} className={isProcessing ? 'animate-spin' : ''} />
                     {isProcessing ? 'Processando...' : 'Finalizar & Gerar Bravvo Binder'}

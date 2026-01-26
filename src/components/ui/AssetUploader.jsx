@@ -100,7 +100,7 @@ export function AssetUploader({ assets = [], onUpdate, assetType = 'logos', maxF
                     border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-all
                     ${isDragging
                         ? 'border-purple-500 bg-purple-500/10'
-                        : 'border-white/20 hover:border-white/40 bg-white/5'
+                        : 'border-[var(--border-subtle)] hover:border-[var(--border-active)] bg-[var(--bg-panel)]'
                     }
                 `}
             >
@@ -125,7 +125,7 @@ export function AssetUploader({ assets = [], onUpdate, assetType = 'logos', maxF
                     {assets.map((asset) => (
                         <div
                             key={asset.id}
-                            className="group relative bg-white/5 border border-white/10 rounded-lg overflow-hidden hover:border-purple-500/50 transition-colors"
+                            className="group relative bg-[var(--bg-panel)] border border-[var(--border-subtle)] rounded-lg overflow-hidden hover:border-purple-500/50 transition-colors"
                         >
                             {/* Image Preview */}
                             <div className="aspect-square relative">
@@ -172,7 +172,7 @@ export function AssetUploader({ assets = [], onUpdate, assetType = 'logos', maxF
                                             onBlur={() => { addTagToAsset(asset.id); setShowTagInput(null); }}
                                             placeholder="Tag..."
                                             autoFocus
-                                            className="text-[9px] bg-white/10 text-white px-1 rounded w-12 outline-none"
+                                            className="text-[9px] bg-[var(--bg-deep)] border border-[var(--border-subtle)] text-white px-1 rounded w-12 outline-none"
                                         />
                                     ) : (
                                         <button

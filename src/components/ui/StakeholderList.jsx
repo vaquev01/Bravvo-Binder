@@ -43,7 +43,7 @@ export function StakeholderList({ stakeholders = [], onChange }) {
                 {stakeholders.map((stakeholder) => (
                     <div
                         key={stakeholder.id}
-                        className="bg-white/5 border border-white/10 rounded-lg p-4 flex items-center justify-between group hover:border-white/20 transition-colors"
+                        className="bg-[var(--bg-panel)] border border-[var(--border-subtle)] rounded-lg p-4 flex items-center justify-between group hover:border-[var(--border-active)] transition-colors"
                     >
                         <div className="flex items-center gap-4">
                             <div className="w-10 h-10 bg-green-500/20 text-green-400 rounded-full flex items-center justify-center">
@@ -71,7 +71,7 @@ export function StakeholderList({ stakeholders = [], onChange }) {
                                     }
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="flex items-center gap-1 text-xs text-gray-400 hover:text-white bg-white/5 px-2 py-1 rounded transition-colors"
+                                    className="flex items-center gap-1 text-xs text-[var(--text-secondary)] hover:text-white bg-[var(--bg-panel)] border border-[var(--border-subtle)] px-2 py-1 rounded transition-colors"
                                 >
                                     {stakeholder.contactType === 'whatsapp' ? <Phone size={12} /> : <Mail size={12} />}
                                     {stakeholder.contact}
@@ -81,7 +81,7 @@ export function StakeholderList({ stakeholders = [], onChange }) {
                                 onClick={() => toggleApprover(stakeholder.id)}
                                 className={`p-1.5 rounded transition-colors ${stakeholder.canApprove
                                         ? 'bg-green-500/20 text-green-400'
-                                        : 'bg-white/5 text-gray-500 hover:text-white'
+                                        : 'bg-[var(--bg-panel)] text-[var(--text-secondary)] hover:text-white'
                                     }`}
                                 title={stakeholder.canApprove ? 'Remover permissão de aprovador' : 'Definir como aprovador'}
                             >
@@ -89,7 +89,7 @@ export function StakeholderList({ stakeholders = [], onChange }) {
                             </button>
                             <button
                                 onClick={() => removeStakeholder(stakeholder.id)}
-                                className="p-1.5 rounded bg-white/5 text-gray-500 hover:bg-red-500/20 hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100"
+                                className="p-1.5 rounded bg-[var(--bg-panel)] text-[var(--text-secondary)] hover:bg-red-500/20 hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100"
                                 title="Remover"
                             >
                                 <Trash2 size={14} />
@@ -152,7 +152,7 @@ export function StakeholderList({ stakeholders = [], onChange }) {
                             type="checkbox"
                             checked={newStakeholder.canApprove}
                             onChange={e => setNewStakeholder({ ...newStakeholder, canApprove: e.target.checked })}
-                            className="w-4 h-4 rounded bg-white/10 border-white/20"
+                            className="w-4 h-4 rounded bg-[var(--bg-panel)] border-[var(--border-subtle)] accent-[var(--brand-accent)]"
                         />
                         <label htmlFor="canApprove" className="text-sm text-gray-400">
                             Este stakeholder pode aprovar conteúdos
@@ -181,7 +181,7 @@ export function StakeholderList({ stakeholders = [], onChange }) {
                 <button
                     type="button"
                     onClick={() => setShowAddForm(true)}
-                    className="w-full py-3 border border-dashed border-white/20 rounded-lg text-sm text-gray-400 hover:text-white hover:border-white/40 transition-colors flex items-center justify-center gap-2"
+                    className="w-full py-3 border border-dashed border-[var(--border-subtle)] rounded-lg text-sm text-[var(--text-secondary)] hover:text-white hover:border-[var(--border-active)] transition-colors flex items-center justify-center gap-2"
                 >
                     <Plus size={16} />
                     Adicionar Stakeholder

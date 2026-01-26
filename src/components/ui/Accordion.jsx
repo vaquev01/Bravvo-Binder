@@ -5,7 +5,7 @@ export function Accordion({ title, icon: Icon, defaultOpen = false, children, cl
     const [isOpen, setIsOpen] = useState(defaultOpen);
 
     return (
-        <div className={`border border-white/10 rounded-xl overflow-hidden bg-white/5 ${className}`}>
+        <div className={`border border-[var(--border-subtle)] rounded-xl overflow-hidden bg-[var(--bg-panel)] ${className}`}>
             <button
                 type="button"
                 onClick={() => setIsOpen(!isOpen)}
@@ -25,7 +25,7 @@ export function Accordion({ title, icon: Icon, defaultOpen = false, children, cl
                 className={`transition-all duration-300 ease-in-out ${isOpen ? 'max-h-[1000px] opacity-100' : 'max-h-0 opacity-0'
                     }`}
             >
-                <div className="p-4 border-t border-white/10 bg-[#0A0A0A]">
+                <div className="p-4 border-t border-[var(--border-subtle)] bg-[var(--bg-surface)]">
                     {children}
                 </div>
             </div>

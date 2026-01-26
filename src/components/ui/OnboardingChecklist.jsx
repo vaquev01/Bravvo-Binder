@@ -110,12 +110,12 @@ export function OnboardingChecklist({
     // Variante compact (só barra de progresso)
     if (variant === 'compact') {
         return (
-            <div className="p-3 bg-white/5 border border-white/10 rounded-lg">
+            <div className="p-3 bg-[var(--bg-panel)] border border-[var(--border-subtle)] rounded-lg">
                 <div className="flex items-center justify-between mb-2">
                     <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Setup</span>
                     <span className="text-xs font-mono text-white">{progress}%</span>
                 </div>
-                <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
+                <div className="h-1.5 bg-[var(--border-subtle)] rounded-full overflow-hidden">
                     <div 
                         className="h-full bg-gradient-to-r from-purple-500 to-blue-500 transition-all duration-500"
                         style={{ width: `${progress}%` }}
@@ -132,9 +132,9 @@ export function OnboardingChecklist({
 
     // Variante full (checklist completo)
     return (
-        <div className="bg-[#0A0A0A] border border-white/10 rounded-xl overflow-hidden">
+        <div className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-xl overflow-hidden">
             {/* Header */}
-            <div className="p-4 border-b border-white/10 bg-gradient-to-r from-purple-500/10 to-blue-500/10">
+            <div className="p-4 border-b border-[var(--border-subtle)] bg-gradient-to-r from-purple-500/10 to-blue-500/10">
                 <div className="flex items-center justify-between mb-3">
                     <div>
                         <h3 className="text-sm font-bold text-white">Setup do Bravvo Binder</h3>
@@ -147,7 +147,7 @@ export function OnboardingChecklist({
                 </div>
                 
                 {/* Progress Bar */}
-                <div className="h-2 bg-white/10 rounded-full overflow-hidden">
+                <div className="h-2 bg-[var(--border-subtle)] rounded-full overflow-hidden">
                     <div 
                         className="h-full bg-gradient-to-r from-purple-500 to-blue-500 transition-all duration-500"
                         style={{ width: `${progress}%` }}
@@ -156,7 +156,7 @@ export function OnboardingChecklist({
             </div>
             
             {/* Steps */}
-            <div className="divide-y divide-white/5">
+            <div className="divide-y divide-[var(--border-subtle)]">
                 {ONBOARDING_STEPS.map((step, index) => {
                     const isComplete = completedSteps.includes(step.id);
                     const isCurrent = step.id === nextStep?.id;
@@ -178,7 +178,7 @@ export function OnboardingChecklist({
                                     ? 'bg-green-500/20 text-green-400' 
                                     : isCurrent
                                         ? 'bg-purple-500/20 text-purple-400'
-                                        : 'bg-white/5 text-gray-600'
+                                        : 'bg-[var(--bg-panel)] text-gray-600'
                                 }
                             `}>
                                 {isComplete ? (

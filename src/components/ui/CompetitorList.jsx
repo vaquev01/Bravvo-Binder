@@ -36,7 +36,7 @@ export function CompetitorList({ competitors = [], onChange }) {
                 {competitors.map((competitor) => (
                     <div
                         key={competitor.id}
-                        className="bg-white/5 border border-white/10 rounded-lg p-4 group hover:border-orange-500/30 transition-colors"
+                        className="bg-[var(--bg-panel)] border border-[var(--border-subtle)] rounded-lg p-4 group hover:border-orange-500/30 transition-colors"
                     >
                         <div className="flex items-start justify-between mb-2">
                             <div className="flex items-center gap-2">
@@ -69,7 +69,7 @@ export function CompetitorList({ competitors = [], onChange }) {
                                     href={`https://instagram.com/${competitor.handle}`}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="flex items-center gap-1 text-[10px] text-gray-500 hover:text-pink-400 bg-white/5 px-2 py-1 rounded transition-colors"
+                                    className="flex items-center gap-1 text-[10px] text-[var(--text-secondary)] hover:text-pink-400 bg-[var(--bg-panel)] border border-[var(--border-subtle)] px-2 py-1 rounded transition-colors"
                                 >
                                     <Instagram size={10} />
                                     Instagram
@@ -80,7 +80,7 @@ export function CompetitorList({ competitors = [], onChange }) {
                                     href={competitor.link.startsWith('http') ? competitor.link : `https://${competitor.link}`}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="flex items-center gap-1 text-[10px] text-gray-500 hover:text-blue-400 bg-white/5 px-2 py-1 rounded transition-colors"
+                                    className="flex items-center gap-1 text-[10px] text-[var(--text-secondary)] hover:text-blue-400 bg-[var(--bg-panel)] border border-[var(--border-subtle)] px-2 py-1 rounded transition-colors"
                                 >
                                     <Globe size={10} />
                                     Site
@@ -107,7 +107,7 @@ export function CompetitorList({ competitors = [], onChange }) {
                         <div>
                             <label className="input-label">@ Instagram</label>
                             <div className="flex">
-                                <span className="bg-white/5 border border-white/10 border-r-0 rounded-l-lg px-3 py-2.5 text-gray-500">@</span>
+                                <span className="bg-[var(--bg-panel)] border border-[var(--border-subtle)] border-r-0 rounded-l-lg px-3 py-2.5 text-[var(--text-secondary)]">@</span>
                                 <input
                                     className="input-field rounded-l-none flex-1"
                                     placeholder="perfil"
@@ -160,7 +160,7 @@ export function CompetitorList({ competitors = [], onChange }) {
                 <button
                     type="button"
                     onClick={() => setShowAddForm(true)}
-                    className="w-full py-3 border border-dashed border-white/20 rounded-lg text-sm text-gray-400 hover:text-white hover:border-white/40 transition-colors flex items-center justify-center gap-2"
+                    className="w-full py-3 border border-dashed border-[var(--border-subtle)] rounded-lg text-sm text-[var(--text-secondary)] hover:text-white hover:border-[var(--border-active)] transition-colors flex items-center justify-center gap-2"
                 >
                     <Plus size={16} />
                     Adicionar Concorrente

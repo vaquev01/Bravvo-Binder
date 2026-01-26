@@ -45,7 +45,7 @@ export function TagInput({ value = [], onChange, placeholder = "Digite e pressio
                 {value.map((tag, index) => (
                     <span
                         key={index}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white/10 border border-white/10 rounded-full text-sm text-white group hover:bg-white/15 transition-colors"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[var(--bg-panel)] border border-[var(--border-subtle)] rounded-full text-sm text-white group hover:border-[var(--border-active)] hover:bg-white/5 transition-colors"
                     >
                         {tag}
                         <button
@@ -85,13 +85,13 @@ export function TagInput({ value = [], onChange, placeholder = "Digite e pressio
 
                     {/* Suggestions Dropdown */}
                     {showSuggestions && filteredSuggestions.length > 0 && (
-                        <div className="absolute top-full left-0 right-0 mt-1 bg-[#1a1a1a] border border-white/10 rounded-lg shadow-xl z-50 max-h-40 overflow-y-auto">
+                        <div className="absolute top-full left-0 right-0 mt-1 bg-[var(--bg-panel)] border border-[var(--border-subtle)] rounded-lg shadow-xl z-50 max-h-40 overflow-y-auto">
                             {filteredSuggestions.slice(0, 5).map((suggestion, index) => (
                                 <button
                                     key={index}
                                     type="button"
                                     onClick={() => addTag(suggestion)}
-                                    className="w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-white/10 hover:text-white transition-colors"
+                                    className="w-full text-left px-4 py-2 text-sm text-[var(--text-secondary)] hover:bg-white/5 hover:text-white transition-colors"
                                 >
                                     {suggestion}
                                 </button>

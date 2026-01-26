@@ -78,13 +78,13 @@ export function Drawer({
                 className={`
                     absolute top-0 bottom-0 ${positionClasses[position]}
                     ${widthClasses[width]}
-                    bg-[#0A0A0A] border-l border-white/10
+                    bg-[var(--bg-surface)] border-l border-[var(--border-subtle)]
                     flex flex-col shadow-2xl
                     ${slideAnimation}
                 `}
             >
                 {/* Header */}
-                <div className="flex items-center justify-between px-6 py-4 border-b border-white/10 bg-[#080808]">
+                <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--border-subtle)] bg-[var(--bg-panel)]">
                     <div>
                         <h2 className="text-sm font-bold text-white uppercase tracking-widest">
                             {title}
@@ -118,7 +118,7 @@ export function Drawer({
 export function DrawerFooter({ children, className = '' }) {
     return (
         <div className={`
-            px-6 py-4 border-t border-white/10 bg-[#080808]
+            px-6 py-4 border-t border-[var(--border-subtle)] bg-[var(--bg-panel)]
             flex items-center justify-end gap-3
             ${className}
         `}>

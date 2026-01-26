@@ -19,7 +19,7 @@ export function LanguageSwitcher({ className = "" }) {
             <button
                 onClick={() => setIsOpen(!isOpen)}
                 onBlur={() => setTimeout(() => setIsOpen(false), 200)}
-                className="flex items-center gap-2 px-3 py-2 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 transition-colors text-xs font-medium text-gray-300"
+                className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[var(--bg-panel)] border border-[var(--border-subtle)] hover:border-[var(--border-active)] hover:bg-white/5 transition-colors text-xs font-medium text-[var(--text-secondary)]"
             >
                 <Globe size={14} />
                 <span>{currentLang.code.toUpperCase()}</span>
@@ -27,7 +27,7 @@ export function LanguageSwitcher({ className = "" }) {
             </button>
 
             {isOpen && (
-                <div className="absolute top-full right-0 mt-2 w-32 bg-[#111] border border-white/10 rounded-lg shadow-xl overflow-hidden z-50 animate-fadeIn">
+                <div className="absolute top-full right-0 mt-2 w-32 bg-[var(--bg-panel)] border border-[var(--border-subtle)] rounded-lg shadow-xl overflow-hidden z-50 animate-fadeIn">
                     {LANGUAGES.map(lang => (
                         <button
                             key={lang.code}
@@ -35,7 +35,7 @@ export function LanguageSwitcher({ className = "" }) {
                                 setLanguage(lang.code);
                                 setIsOpen(false);
                             }}
-                            className={`w-full flex items-center gap-3 px-4 py-2 text-xs text-left hover:bg-white/5 transition-colors ${language === lang.code ? 'text-white font-bold bg-white/5' : 'text-gray-400'}`}
+                            className={`w-full flex items-center gap-3 px-4 py-2 text-xs text-left hover:bg-white/5 transition-colors ${language === lang.code ? 'text-white font-bold bg-white/5' : 'text-[var(--text-secondary)]'}`}
                         >
                             <span>{lang.flag}</span>
                             {lang.label}

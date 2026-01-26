@@ -104,7 +104,7 @@ export function PageIdeas({ formData: externalFormData, setFormData: externalSet
                 {/* Ideas List */}
                 <div className="space-y-3">
                     {(formData.ideas || []).length === 0 && !showIdeaForm && (
-                        <div className="bg-white/5 border border-dashed border-white/20 rounded-xl p-8 text-center">
+                        <div className="bg-[var(--bg-panel)] border border-dashed border-[var(--border-subtle)] rounded-xl p-8 text-center">
                             <Lightbulb size={32} className="text-gray-600 mx-auto mb-3" />
                             <p className="text-gray-500">Nenhuma ideia cadastrada ainda</p>
                         </div>
@@ -114,7 +114,7 @@ export function PageIdeas({ formData: externalFormData, setFormData: externalSet
                         <div
                             key={idea.id}
                             data-testid={`v5-idea-${idea.id}`}
-                            className="bg-white/5 border border-white/10 rounded-xl p-4 group hover:border-yellow-500/30 transition-colors"
+                            className="bg-[var(--bg-panel)] border border-[var(--border-subtle)] rounded-xl p-4 group hover:border-yellow-500/30 transition-colors"
                         >
                             <div className="flex items-start justify-between">
                                 <div className="flex-1">
@@ -205,7 +205,7 @@ export function PageIdeas({ formData: externalFormData, setFormData: externalSet
                                         onClick={() => toggleIdeaTag(tag)}
                                         className={`px-3 py-1 rounded-full text-xs font-medium border transition-all ${newIdea.tags.includes(tag)
                                             ? 'bg-yellow-500 text-black border-yellow-500'
-                                            : 'bg-white/5 text-gray-400 border-white/10 hover:border-white/30'
+                                            : 'bg-[var(--bg-panel)] text-[var(--text-secondary)] border-[var(--border-subtle)] hover:border-[var(--border-active)]'
                                             }`}
                                     >
                                         {tag}
@@ -234,7 +234,7 @@ export function PageIdeas({ formData: externalFormData, setFormData: externalSet
                         type="button"
                         onClick={() => setShowIdeaForm(true)}
                         data-testid="v5-new-idea"
-                        className="w-full py-3 border border-dashed border-white/20 rounded-lg text-sm text-gray-400 hover:text-white hover:border-yellow-500/40 transition-colors flex items-center justify-center gap-2"
+                        className="w-full py-3 border border-dashed border-[var(--border-subtle)] rounded-lg text-sm text-[var(--text-secondary)] hover:text-white hover:border-yellow-500/40 transition-colors flex items-center justify-center gap-2"
                     >
                         <Plus size={16} />
                         Nova Ideia
@@ -257,7 +257,7 @@ export function PageIdeas({ formData: externalFormData, setFormData: externalSet
                 {/* References List */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     {(formData.references || []).length === 0 && !showRefForm && (
-                        <div className="col-span-2 bg-white/5 border border-dashed border-white/20 rounded-xl p-8 text-center">
+                        <div className="col-span-2 bg-[var(--bg-panel)] border border-dashed border-[var(--border-subtle)] rounded-xl p-8 text-center">
                             <Link2 size={32} className="text-gray-600 mx-auto mb-3" />
                             <p className="text-gray-500">Nenhuma referência salva</p>
                         </div>
@@ -266,7 +266,7 @@ export function PageIdeas({ formData: externalFormData, setFormData: externalSet
                     {(formData.references || []).map((ref) => (
                         <div
                             key={ref.id}
-                            className="bg-white/5 border border-white/10 rounded-xl p-4 group hover:border-blue-500/30 transition-colors"
+                            className="bg-[var(--bg-panel)] border border-[var(--border-subtle)] rounded-xl p-4 group hover:border-blue-500/30 transition-colors"
                         >
                             <div className="flex items-start justify-between mb-2">
                                 <div className="flex items-center gap-2">
@@ -367,7 +367,7 @@ export function PageIdeas({ formData: externalFormData, setFormData: externalSet
                     <button
                         type="button"
                         onClick={() => setShowRefForm(true)}
-                        className="w-full py-3 border border-dashed border-white/20 rounded-lg text-sm text-gray-400 hover:text-white hover:border-blue-500/40 transition-colors flex items-center justify-center gap-2"
+                        className="w-full py-3 border border-dashed border-[var(--border-subtle)] rounded-lg text-sm text-[var(--text-secondary)] hover:text-white hover:border-blue-500/40 transition-colors flex items-center justify-center gap-2"
                     >
                         <Plus size={16} />
                         Nova Referência
@@ -387,13 +387,13 @@ export function PageIdeas({ formData: externalFormData, setFormData: externalSet
                     Anotações rápidas, brainstorm, rascunhos
                 </p>
 
-                <div className="bg-white/5 border border-white/10 rounded-xl overflow-hidden">
-                    <div className="bg-purple-500/10 border-b border-white/10 px-4 py-2 flex items-center gap-2">
+                <div className="vault-room overflow-hidden">
+                    <div className="bg-purple-500/10 border-b border-[var(--border-subtle)] px-4 py-2 flex items-center gap-2">
                         <FileText size={14} className="text-purple-400" />
                         <span className="text-xs text-purple-400 font-medium">NOTEPAD</span>
                     </div>
                     <textarea
-                        className="w-full bg-transparent text-gray-200 p-4 min-h-[200px] resize-none focus:outline-none font-mono text-sm placeholder-gray-600"
+                        className="w-full bg-transparent text-[var(--text-primary)] p-4 min-h-[200px] resize-none focus:outline-none font-mono text-sm placeholder-[var(--text-tertiary)]"
                         placeholder="Digite suas anotações aqui...
 
 • Ideias soltas
@@ -403,7 +403,7 @@ export function PageIdeas({ formData: externalFormData, setFormData: externalSet
                         value={formData.notepad || ''}
                         onChange={e => updateField('notepad', e.target.value)}
                     />
-                    <div className="bg-white/5 border-t border-white/10 px-4 py-2 flex justify-between items-center">
+                    <div className="bg-[var(--bg-panel)] border-t border-[var(--border-subtle)] px-4 py-2 flex justify-between items-center">
                         <span className="text-[10px] text-gray-600">
                             {(formData.notepad || '').length} caracteres
                         </span>
@@ -415,7 +415,7 @@ export function PageIdeas({ formData: externalFormData, setFormData: externalSet
             </section>
 
             {/* Submit */}
-            <div className="pt-6 border-t border-white/5 flex justify-between items-center sticky bottom-0 bg-[#050505] pb-6 z-10 shadow-[0_-10px_20px_rgba(0,0,0,0.5)]">
+            <div className="vault-footer">
                 <div className="flex items-center gap-2 text-sm">
                     {isSynced ? (
                         <span className="flex items-center gap-1.5 text-green-400">
@@ -430,7 +430,7 @@ export function PageIdeas({ formData: externalFormData, setFormData: externalSet
                 <button
                     type="submit"
                     data-testid="v5-complete"
-                    className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-xl font-bold flex items-center gap-2 transition-all hover:scale-105 shadow-lg shadow-purple-600/20"
+                    className="btn-primary-lg"
                 >
                     <Sparkles size={18} />
                     Concluir V5

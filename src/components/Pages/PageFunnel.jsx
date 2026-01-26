@@ -91,7 +91,7 @@ export function PageFunnel({ formData: externalFormData, setFormData: externalSe
                     <div>
                         <label className="input-label">Link Principal (WhatsApp/Site)</label>
                         <div className="flex gap-2">
-                            <span className="bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-gray-500 font-mono text-sm flex items-center">https://</span>
+                            <span className="bg-[var(--bg-panel)] border border-[var(--border-subtle)] rounded-lg px-4 py-3 text-[var(--text-secondary)] font-mono text-sm flex items-center">https://</span>
                             <input
                                 required
                                 placeholder="wa.me/5511999999999"
@@ -110,7 +110,7 @@ export function PageFunnel({ formData: externalFormData, setFormData: externalSe
                         <div>
                             <label className="input-label">Link do Instagram</label>
                             <div className="flex gap-2">
-                                <span className="bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-gray-500 font-mono text-sm flex items-center">@</span>
+                                <span className="bg-[var(--bg-panel)] border border-[var(--border-subtle)] rounded-lg px-4 py-3 text-[var(--text-secondary)] font-mono text-sm flex items-center">@</span>
                                 <input
                                     className="input-field font-mono flex-1"
                                     placeholder="seuperfil"
@@ -125,7 +125,7 @@ export function PageFunnel({ formData: externalFormData, setFormData: externalSe
                         <div>
                             <label className="input-label">URL do Site</label>
                             <div className="flex gap-2">
-                                <span className="bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-gray-500 font-mono text-sm flex items-center">https://</span>
+                                <span className="bg-[var(--bg-panel)] border border-[var(--border-subtle)] rounded-lg px-4 py-3 text-[var(--text-secondary)] font-mono text-sm flex items-center">https://</span>
                                 <input
                                     className="input-field font-mono flex-1"
                                     placeholder="www.seusite.com.br"
@@ -196,7 +196,7 @@ export function PageFunnel({ formData: externalFormData, setFormData: externalSe
                     Metas & Tracking (Calculadora Reversa)
                 </h3>
 
-                <div className="bg-white/5 border border-white/10 rounded-xl p-6">
+                <div className="vault-room vault-room-body">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                             <label className="input-label">Meta Financeira do Ciclo</label>
@@ -244,8 +244,8 @@ export function PageFunnel({ formData: externalFormData, setFormData: externalSe
                                     <p className="text-xs text-gray-400 uppercase tracking-wider mt-1">Vendas</p>
                                 </div>
                                 <div className="relative">
-                                    <div className="absolute left-0 top-1/2 -translate-y-1/2 w-full h-[1px] bg-white/10 -z-10 hidden md:block"></div>
-                                    <p className="text-xs text-gray-500 bg-[#0A0A0A] px-2 inline-block relative z-10 mb-1">
+                                    <div className="absolute left-0 top-1/2 -translate-y-1/2 w-full h-[1px] bg-[var(--border-subtle)] -z-10 hidden md:block"></div>
+                                    <p className="text-xs text-gray-500 bg-[var(--bg-deep)] px-2 inline-block relative z-10 mb-1">
                                         Se conv. {formData.targetConversion || 2}%
                                     </p>
                                     <div>
@@ -353,7 +353,7 @@ export function PageFunnel({ formData: externalFormData, setFormData: externalSe
             </section>
 
             {/* Submit */}
-            <div className="pt-6 border-t border-white/5 flex justify-between items-center sticky bottom-0 bg-[#050505] pb-6 z-10 shadow-[0_-10px_20px_rgba(0,0,0,0.5)]">
+            <div className="vault-footer">
                 <div className="flex items-center gap-2 text-sm">
                     {isSynced ? (
                         <span className="flex items-center gap-1.5 text-green-400">
@@ -367,7 +367,7 @@ export function PageFunnel({ formData: externalFormData, setFormData: externalSe
                 </div>
                 <button
                     type="submit"
-                    className="bg-blue-500 hover:bg-blue-600 text-white px-8 py-4 rounded-xl font-bold flex items-center gap-3 transition-all hover:scale-105 shadow-lg shadow-blue-500/20"
+                    className="btn-primary-lg"
                 >
                     Salvar e Avançar para V4 <ArrowRight size={20} />
                 </button>

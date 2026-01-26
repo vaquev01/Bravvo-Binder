@@ -52,7 +52,7 @@ export function ProductList({ products = [], onChange, maxProducts = 5 }) {
                         relative p-4 rounded-xl border transition-all
                         ${product.isHero
                             ? 'bg-orange-500/10 border-orange-500/30'
-                            : 'bg-white/5 border-white/10'
+                            : 'bg-[var(--bg-panel)] border-[var(--border-subtle)] hover:border-[var(--border-active)]'
                         }
                     `}
                 >
@@ -155,7 +155,7 @@ export function ProductList({ products = [], onChange, maxProducts = 5 }) {
                                             ? margin === 'high' ? 'bg-green-500/20 text-green-400 border border-green-500/30'
                                                 : margin === 'medium' ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30'
                                                     : 'bg-red-500/20 text-red-400 border border-red-500/30'
-                                            : 'bg-white/5 text-gray-500 border border-transparent hover:border-white/10'
+                                            : 'bg-[var(--bg-panel)] text-[var(--text-secondary)] border border-transparent hover:border-[var(--border-subtle)]'
                                         }
                                     `}
                                 >
@@ -173,7 +173,7 @@ export function ProductList({ products = [], onChange, maxProducts = 5 }) {
                     type="button"
                     onClick={addProduct}
                     data-testid="v2-add-product"
-                    className="w-full p-4 border-2 border-dashed border-white/10 rounded-xl text-gray-500 hover:text-white hover:border-white/30 transition-all flex items-center justify-center gap-2 group"
+                    className="w-full p-4 border-2 border-dashed border-[var(--border-subtle)] rounded-xl text-[var(--text-secondary)] hover:text-white hover:border-[var(--border-active)] transition-all flex items-center justify-center gap-2 group"
                 >
                     <Plus size={20} className="group-hover:scale-110 transition-transform" />
                     <span>Adicionar Produto ({products.length}/{maxProducts})</span>
