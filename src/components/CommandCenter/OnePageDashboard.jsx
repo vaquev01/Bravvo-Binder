@@ -90,6 +90,113 @@ function InlineEdit({ value, onSave, type = 'text', prefix = '', suffix = '', cl
     );
 }
 
+function QuickAddForm({ onAdd, onClose }) {
+    const { t } = useLanguage();
+    const [form, setForm] = useState({
+        initiative: '',
+        channelId: 'instagram',
+        subchannelId: 'feed',
+        channel: 'Instagram Feed',
+        format: 'post',
+        date: new Date().toISOString().split('T')[0],
+        responsible: '',
+    });
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        onAdd({
+            id: `NEW-${Date.now()}`,
+            ...form,
+            status: 'draft',
+            offerId: 'hero',
+            ctaId: 'whatsapp',
+        });
+        onClose();
+        setForm({
+            initiative: '',
+            channelId: 'instagram',
+            subchannelId: 'feed',
+            channel: 'Instagram Feed',
+            format: 'post',
+            date: new Date().toISOString().split('T')[0],
+            responsible: '',
+        });
+    };
+
+    return (
+        <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+                <label className="text-label">{t('os.quick_add.title_label')}</label>
+                <input
+                    required
+                    className="premium-input"
+                    value={form.initiative}
+                    onChange={e => setForm({ ...form, initiative: e.target.value })}
+                    placeholder={t('os.quick_add.placeholder')}
+                    data-testid="quickadd-initiative"
+                />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+                <div>
+                    <label className="text-label">{t('os.quick_add.date_label')}</label>
+                    <input
+                        type="date"
+                        className="premium-input"
+                        value={form.date}
+                        onChange={e => setForm({ ...form, date: e.target.value })}
+                    />
+                </div>
+                <div>
+                    <label className="text-label">{t('os.quick_add.channel_label')}</label>
+                    <div className="grid grid-cols-2 gap-2">
+                        <select
+                            className="premium-input"
+                            value={form.channelId}
+                            onChange={e => {
+                                const nextChannelId = e.target.value;
+                                const nextSubchannelId = getDefaultSubchannelId(nextChannelId);
+                                setForm(prev => ({
+                                    ...prev,
+                                    channelId: nextChannelId,
+                                    subchannelId: nextSubchannelId,
+                                    channel: toLegacyChannelLabel(nextChannelId, nextSubchannelId),
+                                    format: getDefaultContentType(nextChannelId, nextSubchannelId)
+                                }));
+                            }}
+                        >
+                            {listChannels().map(c => (
+                                <option key={c.id} value={c.id}>{c.label}</option>
+                            ))}
+                        </select>
+                        <select
+                            className="premium-input"
+                            value={form.subchannelId}
+                            onChange={e => {
+                                const nextSub = e.target.value;
+                                const nextChannelId = form.channelId;
+                                setForm(prev => ({
+                                    ...prev,
+                                    subchannelId: nextSub,
+                                    channel: toLegacyChannelLabel(nextChannelId, nextSub),
+                                    format: getDefaultContentType(nextChannelId, nextSub)
+                                }));
+                            }}
+                        >
+                            {listSubchannels(form.channelId).map(sc => (
+                                <option key={sc.id} value={sc.id}>{sc.label}</option>
+                            ))}
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div className="pt-4 flex justify-end gap-2">
+                <button type="button" onClick={onClose} className="btn-ghost">{t('common.cancel')}</button>
+                <button type="submit" className="btn-primary" data-testid="quickadd-submit">{t('os.quick_add.create_button')}</button>
+            </div>
+        </form>
+    );
+}
+
 // Status Dropdown Component
 function StatusDropdown({ value, onChange, options }) {
     const [open, setOpen] = useState(false);
@@ -285,36 +392,6 @@ function DetailEditModal({ open, onClose, item, onSave }) {
 // Quick Add Modal
 function QuickAddModal({ open, onClose, onAdd }) {
     const { t } = useLanguage();
-    const [form, setForm] = useState({
-        initiative: '',
-        channelId: 'instagram',
-        subchannelId: 'feed',
-        channel: 'Instagram Feed',
-        format: 'post',
-        date: new Date().toISOString().split('T')[0],
-        responsible: '',
-    });
-
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        onAdd({
-            id: `NEW-${Date.now()}`,
-            ...form,
-            status: 'draft',
-            offerId: 'hero',
-            ctaId: 'whatsapp',
-        });
-        onClose();
-        setForm({
-            initiative: '',
-            channelId: 'instagram',
-            subchannelId: 'feed',
-            channel: 'Instagram Feed',
-            format: 'post',
-            date: new Date().toISOString().split('T')[0],
-            responsible: '',
-        });
-    };
 
     if (!open) return null;
 
@@ -325,77 +402,7 @@ function QuickAddModal({ open, onClose, onAdd }) {
                     <h3 className="text-sm font-bold text-white uppercase tracking-widest">{t('os.quick_add.title')}</h3>
                     <button onClick={onClose} className="text-gray-500 hover:text-white"><X size={16} /></button>
                 </div>
-
-                <form onSubmit={handleSubmit} className="space-y-4">
-                    <div>
-                        <label className="text-label">{t('os.quick_add.title_label')}</label>
-                        <input
-                            required
-                            className="premium-input"
-                            value={form.initiative}
-                            onChange={e => setForm({ ...form, initiative: e.target.value })}
-                            placeholder={t('os.quick_add.placeholder')}
-                            data-testid="quickadd-initiative"
-                        />
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                        <div>
-                            <label className="text-label">{t('os.quick_add.date_label')}</label>
-                            <input
-                                type="date"
-                                className="premium-input"
-                                value={form.date}
-                                onChange={e => setForm({ ...form, date: e.target.value })}
-                            />
-                        </div>
-                        <div>
-                            <label className="text-label">{t('os.quick_add.channel_label')}</label>
-                            <div className="grid grid-cols-2 gap-2">
-                                <select
-                                    className="premium-input"
-                                    value={form.channelId}
-                                    onChange={e => {
-                                        const nextChannelId = e.target.value;
-                                        const nextSubchannelId = getDefaultSubchannelId(nextChannelId);
-                                        setForm(prev => ({
-                                            ...prev,
-                                            channelId: nextChannelId,
-                                            subchannelId: nextSubchannelId,
-                                            channel: toLegacyChannelLabel(nextChannelId, nextSubchannelId),
-                                            format: getDefaultContentType(nextChannelId, nextSubchannelId)
-                                        }));
-                                    }}
-                                >
-                                    {listChannels().map(c => (
-                                        <option key={c.id} value={c.id}>{c.label}</option>
-                                    ))}
-                                </select>
-                                <select
-                                    className="premium-input"
-                                    value={form.subchannelId}
-                                    onChange={e => {
-                                        const nextSub = e.target.value;
-                                        const nextChannelId = form.channelId;
-                                        setForm(prev => ({
-                                            ...prev,
-                                            subchannelId: nextSub,
-                                            channel: toLegacyChannelLabel(nextChannelId, nextSub),
-                                            format: getDefaultContentType(nextChannelId, nextSub)
-                                        }));
-                                    }}
-                                >
-                                    {listSubchannels(form.channelId).map(sc => (
-                                        <option key={sc.id} value={sc.id}>{sc.label}</option>
-                                    ))}
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                    <div className="pt-4 flex justify-end gap-2">
-                        <button type="button" onClick={onClose} className="btn-ghost">{t('common.cancel')}</button>
-                        <button type="submit" className="btn-primary" data-testid="quickadd-submit">{t('os.quick_add.create_button')}</button>
-                    </div>
-                </form>
+                <QuickAddForm onAdd={onAdd} onClose={onClose} />
             </div>
         </div>
     );
@@ -418,6 +425,7 @@ export function OnePageDashboard({
     const FLAG_DASH_INSIGHTS = getFeatureFlag('DASH_INSIGHTS', false);
     const FLAG_DASH_INSIGHTS_ACTIONS = getFeatureFlag('DASH_INSIGHTS_ACTIONS', false);
     const FLAG_DASH_EDIT_DRAWER = getFeatureFlag('DASH_EDIT_DRAWER', false);
+    const FLAG_DASH_QUICKADD_DRAWER = getFeatureFlag('DASH_QUICKADD_DRAWER', false);
     const FLAG_DASH_EMPTY_STATES = getFeatureFlag('DASH_EMPTY_STATES', false);
 
     // UI State
@@ -1082,7 +1090,21 @@ export function OnePageDashboard({
                 </div>
 
                 {/* Modal Mounts */}
-                <QuickAddModal open={showQuickAdd} onClose={() => setShowQuickAdd(false)} onAdd={handleAddItem} />
+                {FLAG_DASH_QUICKADD_DRAWER ? (
+                    <Drawer
+                        open={showQuickAdd}
+                        onClose={() => setShowQuickAdd(false)}
+                        title={t('os.quick_add.title')}
+                        width="lg"
+                        testId="quickadd-drawer"
+                    >
+                        <div className="p-6">
+                            <QuickAddForm onAdd={handleAddItem} onClose={() => setShowQuickAdd(false)} />
+                        </div>
+                    </Drawer>
+                ) : (
+                    <QuickAddModal open={showQuickAdd} onClose={() => setShowQuickAdd(false)} onAdd={handleAddItem} />
+                )}
                 {FLAG_DASH_EDIT_DRAWER ? (
                     <Drawer
                         open={!!editingItem}
