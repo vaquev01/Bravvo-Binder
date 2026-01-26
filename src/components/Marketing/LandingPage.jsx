@@ -48,7 +48,7 @@ export function LandingPage({ onLogin }) {
                     <button
                         onClick={onLogin}
                         data-testid="landing-login"
-                        className="px-4 py-2 bg-white/5 hover:bg-white/10 border border-[var(--border-subtle)] rounded text-[13px] font-bold text-white transition-all flex items-center gap-2"
+                        className="btn-ghost btn-sm"
                     >
                         <User size={14} />
                         {t('common.sign_in')}
@@ -85,14 +85,14 @@ export function LandingPage({ onLogin }) {
                         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-fadeInUp" style={{ animationDelay: '0.3s' }}>
                             <button
                                 onClick={onLogin}
-                                className="h-14 px-10 bg-[var(--brand-accent)] text-white text-[14px] font-bold tracking-wide rounded-lg hover:brightness-110 transition-all flex items-center gap-3 hover:translate-y-[-2px] hover:shadow-[0_0_30px_rgba(0,0,0,0.35)] duration-300 group"
+                                className="btn-primary btn-lg group"
                             >
                                 <Play size={16} className="group-hover:scale-110 transition-transform" />
                                 {t('landing.hero.cta_primary')}
                             </button>
                             <button
                                 onClick={() => scrollToSection('how-it-works')}
-                                className="h-14 px-10 bg-transparent border-2 border-[var(--border-active)] text-white text-[14px] font-bold tracking-wide rounded-lg hover:bg-white/5 transition-all flex items-center gap-2"
+                                className="btn-ghost btn-lg"
                             >
                                 {t('landing.hero.cta_secondary')}
                                 <ChevronDown size={16} />
@@ -123,57 +123,57 @@ export function LandingPage({ onLogin }) {
             <section id="how-it-works" className="py-24 bg-[var(--bg-deep)]">
                 <div className="max-w-[1400px] mx-auto px-6">
                     <div className="text-center mb-16">
-                        <h2 className="text-4xl font-bold text-white mb-4">{t('landing.how_it_works.title')}</h2>
-                        <p className="text-gray-500 max-w-xl mx-auto">{t('landing.how_it_works.subtitle')}</p>
+                        <h2 className="text-title text-3xl mb-4">{t('landing.how_it_works.title')}</h2>
+                        <p className="text-body max-w-xl mx-auto">{t('landing.how_it_works.subtitle')}</p>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                         {/* Step 1 - Vaults */}
-                        <div className="bg-[var(--bg-panel)] border border-[var(--border-subtle)] rounded-xl p-8 group hover:border-[var(--border-active)] transition-all duration-300">
+                        <div className="card-elevated rounded-xl p-8 group hover:border-[var(--border-active)] transition-all duration-300">
                             <div className="flex items-center gap-3 mb-6">
-                                <span className="text-5xl font-black text-white/10 group-hover:text-purple-500/30 transition-colors">{t('landing.how_it_works.step1.number')}</span>
+                                <span className="text-5xl font-black text-white/10 group-hover:text-accent/30 transition-colors">{t('landing.how_it_works.step1.number')}</span>
                                 <div className="w-12 h-12 bg-purple-500/10 border border-purple-500/30 rounded-lg flex items-center justify-center text-purple-400">
                                     <Database size={24} />
                                 </div>
                             </div>
-                            <h3 className="text-xl font-bold text-white mb-3">{t('landing.how_it_works.step1.title')}</h3>
-                            <p className="text-sm text-gray-400 leading-relaxed">{t('landing.how_it_works.step1.desc')}</p>
+                            <h3 className="text-section mb-3">{t('landing.how_it_works.step1.title')}</h3>
+                            <p className="text-body">{t('landing.how_it_works.step1.desc')}</p>
                         </div>
 
                         {/* Step 2 - Calendar */}
-                        <div className="bg-[var(--bg-panel)] border border-[var(--border-subtle)] rounded-xl p-8 group hover:border-[var(--border-active)] transition-all duration-300">
+                        <div className="card-elevated rounded-xl p-8 group hover:border-[var(--border-active)] transition-all duration-300">
                             <div className="flex items-center gap-3 mb-6">
-                                <span className="text-5xl font-black text-white/10 group-hover:text-blue-500/30 transition-colors">{t('landing.how_it_works.step2.number')}</span>
+                                <span className="text-5xl font-black text-white/10 group-hover:text-info/30 transition-colors">{t('landing.how_it_works.step2.number')}</span>
                                 <div className="w-12 h-12 bg-blue-500/10 border border-blue-500/30 rounded-lg flex items-center justify-center text-blue-400">
                                     <Calendar size={24} />
                                 </div>
                             </div>
-                            <h3 className="text-xl font-bold text-white mb-3">{t('landing.how_it_works.step2.title')}</h3>
-                            <p className="text-sm text-gray-400 leading-relaxed">{t('landing.how_it_works.step2.desc')}</p>
+                            <h3 className="text-section mb-3">{t('landing.how_it_works.step2.title')}</h3>
+                            <p className="text-body">{t('landing.how_it_works.step2.desc')}</p>
                         </div>
 
                         {/* Step 3 - Creative */}
-                        <div className="bg-[var(--bg-panel)] border border-[var(--border-subtle)] rounded-xl p-8 group hover:border-[var(--border-active)] transition-all duration-300">
+                        <div className="card-elevated rounded-xl p-8 group hover:border-[var(--border-active)] transition-all duration-300">
                             <div className="flex items-center gap-3 mb-6">
-                                <span className="text-5xl font-black text-white/10 group-hover:text-orange-500/30 transition-colors">{t('landing.how_it_works.step3.number')}</span>
+                                <span className="text-5xl font-black text-white/10 group-hover:text-warning/30 transition-colors">{t('landing.how_it_works.step3.number')}</span>
                                 <div className="w-12 h-12 bg-orange-500/10 border border-orange-500/30 rounded-lg flex items-center justify-center text-orange-400">
                                     <Wand2 size={24} />
                                 </div>
                             </div>
-                            <h3 className="text-xl font-bold text-white mb-3">{t('landing.how_it_works.step3.title')}</h3>
-                            <p className="text-sm text-gray-400 leading-relaxed">{t('landing.how_it_works.step3.desc')}</p>
+                            <h3 className="text-section mb-3">{t('landing.how_it_works.step3.title')}</h3>
+                            <p className="text-body">{t('landing.how_it_works.step3.desc')}</p>
                         </div>
 
                         {/* Step 4 - Approve */}
-                        <div className="bg-[var(--bg-panel)] border border-[var(--border-subtle)] rounded-xl p-8 group hover:border-[var(--border-active)] transition-all duration-300">
+                        <div className="card-elevated rounded-xl p-8 group hover:border-[var(--border-active)] transition-all duration-300">
                             <div className="flex items-center gap-3 mb-6">
-                                <span className="text-5xl font-black text-white/10 group-hover:text-green-500/30 transition-colors">{t('landing.how_it_works.step4.number')}</span>
+                                <span className="text-5xl font-black text-white/10 group-hover:text-success/30 transition-colors">{t('landing.how_it_works.step4.number')}</span>
                                 <div className="w-12 h-12 bg-green-500/10 border border-green-500/30 rounded-lg flex items-center justify-center text-green-400">
                                     <CheckCircle2 size={24} />
                                 </div>
                             </div>
-                            <h3 className="text-xl font-bold text-white mb-3">{t('landing.how_it_works.step4.title')}</h3>
-                            <p className="text-sm text-gray-400 leading-relaxed">{t('landing.how_it_works.step4.desc')}</p>
+                            <h3 className="text-section mb-3">{t('landing.how_it_works.step4.title')}</h3>
+                            <p className="text-body">{t('landing.how_it_works.step4.desc')}</p>
                         </div>
                     </div>
                 </div>
@@ -183,63 +183,63 @@ export function LandingPage({ onLogin }) {
             <section id="features" className="py-24 bg-[var(--bg-deep)] border-t border-b border-[var(--border-subtle)]">
                 <div className="max-w-[1400px] mx-auto px-6">
                     <div className="text-center mb-16">
-                        <h2 className="text-4xl font-bold text-white mb-4">{t('landing.features.title')}</h2>
-                        <p className="text-gray-500 max-w-xl mx-auto">{t('landing.features.subtitle')}</p>
+                        <h2 className="text-title text-3xl mb-4">{t('landing.features.title')}</h2>
+                        <p className="text-body max-w-xl mx-auto">{t('landing.features.subtitle')}</p>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {/* Feature 1 - Vaults */}
-                        <div className="bg-[var(--bg-panel)] border border-[var(--border-subtle)] rounded-xl p-8 hover:bg-[var(--bg-surface)] transition-colors group">
+                        <div className="card-elevated rounded-xl p-8 hover:bg-[var(--bg-surface)] transition-colors group">
                             <div className="w-14 h-14 bg-purple-500/10 border border-purple-500/20 rounded-xl flex items-center justify-center text-purple-400 mb-6 group-hover:scale-110 transition-transform">
                                 <Database size={28} />
                             </div>
-                            <h3 className="text-lg font-bold text-white mb-3">{t('landing.features.vaults.title')}</h3>
-                            <p className="text-sm text-gray-400 leading-relaxed">{t('landing.features.vaults.desc')}</p>
+                            <h3 className="text-section mb-3">{t('landing.features.vaults.title')}</h3>
+                            <p className="text-body">{t('landing.features.vaults.desc')}</p>
                         </div>
 
                         {/* Feature 2 - Dashboard */}
-                        <div className="bg-[var(--bg-panel)] border border-[var(--border-subtle)] rounded-xl p-8 hover:bg-[var(--bg-surface)] transition-colors group">
+                        <div className="card-elevated rounded-xl p-8 hover:bg-[var(--bg-surface)] transition-colors group">
                             <div className="w-14 h-14 bg-blue-500/10 border border-blue-500/20 rounded-xl flex items-center justify-center text-blue-400 mb-6 group-hover:scale-110 transition-transform">
                                 <LayoutDashboard size={28} />
                             </div>
-                            <h3 className="text-lg font-bold text-white mb-3">{t('landing.features.dashboard.title')}</h3>
-                            <p className="text-sm text-gray-400 leading-relaxed">{t('landing.features.dashboard.desc')}</p>
+                            <h3 className="text-section mb-3">{t('landing.features.dashboard.title')}</h3>
+                            <p className="text-body">{t('landing.features.dashboard.desc')}</p>
                         </div>
 
                         {/* Feature 3 - Creative Studio */}
-                        <div className="bg-[var(--bg-panel)] border border-[var(--border-subtle)] rounded-xl p-8 hover:bg-[var(--bg-surface)] transition-colors group">
+                        <div className="card-elevated rounded-xl p-8 hover:bg-[var(--bg-surface)] transition-colors group">
                             <div className="w-14 h-14 bg-orange-500/10 border border-orange-500/20 rounded-xl flex items-center justify-center text-orange-400 mb-6 group-hover:scale-110 transition-transform">
                                 <Palette size={28} />
                             </div>
-                            <h3 className="text-lg font-bold text-white mb-3">{t('landing.features.creative.title')}</h3>
-                            <p className="text-sm text-gray-400 leading-relaxed">{t('landing.features.creative.desc')}</p>
+                            <h3 className="text-section mb-3">{t('landing.features.creative.title')}</h3>
+                            <p className="text-body">{t('landing.features.creative.desc')}</p>
                         </div>
 
                         {/* Feature 4 - Governance */}
-                        <div className="bg-[var(--bg-panel)] border border-[var(--border-subtle)] rounded-xl p-8 hover:bg-[var(--bg-surface)] transition-colors group">
+                        <div className="card-elevated rounded-xl p-8 hover:bg-[var(--bg-surface)] transition-colors group">
                             <div className="w-14 h-14 bg-green-500/10 border border-green-500/20 rounded-xl flex items-center justify-center text-green-400 mb-6 group-hover:scale-110 transition-transform">
                                 <FileCheck size={28} />
                             </div>
-                            <h3 className="text-lg font-bold text-white mb-3">{t('landing.features.governance.title')}</h3>
-                            <p className="text-sm text-gray-400 leading-relaxed">{t('landing.features.governance.desc')}</p>
+                            <h3 className="text-section mb-3">{t('landing.features.governance.title')}</h3>
+                            <p className="text-body">{t('landing.features.governance.desc')}</p>
                         </div>
 
                         {/* Feature 5 - Channels */}
-                        <div className="bg-[var(--bg-panel)] border border-[var(--border-subtle)] rounded-xl p-8 hover:bg-[var(--bg-surface)] transition-colors group">
+                        <div className="card-elevated rounded-xl p-8 hover:bg-[var(--bg-surface)] transition-colors group">
                             <div className="w-14 h-14 bg-pink-500/10 border border-pink-500/20 rounded-xl flex items-center justify-center text-pink-400 mb-6 group-hover:scale-110 transition-transform">
                                 <Share2 size={28} />
                             </div>
-                            <h3 className="text-lg font-bold text-white mb-3">{t('landing.features.multicanal.title')}</h3>
-                            <p className="text-sm text-gray-400 leading-relaxed">{t('landing.features.multicanal.desc')}</p>
+                            <h3 className="text-section mb-3">{t('landing.features.multicanal.title')}</h3>
+                            <p className="text-body">{t('landing.features.multicanal.desc')}</p>
                         </div>
 
                         {/* Feature 6 - Formats */}
-                        <div className="bg-[var(--bg-panel)] border border-[var(--border-subtle)] rounded-xl p-8 hover:bg-[var(--bg-surface)] transition-colors group">
+                        <div className="card-elevated rounded-xl p-8 hover:bg-[var(--bg-surface)] transition-colors group">
                             <div className="w-14 h-14 bg-cyan-500/10 border border-cyan-500/20 rounded-xl flex items-center justify-center text-cyan-400 mb-6 group-hover:scale-110 transition-transform">
                                 <Layers size={28} />
                             </div>
-                            <h3 className="text-lg font-bold text-white mb-3">{t('landing.features.formats.title')}</h3>
-                            <p className="text-sm text-gray-400 leading-relaxed">{t('landing.features.formats.desc')}</p>
+                            <h3 className="text-section mb-3">{t('landing.features.formats.title')}</h3>
+                            <p className="text-body">{t('landing.features.formats.desc')}</p>
                         </div>
                     </div>
                 </div>

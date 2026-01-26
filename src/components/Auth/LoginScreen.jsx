@@ -176,7 +176,7 @@ export function LoginScreen({ onLogin }) {
                     <div className="flex gap-4">
                         <button
                             onClick={() => setShowPricing(true)}
-                            className="h-12 px-8 bg-white text-black text-xs font-bold uppercase tracking-wider rounded hover:bg-gray-200 hover:scale-105 transition-all shadow-[0_0_20px_rgba(255,255,255,0.1)] flex items-center gap-2"
+                            className="btn-secondary btn-lg"
                         >
                             {t('auth.login.cta_pricing')}
                         </button>
@@ -184,26 +184,26 @@ export function LoginScreen({ onLogin }) {
 
                     <div className="grid grid-cols-3 gap-6 pt-8 border-t border-[var(--border-subtle)]">
                         <div className="group cursor-default">
-                            <h4 className="text-2xl font-bold text-white group-hover:text-[var(--brand-accent)] transition-colors">15+</h4>
-                            <span className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">Agências</span>
+                            <h4 className="text-metric group-hover:text-accent transition-colors">15+</h4>
+                            <span className="text-label">Agências</span>
                         </div>
                         <div className="group cursor-default">
-                            <h4 className="text-2xl font-bold text-white group-hover:text-blue-400 transition-colors">200+</h4>
-                            <span className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">Marcas</span>
+                            <h4 className="text-metric group-hover:text-info transition-colors">200+</h4>
+                            <span className="text-label">Marcas</span>
                         </div>
                         <div className="group cursor-default">
-                            <h4 className="text-2xl font-bold text-white group-hover:text-green-400 transition-colors">R$ 12M</h4>
-                            <span className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">Gerenciados</span>
+                            <h4 className="text-metric group-hover:text-success transition-colors">R$ 12M</h4>
+                            <span className="text-label">Gerenciados</span>
                         </div>
                     </div>
                 </div>
 
                 <div className="space-y-4">
                     {/* Unified Login Form */}
-                    <div className="bg-[var(--bg-panel)] border border-[var(--border-subtle)] rounded-xl p-8 shadow-2xl relative overflow-hidden group">
+                    <div className="card-elevated rounded-xl p-8 shadow-2xl relative overflow-hidden group signature-top-bar">
                         <div className="absolute top-0 right-0 w-32 h-32 bg-[color:var(--brand-accent)]/5 blur-3xl rounded-full group-hover:bg-[color:var(--brand-accent)]/10 transition-colors"></div>
 
-                        <h3 className="text-xl font-bold text-white mb-6">{t('auth.login.form_title')}</h3>
+                        <h3 className="text-title mb-6">{t('auth.login.form_title')}</h3>
 
                         <form onSubmit={(e) => {
                             e.preventDefault();
@@ -221,28 +221,28 @@ export function LoginScreen({ onLogin }) {
                         }} className="space-y-4 relative z-10">
 
                             <div className="space-y-1">
-                                <label className="text-[10px] uppercase font-bold text-gray-500 tracking-wider">{t('auth.login.label_user')}</label>
+                                <label className="input-label">{t('auth.login.label_user')}</label>
                                 <div className="relative">
                                     <User className="absolute left-3 top-2.5 text-gray-600" size={16} />
                                     <input
                                         name="username"
                                         type="text"
                                         placeholder={t('auth.login.placeholder_user')}
-                                        className="w-full bg-[var(--bg-deep)] border border-[var(--border-subtle)] rounded-lg py-2 pl-10 pr-4 text-sm text-white focus:border-[var(--border-active)] focus:outline-none focus:ring-1 focus:ring-white/10 transition-all placeholder-[var(--text-tertiary)]"
+                                        className="input-field pl-10"
                                         required
                                     />
                                 </div>
                             </div>
 
                             <div className="space-y-1">
-                                <label className="text-[10px] uppercase font-bold text-gray-500 tracking-wider">{t('auth.login.label_pass')}</label>
+                                <label className="input-label">{t('auth.login.label_pass')}</label>
                                 <div className="relative">
                                     <Briefcase className="absolute left-3 top-2.5 text-gray-600" size={16} /> {/* Using Briefcase as lock icon substitute if don't want to import Lock */}
                                     <input
                                         name="password"
                                         type="password"
                                         placeholder={t('auth.login.placeholder_pass')}
-                                        className="w-full bg-[var(--bg-deep)] border border-[var(--border-subtle)] rounded-lg py-2 pl-10 pr-4 text-sm text-white focus:border-[var(--border-active)] focus:outline-none focus:ring-1 focus:ring-white/10 transition-all placeholder-[var(--text-tertiary)]"
+                                        className="input-field pl-10"
                                         required
                                     />
                                 </div>
@@ -263,7 +263,7 @@ export function LoginScreen({ onLogin }) {
                             <button
                                 type="submit"
                                 data-testid="login-submit"
-                                className="w-full bg-[var(--brand-accent)] text-white font-bold h-10 rounded-lg hover:brightness-110 transition-all flex items-center justify-center gap-2 mt-4"
+                                className="btn-primary w-full mt-4"
                             >
                                 <Zap size={16} className="text-white" />
                                 {t('auth.login.submit')}
