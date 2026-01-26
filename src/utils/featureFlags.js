@@ -3,6 +3,7 @@ const STORAGE_KEY = 'bravvo_feature_flags';
 const DEFAULT_FLAGS = {
     DASH_ONBOARDING: false,
     DASH_INSIGHTS: false,
+    DASH_INSIGHTS_ACTIONS: false,
     DASH_EMPTY_STATES: false
 };
 

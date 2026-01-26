@@ -414,6 +414,7 @@ export function OnePageDashboard({
 
     const FLAG_DASH_ONBOARDING = getFeatureFlag('DASH_ONBOARDING', false);
     const FLAG_DASH_INSIGHTS = getFeatureFlag('DASH_INSIGHTS', false);
+    const FLAG_DASH_INSIGHTS_ACTIONS = getFeatureFlag('DASH_INSIGHTS_ACTIONS', false);
     const FLAG_DASH_EMPTY_STATES = getFeatureFlag('DASH_EMPTY_STATES', false);
 
     // UI State
@@ -426,6 +427,8 @@ export function OnePageDashboard({
     const [showPlaybooks, setShowPlaybooks] = useState(false);
     const [showCreativeStudio, setShowCreativeStudio] = useState(false);
     const [creativeItem, setCreativeItem] = useState(null);
+    const [highlightedRowId, setHighlightedRowId] = useState(null);
+    const highlightTimeoutRef = useRef(null);
 
     // Editable KPI State - Linked to Global Data
     const [kpis, setKpis] = useState(appData.kpis || {
@@ -440,6 +443,43 @@ export function OnePageDashboard({
             setKpis(appData.kpis);
         }
     }, [appData.kpis]);
+
+    useEffect(() => {
+        return () => {
+            if (highlightTimeoutRef.current) {
+                clearTimeout(highlightTimeoutRef.current);
+                highlightTimeoutRef.current = null;
+            }
+        };
+    }, []);
+
+    const highlightRow = (rowId) => {
+        if (!rowId) return;
+        setHighlightedRowId(rowId);
+        if (highlightTimeoutRef.current) {
+            clearTimeout(highlightTimeoutRef.current);
+        }
+        highlightTimeoutRef.current = setTimeout(() => {
+            setHighlightedRowId(null);
+            highlightTimeoutRef.current = null;
+        }, 2500);
+    };
+
+    const handleInsightAction = (insight) => {
+        if (!FLAG_DASH_INSIGHTS_ACTIONS) return;
+        const targetItem = Array.isArray(insight?.items) ? insight.items[0] : null;
+        if (!targetItem?.id) return;
+
+        setDateFilter('month');
+
+        requestAnimationFrame(() => {
+            const el = document.querySelector(`[data-testid="d2-row-${targetItem.id}"]`);
+            if (el && typeof el.scrollIntoView === 'function') {
+                el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+            highlightRow(targetItem.id);
+        });
+    };
 
     const handleKpiUpdate = (key, val) => {
         if (!meetingState.active) {
@@ -832,9 +872,7 @@ export function OnePageDashboard({
                         <InsightCards
                             items={appData?.dashboard?.D2 || []}
                             vaults={appData?.vaults}
-                            onInsightAction={() => {
-                                // read-only in Phase 1
-                            }}
+                            onInsightAction={FLAG_DASH_INSIGHTS_ACTIONS ? handleInsightAction : undefined}
                             maxItems={3}
                         />
                     </div>
@@ -939,7 +977,7 @@ export function OnePageDashboard({
                                     <div
                                         key={item.id}
                                         data-testid={`d2-row-${item.id}`}
-                                        className="grid grid-cols-[100px_1fr_150px_120px_120px_120px] gap-4 px-4 py-3 border-b border-[var(--border-subtle)] hover:bg-[var(--bg-surface)] group transition-all duration-200 items-center hover:pl-5"
+                                        className={`grid grid-cols-[100px_1fr_150px_120px_120px_120px] gap-4 px-4 py-3 border-b border-[var(--border-subtle)] hover:bg-[var(--bg-surface)] group transition-all duration-200 items-center hover:pl-5 ${highlightedRowId === item.id ? 'bg-purple-500/10 ring-1 ring-purple-500/30' : ''}`}
                                     >
                                         <div className="text-mono-data text-gray-400 group-hover:text-white transition-colors">
                                             {formatHumanDate(item.date)}
