@@ -146,6 +146,7 @@ function QuickAddForm({ onAdd, onClose }) {
                         className="premium-input"
                         value={form.date}
                         onChange={e => setForm({ ...form, date: e.target.value })}
+                        data-testid="quickadd-date"
                     />
                 </div>
                 <div>
@@ -200,7 +201,7 @@ function QuickAddForm({ onAdd, onClose }) {
 }
 
 // Status Dropdown Component
-function StatusDropdown({ value, onChange, options }) {
+function StatusDropdown({ value, onChange, options, testId }) {
     const [open, setOpen] = useState(false);
     const dropdownRef = useRef(null);
 
@@ -227,6 +228,7 @@ function StatusDropdown({ value, onChange, options }) {
             <button
                 onClick={() => setOpen(!open)}
                 className="flex items-center gap-2 px-2 py-1 rounded hover:bg-white/5 transition-colors"
+                data-testid={testId ? `${testId}-trigger` : undefined}
             >
                 <div className={`w-1.5 h-1.5 rounded-full ${statusColors[value] || 'bg-gray-500'}`} />
                 <span className="text-[10px] font-bold uppercase tracking-wider text-gray-300">
@@ -241,6 +243,7 @@ function StatusDropdown({ value, onChange, options }) {
                             key={opt.value}
                             onClick={() => { onChange(opt.value); setOpen(false); }}
                             className="w-full text-left px-3 py-2 text-[10px] font-bold uppercase tracking-wider hover:bg-white/10 flex items-center gap-2 text-gray-400 hover:text-white transition-colors"
+                            data-testid={testId ? `${testId}-opt-${opt.value}` : undefined}
                         >
                             <span className={`w-1.5 h-1.5 rounded-full ${opt.color.replace('bg-', 'bg-')}`}></span>
                             {opt.label}
@@ -1106,6 +1109,7 @@ export function OnePageDashboard({
                                                 value={item.status}
                                                 onChange={(newStatus) => handleStatusChange(item.id, newStatus)}
                                                 options={statusOptions}
+                                                testId={`d2-status-${item.id}`}
                                             />
                                         </div>
                                         <div className="text-xs text-gray-600 truncate">
