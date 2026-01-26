@@ -15,6 +15,7 @@ import {
     Upload,
     Book
 } from 'lucide-react';
+import { DaySummary, formatHumanDate } from './DaySummary';
 import { GovernanceHistory } from './GovernanceHistory';
 import { ImportDataModal } from './ImportDataModal';
 import { PlaybookModal } from './PlaybookModal';
@@ -799,6 +800,13 @@ export function OnePageDashboard({
             {/* SCROLLABLE CONTENT */}
             <div className="flex-1 overflow-y-auto custom-scrollbar p-4 md:p-6">
 
+                {/* 0. DAY SUMMARY - ONDA 1.1 PRD */}
+                <DaySummary 
+                    items={appData?.dashboard?.D2 || []}
+                    clientName={appData?.clientName}
+                    onPriorityClick={(item) => setEditingItem(item)}
+                />
+
                 {/* 1. KPIs - Responsive Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
                     <div className="bento-grid p-4 bento-cell">
@@ -901,7 +909,7 @@ export function OnePageDashboard({
                                         className="grid grid-cols-[100px_1fr_150px_120px_120px_120px] gap-4 px-4 py-3 border-b border-[var(--border-subtle)] hover:bg-[var(--bg-surface)] group transition-all duration-200 items-center hover:pl-5"
                                     >
                                         <div className="text-mono-data text-gray-400 group-hover:text-white transition-colors">
-                                            {new Date(item.date).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}
+                                            {formatHumanDate(item.date)}
                                         </div>
                                         <div 
                                             className="text-sm font-medium text-white truncate pr-4 group-hover:translate-x-1 transition-transform"
