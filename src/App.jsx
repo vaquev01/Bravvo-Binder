@@ -37,7 +37,7 @@ import { VaultProvider } from './contexts/VaultContext';
 // ============================================================================
 // CLIENT WORKSPACE (THE ORIGINAL APP "OS")
 // ============================================================================
-function ClientWorkspace({ onBackToAgency, isAgencyView, initialData, onSave, currentUser }) {
+function ClientWorkspace({ onBackToAgency, isAgencyView, initialData, onSave, currentUser, isWorkspaceLoading }) {
     const clientId = initialData?.id || currentUser?.client?.id || null;
     // We wrap the internal content with VaultProvider so it can accept initialData
     return (
@@ -47,12 +47,13 @@ function ClientWorkspace({ onBackToAgency, isAgencyView, initialData, onSave, cu
                 isAgencyView={isAgencyView}
                 currentUser={currentUser}
                 clientId={clientId}
+                isWorkspaceLoading={isWorkspaceLoading}
             />
         </VaultProvider>
     );
 }
 
-function ClientWorkspaceContent({ onBackToAgency, isAgencyView: _isAgencyView, currentUser, clientId }) {
+function ClientWorkspaceContent({ onBackToAgency, isAgencyView: _isAgencyView, currentUser, clientId, isWorkspaceLoading }) {
     const { addToast } = useToast();
 
     // State
@@ -664,6 +665,7 @@ function ClientWorkspaceContent({ onBackToAgency, isAgencyView: _isAgencyView, c
                     meetingState={meetingState}
                     setMeetingState={setMeetingState}
                     currentUser={currentUser}
+                    isWorkspaceLoading={isWorkspaceLoading}
                 />
             )}
 
@@ -766,6 +768,7 @@ function AppContent() {
     const [viewMode, setViewMode] = useState('landing'); // 'landing' | 'login' | 'agency' | 'master' | 'client_workspace'
     const [currentUser, setCurrentUser] = useState(null); // { role: 'agency' | 'master', client: null }
     const [clientData, setClientData] = useState(null); // The actual data for the workspace
+    const [isClientLoading, setIsClientLoading] = useState(false);
     const { addToast } = useToast();
 
     // AUTO-LOGIN CHECK - Only if explicitly requested (not on first visit)
@@ -810,6 +813,7 @@ function AppContent() {
             // Client login - for demo, we pick C1
             const seed = api.getClientData('C1');
             const data = storageService.loadClientData('C1', seed);
+            setIsClientLoading(true);
             setClientData(data);
             setViewMode('client_workspace');
             setCurrentUser({ role: 'client', client: { id: 'C1', name: 'Direct Client' } });
@@ -820,10 +824,17 @@ function AppContent() {
         // Fetch fresh data for the selected client from Mock DB
         const seed = api.getClientData(client.id);
         const data = storageService.loadClientData(client.id, seed);
+        setIsClientLoading(true);
         setClientData(data);
         setCurrentUser(prev => ({ ...prev, client: client }));
         setViewMode('client_workspace');
     };
+
+    useEffect(() => {
+        if (viewMode !== 'client_workspace') return;
+        if (!isClientLoading) return;
+        setIsClientLoading(false);
+    }, [viewMode, isClientLoading]);
 
     const handleSaveClientData = (newData) => {
         if (clientData && clientData.id) {
@@ -878,6 +889,7 @@ function AppContent() {
                     initialData={clientData}
                     onSave={handleSaveClientData}
                     currentUser={currentUser}
+                    isWorkspaceLoading={isClientLoading}
                 />
             );
 

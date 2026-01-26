@@ -20,6 +20,7 @@ import { OnboardingChecklist } from '../ui/OnboardingChecklist';
 import { InsightCards } from '../ui/InsightCards';
 import { EmptyState } from '../ui/EmptyState';
 import { Drawer } from '../ui/Drawer';
+import { SkeletonDashboard } from '../ui/Skeleton';
 import { GovernanceHistory } from './GovernanceHistory';
 import { ImportDataModal } from './ImportDataModal';
 import { PlaybookModal } from './PlaybookModal';
@@ -417,7 +418,8 @@ export function OnePageDashboard({
     setFormData,
     meetingState,
     setMeetingState,
-    currentUser
+    currentUser,
+    isWorkspaceLoading
 }) {
     const { t } = useLanguage();
     const { addToast } = useToast();
@@ -428,6 +430,7 @@ export function OnePageDashboard({
     const FLAG_DASH_EDIT_DRAWER = getFeatureFlag('DASH_EDIT_DRAWER', false);
     const FLAG_DASH_QUICKADD_DRAWER = getFeatureFlag('DASH_QUICKADD_DRAWER', false);
     const FLAG_DASH_UNDO = getFeatureFlag('DASH_UNDO', false);
+    const FLAG_DASH_SKELETON_REAL = getFeatureFlag('DASH_SKELETON_REAL', false);
     const FLAG_DASH_EMPTY_STATES = getFeatureFlag('DASH_EMPTY_STATES', false);
 
     // UI State
@@ -495,6 +498,14 @@ export function OnePageDashboard({
             highlightRow(targetItem.id);
         });
     };
+
+    if (FLAG_DASH_SKELETON_REAL && isWorkspaceLoading) {
+        return (
+            <div className="h-full bg-[var(--bg-deep)] text-[var(--text-primary)] font-sans relative flex flex-col selection:bg-white/20">
+                <SkeletonDashboard />
+            </div>
+        );
+    }
 
     const handleKpiUpdate = (key, val) => {
         if (!meetingState.active) {
