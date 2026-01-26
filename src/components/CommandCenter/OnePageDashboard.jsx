@@ -23,6 +23,7 @@ import { ImportDataModal } from './ImportDataModal';
 import { PlaybookModal } from './PlaybookModal';
 import { CreativeStudioModal } from './CreativeStudioModal';
 import { GovernanceModal } from './GovernanceModal';
+import { GovernanceModeModal } from './GovernanceModeModal';
 import { GovernanceHeader } from './GovernanceHeader';
 import { DaySummaryAI } from './DaySummaryAI';
 import { KPIGrid } from './KPICard';
@@ -452,6 +453,7 @@ export function OnePageDashboard({
     const [highlightedRowId, setHighlightedRowId] = useState(null);
     const highlightTimeoutRef = useRef(null);
     const [showGovernanceModal, setShowGovernanceModal] = useState(false);
+    const [showGovernanceModeModal, setShowGovernanceModeModal] = useState(false);
     const [governanceFrequency, setGovernanceFrequency] = useState(appData.governanceFrequency || 'weekly');
 
     const { executeWithUndo } = useUndo();
@@ -556,7 +558,70 @@ export function OnePageDashboard({
     const toggleGovernanceMode = () => {
         const newActive = !meetingState.active;
         setMeetingState(prev => ({ ...prev, active: newActive }));
-        if (newActive) addToast({ title: 'Governance Mode Active', type: 'info' });
+        if (newActive) {
+            addToast({ title: 'Governance Mode Active', type: 'info' });
+            setShowGovernanceModeModal(true);
+        }
+    };
+
+    const handleGovernanceModeComplete = (result) => {
+        // Apply ATA and recalibration
+        const { ata, recalibration, nextWindow, roadmapUpdates } = result;
+
+        // Update roadmap items with governance status
+        if (roadmapUpdates && roadmapUpdates.length > 0) {
+            setAppData(prev => {
+                const updatedD2 = (prev.dashboard?.D2 || []).map(item => {
+                    const update = roadmapUpdates.find(u => u.id === item.id);
+                    if (update) {
+                        return { ...item, status: update.status, governanceNote: update.governanceNote };
+                    }
+                    return item;
+                });
+                return { ...prev, dashboard: { ...prev.dashboard, D2: updatedD2 } };
+            });
+        }
+
+        // Update KPI goals from recalibration
+        if (recalibration?.suggestedKpis) {
+            const newKpis = { ...kpis };
+            Object.entries(recalibration.suggestedKpis).forEach(([key, data]) => {
+                if (newKpis[key] && data.newGoal) {
+                    newKpis[key].goal = data.newGoal;
+                }
+            });
+            setKpis(newKpis);
+        }
+
+        // Save ATA to history
+        const updatedHistory = [ata, ...(appData.governanceHistory || [])];
+        
+        setAppData(prev => ({
+            ...prev,
+            governanceHistory: updatedHistory,
+            lastGovernance: new Date().toISOString(),
+            lastGovernanceATA: ata,
+            nextGovernanceWindow: nextWindow,
+            recalibration: recalibration,
+            governanceFrequency
+        }));
+
+        if (setFormData) {
+            setFormData(prev => ({
+                ...prev,
+                governanceHistory: updatedHistory
+            }));
+        }
+
+        // Exit governance mode
+        setMeetingState({ active: false, comments: { general: '', revenue: '', traffic: '', sales: '' } });
+        setShowGovernanceModeModal(false);
+        
+        addToast({ 
+            title: 'Governança Concluída', 
+            description: 'ATA gerada e sistema recalibrado.', 
+            type: 'success' 
+        });
     };
 
     const handleGovernanceSave = (governanceData) => {
@@ -1262,6 +1327,17 @@ export function OnePageDashboard({
                     onSave={handleGovernanceSave}
                     governanceData={appData?.lastGovernanceData}
                     kpis={kpis}
+                />
+                {/* GOVERNANCE MODE MODAL - Enhanced Ritual */}
+                <GovernanceModeModal
+                    open={meetingState.active && showGovernanceModeModal}
+                    onClose={() => setShowGovernanceModeModal(false)}
+                    onComplete={handleGovernanceModeComplete}
+                    kpis={kpis}
+                    roadmapItems={appData?.dashboard?.D2 || []}
+                    vaults={appData?.vaults}
+                    governanceFrequency={governanceFrequency}
+                    currentUser={currentUser}
                 />
             </div>
         </div>
