@@ -100,6 +100,7 @@ function QuickAddForm({ onAdd, onClose }) {
     const { t } = useLanguage();
     const [form, setForm] = useState({
         initiative: '',
+        microDescription: '',
         channelId: 'instagram',
         subchannelId: 'feed',
         channel: 'Instagram Feed',
@@ -120,6 +121,7 @@ function QuickAddForm({ onAdd, onClose }) {
         onClose();
         setForm({
             initiative: '',
+            microDescription: '',
             channelId: 'instagram',
             subchannelId: 'feed',
             channel: 'Instagram Feed',
@@ -140,6 +142,15 @@ function QuickAddForm({ onAdd, onClose }) {
                     onChange={e => setForm({ ...form, initiative: e.target.value })}
                     placeholder={t('os.quick_add.placeholder')}
                     data-testid="quickadd-initiative"
+                />
+            </div>
+            <div>
+                <label className="text-label">Micro descrição</label>
+                <input
+                    className="premium-input"
+                    value={form.microDescription}
+                    onChange={e => setForm({ ...form, microDescription: e.target.value })}
+                    placeholder="1 linha: objetivo / CTA / detalhe"
                 />
             </div>
             <div className="grid grid-cols-2 gap-4">
@@ -299,6 +310,15 @@ function DetailEditForm({ item, onSave, onClose }) {
                         data-testid="detail-edit-initiative"
                     />
                 </div>
+                <div>
+                    <label className="text-label">Micro descrição</label>
+                    <input
+                        className="premium-input bg-[#111]"
+                        value={form.microDescription || ''}
+                        onChange={e => setForm({ ...form, microDescription: e.target.value })}
+                        placeholder="1 linha: objetivo / CTA / detalhe"
+                    />
+                </div>
                 <div className="grid grid-cols-2 gap-4">
                     <div>
                         <label className="text-label">{t('os.detail_edit.date_label')}</label>
@@ -454,6 +474,7 @@ export function OnePageDashboard({
     const highlightTimeoutRef = useRef(null);
     const [showGovernanceModal, setShowGovernanceModal] = useState(false);
     const [showGovernanceModeModal, setShowGovernanceModeModal] = useState(false);
+    const [historyFocusEntryId, setHistoryFocusEntryId] = useState(null);
     const [governanceFrequency, setGovernanceFrequency] = useState(appData.governanceFrequency || 'weekly');
 
     const { executeWithUndo } = useUndo();
@@ -492,6 +513,25 @@ export function OnePageDashboard({
             highlightTimeoutRef.current = null;
         }, 2500);
     };
+
+    useEffect(() => {
+        try {
+            const params = new URLSearchParams(window.location.search);
+            const focusItem = params.get('focusItem');
+            if (!focusItem) return;
+
+            setDateFilter('month');
+            requestAnimationFrame(() => {
+                const el = document.querySelector(`[data-testid="d2-row-${focusItem}"]`);
+                if (el && typeof el.scrollIntoView === 'function') {
+                    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+                highlightRow(focusItem);
+            });
+        } catch {
+            // no-op
+        }
+    }, []);
 
     const handleInsightAction = (insight) => {
         if (!FLAG_DASH_INSIGHTS_ACTIONS) return;
@@ -565,51 +605,80 @@ export function OnePageDashboard({
     };
 
     const handleGovernanceModeComplete = (result) => {
-        // Apply ATA and recalibration
         const { ata, recalibration, nextWindow, roadmapUpdates } = result;
 
-        // Update roadmap items with governance status
-        if (roadmapUpdates && roadmapUpdates.length > 0) {
-            setAppData(prev => {
-                const updatedD2 = (prev.dashboard?.D2 || []).map(item => {
-                    const update = roadmapUpdates.find(u => u.id === item.id);
-                    if (update) {
-                        return { ...item, status: update.status, governanceNote: update.governanceNote };
-                    }
-                    return item;
-                });
-                return { ...prev, dashboard: { ...prev.dashboard, D2: updatedD2 } };
-            });
-        }
-
-        // Update KPI goals from recalibration
+        const nextKpis = { ...kpis };
+        const goalUpdates = [];
         if (recalibration?.suggestedKpis) {
-            const newKpis = { ...kpis };
             Object.entries(recalibration.suggestedKpis).forEach(([key, data]) => {
-                if (newKpis[key] && data.newGoal) {
-                    newKpis[key].goal = data.newGoal;
+                if (nextKpis[key] && data?.newGoal) {
+                    nextKpis[key].goal = data.newGoal;
+                    goalUpdates.push({ id: key, newGoal: data.newGoal, reason: data?.reason || 'recalibration' });
                 }
             });
-            setKpis(newKpis);
         }
+        setKpis(nextKpis);
 
-        // Save ATA to history
-        const updatedHistory = [ata, ...(appData.governanceHistory || [])];
-        
-        setAppData(prev => ({
-            ...prev,
-            governanceHistory: updatedHistory,
-            lastGovernance: new Date().toISOString(),
-            lastGovernanceATA: ata,
-            nextGovernanceWindow: nextWindow,
-            recalibration: recalibration,
-            governanceFrequency
-        }));
+        const updatedHistoryForForm = [ata, ...(appData.governanceHistory || [])];
+
+        setAppData(prev => {
+            const prevHistory = Array.isArray(prev?.governanceHistory) ? prev.governanceHistory : [];
+            const updatedHistory = [ata, ...prevHistory];
+
+            const prevD2 = Array.isArray(prev?.dashboard?.D2) ? prev.dashboard.D2 : [];
+            const nextD2 = (roadmapUpdates && roadmapUpdates.length > 0)
+                ? prevD2.map(item => {
+                    const update = roadmapUpdates.find(u => String(u.id) === String(item.id));
+                    if (update) return { ...item, status: update.status, governanceNote: update.governanceNote };
+                    return item;
+                })
+                : prevD2;
+
+            const prevContractKpis = Array.isArray(prev?.measurementContract?.kpis) ? prev.measurementContract.kpis : [];
+            const nextContractKpis = goalUpdates.length > 0
+                ? prevContractKpis.map(k => {
+                    const update = goalUpdates.find(u => String(u.id) === String(k.id));
+                    if (!update) return k;
+                    return { ...k, target: update.newGoal };
+                })
+                : prevContractKpis;
+
+            const goalAuditEntries = goalUpdates.map(u => ({
+                id: Date.now() + Math.random(),
+                ts: new Date().toISOString(),
+                actor: currentUser?.role ? `${currentUser.role} (${currentUser.client?.name || 'System'})` : 'System',
+                action: 'GOVERNANCE_RECALIBRATION',
+                target: u.id,
+                newValue: u.newGoal,
+                details: u.reason
+            }));
+
+            return {
+                ...prev,
+                kpis: nextKpis,
+                dashboard: {
+                    ...(prev?.dashboard || {}),
+                    D2: nextD2
+                },
+                governanceHistory: updatedHistory,
+                lastGovernance: new Date().toISOString(),
+                lastGovernanceATA: ata,
+                nextGovernanceWindow: nextWindow,
+                recalibration,
+                governanceFrequency,
+                measurementContract: {
+                    ...(prev.measurementContract || {}),
+                    kpis: nextContractKpis,
+                    lastUpdate: new Date().toISOString(),
+                    auditLog: [...goalAuditEntries, ...(prev.measurementContract?.auditLog || [])]
+                }
+            };
+        });
 
         if (setFormData) {
             setFormData(prev => ({
                 ...prev,
-                governanceHistory: updatedHistory
+                governanceHistory: updatedHistoryForForm
             }));
         }
 
@@ -1004,18 +1073,38 @@ export function OnePageDashboard({
     };
 
     // --- INTEGRATIONS: DEEP LINKS ---
+    const buildRoadmapDeepLink = (itemId) => {
+        try {
+            const url = new URL(window.location.href);
+            url.searchParams.set('focusItem', String(itemId));
+            url.hash = '';
+            return url.toString();
+        } catch {
+            return `?focusItem=${encodeURIComponent(String(itemId))}`;
+        }
+    };
+
     const sendApprovalRequest = (item, e) => {
         e.stopPropagation(); // Prevent row click
         
-        const clientPhone = appData?.vaults?.S4?.contacts?.emergency || ''; // Fallback contact
-        // In a real app, this would be the approver's phone
-        
-        const text = `*BRAVVO APPROVAL REQUEST*\n\n📝 *Initiative:* ${item.initiative}\n📅 *Date:* ${item.date}\n📺 *Channel:* ${item.channel}\n\nPor favor, aprovar ou comentar.\n(Link da Arte: https://bravvo.os/p/${item.id})`;
-        
-        // Use wa.me with pre-filled text
-        const url = `https://wa.me/${clientPhone.replace(/\D/g,'')}?text=${encodeURIComponent(text)}`;
+        const clientPhone = appData?.vaults?.S4?.contacts?.emergency || '';
+        const phoneDigits = String(clientPhone).replace(/\D/g, '');
+        const deepLink = buildRoadmapDeepLink(item.id);
+
+        const text = `*BRAVVO APPROVAL REQUEST*\n\n📝 *Initiative:* ${item.initiative}\n📅 *Date:* ${item.date}\n📺 *Channel:* ${item.channel}\n\nPor favor, aprovar ou comentar.\n(Link interno: ${deepLink})`;
+
+        if (!phoneDigits || phoneDigits.length < 10) {
+            try {
+                navigator.clipboard.writeText(text);
+                addToast({ title: 'Contato não configurado', description: 'Telefone inválido. Mensagem copiada.', type: 'info' });
+            } catch {
+                addToast({ title: 'Contato não configurado', description: 'Telefone inválido.', type: 'info' });
+            }
+            return;
+        }
+
+        const url = `https://wa.me/${phoneDigits}?text=${encodeURIComponent(text)}`;
         window.open(url, '_blank');
-        
         addToast({ title: 'WhatsApp Aberto', description: 'Mensagem de aprovação pré-preenchida.', type: 'success' });
     };
 
@@ -1097,6 +1186,43 @@ export function OnePageDashboard({
                     onToggleGovernance={toggleGovernanceMode}
                     onChangeFrequency={handleFrequencyChange}
                 />
+
+                {(() => {
+                    const history = Array.isArray(appData?.governanceHistory) ? appData.governanceHistory : (Array.isArray(formData?.governanceHistory) ? formData.governanceHistory : []);
+                    const ata = appData?.lastGovernanceATA || history.find(h => h?.signature?.closedAt && h?.kpis);
+                    if (!ata) return null;
+
+                    const revenueAchievement = ata?.kpis?.revenue?.achievement;
+                    const executionRate = ata?.roadmapSummary?.executionRate;
+                    const risksCount = Array.isArray(ata?.risks) ? ata.risks.length : 0;
+
+                    return (
+                        <div className="mb-6 p-4 rounded-xl border border-white/10 bg-[#080808]">
+                            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                                <div className="min-w-0">
+                                    <div className="text-[10px] text-gray-500 font-mono uppercase tracking-wider">Última Governança (ATA)</div>
+                                    <div className="text-sm font-bold text-white truncate">{ata?.signature?.period || ata?.id}</div>
+                                    <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-gray-500">
+                                        <span>Receita: <span className="text-gray-300">{revenueAchievement ? `${revenueAchievement}%` : '—'}</span></span>
+                                        <span>Execução: <span className="text-gray-300">{executionRate ? `${executionRate}%` : '—'}</span></span>
+                                        <span>Riscos: <span className="text-gray-300">{risksCount}</span></span>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <button
+                                        onClick={() => {
+                                            setHistoryFocusEntryId(ata?.id);
+                                            setShowHistory(true);
+                                        }}
+                                        className="btn-ghost !h-8 !px-3 !border-purple-500/30 text-purple-300 hover:text-purple-200"
+                                    >
+                                        Ver ATA
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    );
+                })()}
 
                 {/* 1. DAY SUMMARY AI - PRD 3.2 */}
                 <DaySummaryAI 
@@ -1183,11 +1309,15 @@ export function OnePageDashboard({
                                         <div className="text-mono-data text-gray-400 group-hover:text-white transition-colors">
                                             {formatHumanDate(item.date)}
                                         </div>
-                                        <div 
-                                            className="text-sm font-medium text-white truncate pr-4 group-hover:translate-x-1 transition-transform"
-                                            data-testid={`d2-initiative-${item.id}`}
-                                        >
-                                            {item.initiative}
+                                        <div className="min-w-0 pr-4" data-testid={`d2-initiative-${item.id}`}>
+                                            <div className="text-sm font-medium text-white truncate group-hover:translate-x-1 transition-transform">
+                                                {item.initiative}
+                                            </div>
+                                            {(item.microDescription || item.governanceNote || item.origin || item.caption) && (
+                                                <div className="text-[11px] text-gray-500 truncate mt-0.5">
+                                                    {item.microDescription || item.governanceNote || item.origin || String(item.caption).split('\n')[0]}
+                                                </div>
+                                            )}
                                         </div>
                                         <div className="flex items-center gap-2 text-xs text-gray-500 group-hover:text-gray-400 transition-colors">
                                             <span>{formatIcons[item.format]?.icon || '🧩'}</span>
@@ -1307,7 +1437,15 @@ export function OnePageDashboard({
                 ) : (
                     <DetailEditModal open={!!editingItem} onClose={() => setEditingItem(null)} item={editingItem} onSave={handleSaveItem} />
                 )}
-                <GovernanceHistory open={showHistory} onClose={() => setShowHistory(false)} history={formData?.governanceHistory || []} />
+                <GovernanceHistory
+                    open={showHistory}
+                    onClose={() => {
+                        setShowHistory(false);
+                        setHistoryFocusEntryId(null);
+                    }}
+                    history={appData?.governanceHistory || formData?.governanceHistory || []}
+                    focusEntryId={historyFocusEntryId}
+                />
                 <ImportDataModal open={showImport} onClose={() => setShowImport(false)} contract={appData.measurementContract} onImport={handleImport} />
                 <PlaybookModal open={showPlaybooks} onClose={() => setShowPlaybooks(false)} onApply={handleApplyPlaybook} />
                 <CreativeStudioModal
