@@ -33,6 +33,7 @@ export function BinderLayout({ activeTab, setActiveTab, completedTabs, children,
                     return (
                         <button
                             key={tab.id}
+                            data-testid={`binder-tab-${tab.id}`}
                             onClick={() => setActiveTab(tab.id)}
                             className={`
                                 relative w-14 h-14 rounded-xl flex flex-col items-center justify-center transition-all duration-300 group

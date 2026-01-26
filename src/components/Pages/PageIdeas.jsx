@@ -159,6 +159,7 @@ export function PageIdeas({ formData, setFormData, onComplete }) {
                                 <label className="input-label">Título da Ideia</label>
                                 <input
                                     className="input-field"
+                                    data-testid="v5-idea-title"
                                     placeholder="Ex: Reels com bastidores"
                                     value={newIdea.title}
                                     onChange={e => setNewIdea({ ...newIdea, title: e.target.value })}
@@ -211,6 +212,7 @@ export function PageIdeas({ formData, setFormData, onComplete }) {
                             <button
                                 type="button"
                                 onClick={addIdea}
+                                data-testid="v5-save-idea"
                                 className="px-4 py-2 bg-yellow-500 text-black rounded-lg font-medium text-sm hover:bg-yellow-400 transition-colors flex items-center gap-2"
                             >
                                 <Plus size={14} />
@@ -222,6 +224,7 @@ export function PageIdeas({ formData, setFormData, onComplete }) {
                     <button
                         type="button"
                         onClick={() => setShowIdeaForm(true)}
+                        data-testid="v5-new-idea"
                         className="w-full py-3 border border-dashed border-white/20 rounded-lg text-sm text-gray-400 hover:text-white hover:border-yellow-500/40 transition-colors flex items-center justify-center gap-2"
                     >
                         <Plus size={16} />
@@ -409,6 +412,7 @@ export function PageIdeas({ formData, setFormData, onComplete }) {
                 </p>
                 <button
                     type="submit"
+                    data-testid="v5-complete"
                     className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-xl font-bold flex items-center gap-2 transition-all hover:scale-105 shadow-lg shadow-purple-600/20"
                 >
                     <Sparkles size={18} />

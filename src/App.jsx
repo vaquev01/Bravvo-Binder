@@ -12,6 +12,7 @@ import { OnePageDashboard } from './components/CommandCenter/OnePageDashboard';
 // IMPORTS FOR IMPROVEMENTS
 import { useLocalStorage } from './hooks/useLocalStorage';
 import { ToastProvider, useToast } from './contexts/ToastContext';
+import { storageService } from './services/storageService';
 
 import {
     Terminal,
@@ -37,19 +38,21 @@ import { VaultProvider } from './contexts/VaultContext';
 // CLIENT WORKSPACE (THE ORIGINAL APP "OS")
 // ============================================================================
 function ClientWorkspace({ onBackToAgency, isAgencyView, initialData, onSave, currentUser }) {
+    const clientId = initialData?.id || currentUser?.client?.id || null;
     // We wrap the internal content with VaultProvider so it can accept initialData
     return (
-        <VaultProvider initialData={initialData} onSave={onSave}>
+        <VaultProvider key={clientId || 'client'} initialData={initialData} onSave={onSave}>
             <ClientWorkspaceContent
                 onBackToAgency={onBackToAgency}
                 isAgencyView={isAgencyView}
                 currentUser={currentUser}
+                clientId={clientId}
             />
         </VaultProvider>
     );
 }
 
-function ClientWorkspaceContent({ onBackToAgency, isAgencyView: _isAgencyView, currentUser }) {
+function ClientWorkspaceContent({ onBackToAgency, isAgencyView: _isAgencyView, currentUser, clientId }) {
     const { addToast } = useToast();
 
     // State
@@ -64,7 +67,7 @@ function ClientWorkspaceContent({ onBackToAgency, isAgencyView: _isAgencyView, c
     const [_promptHistory, setPromptHistory] = useState([]);
 
     // --- GOVERNANCE / MEETING STATE (Lifted for Persistence) ---
-    const [meetingState, setMeetingState] = useLocalStorage('bravvo_meeting_state', {
+    const [meetingState, setMeetingState] = useLocalStorage(`bravvo_meeting_state:${clientId || 'default'}`, {
         active: false,
         comments: {
             general: '',
@@ -73,6 +76,21 @@ function ClientWorkspaceContent({ onBackToAgency, isAgencyView: _isAgencyView, c
             sales: ''
         }
     });
+
+    useEffect(() => {
+        if (!clientId) return;
+        const legacyKey = 'bravvo_meeting_state';
+        const scopedKey = `bravvo_meeting_state:${clientId}`;
+        if (localStorage.getItem(scopedKey)) return;
+        const legacyValue = localStorage.getItem(legacyKey);
+        if (!legacyValue) return;
+        try {
+            const parsed = JSON.parse(legacyValue);
+            setMeetingState(parsed);
+        } catch {
+            // ignore
+        }
+    }, [clientId, setMeetingState]);
 
     // --- BINDER STATE ---
     // Start at OS (One Page Dashboard) as requested by user ("painel de gestao quero que seja inicial")
@@ -87,7 +105,7 @@ function ClientWorkspaceContent({ onBackToAgency, isAgencyView: _isAgencyView, c
 
     // We use a simple effect to sync local form state with Context if needed, 
     // but for now we rely on appData mostly. 
-    const [formData, setFormData] = useLocalStorage('bravvo_form_data', {
+    const [formData, setFormData] = useLocalStorage(`bravvo_form_data:${clientId || 'default'}`, {
         // --- V1: Brand Vault ---
         clientName: appData.clientName || "",
         niche: appData?.vaults?.S1?.fields?.niche || "gastronomia",
@@ -179,6 +197,21 @@ function ClientWorkspaceContent({ onBackToAgency, isAgencyView: _isAgencyView, c
         customThemeEnabled: appData.customThemeEnabled || false,
         _schemaVersion: 1
     });
+
+    useEffect(() => {
+        if (!clientId) return;
+        const legacyKey = 'bravvo_form_data';
+        const scopedKey = `bravvo_form_data:${clientId}`;
+        if (localStorage.getItem(scopedKey)) return;
+        const legacyValue = localStorage.getItem(legacyKey);
+        if (!legacyValue) return;
+        try {
+            const parsed = JSON.parse(legacyValue);
+            setFormData(parsed);
+        } catch {
+            // ignore
+        }
+    }, [clientId, setFormData]);
 
     useEffect(() => {
         setFormData(prev => {
@@ -775,16 +808,18 @@ function AppContent() {
             setCurrentUser({ role: 'master', client: null });
         } else {
             // Client login - for demo, we pick C1
-            const data = api.getClientData('C1');
+            const seed = api.getClientData('C1');
+            const data = storageService.loadClientData('C1', seed);
             setClientData(data);
             setViewMode('client_workspace');
-            setCurrentUser({ role: 'client', client: { name: 'Direct Client' } });
+            setCurrentUser({ role: 'client', client: { id: 'C1', name: 'Direct Client' } });
         }
     };
 
     const handleSelectClient = (client) => {
         // Fetch fresh data for the selected client from Mock DB
-        const data = api.getClientData(client.id);
+        const seed = api.getClientData(client.id);
+        const data = storageService.loadClientData(client.id, seed);
         setClientData(data);
         setCurrentUser(prev => ({ ...prev, client: client }));
         setViewMode('client_workspace');

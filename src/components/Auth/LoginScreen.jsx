@@ -262,6 +262,7 @@ export function LoginScreen({ onLogin }) {
 
                             <button
                                 type="submit"
+                                data-testid="login-submit"
                                 className="w-full bg-white text-black font-bold h-10 rounded-lg hover:bg-gray-200 transition-colors flex items-center justify-center gap-2 mt-4"
                             >
                                 <Zap size={16} className="fill-black" />

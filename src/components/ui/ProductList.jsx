@@ -45,7 +45,7 @@ export function ProductList({ products = [], onChange, maxProducts = 5 }) {
     return (
         <div className="space-y-4">
             {/* Product Cards */}
-            {products.map((product) => (
+            {products.map((product, index) => (
                 <div
                     key={product.id}
                     className={`
@@ -76,6 +76,7 @@ export function ProductList({ products = [], onChange, maxProducts = 5 }) {
                                 <label className="text-[10px] text-gray-500 uppercase tracking-wider block mb-1">Nome</label>
                                 <input
                                     type="text"
+                                    data-testid={`v2-product-name-${index}`}
                                     value={product.name}
                                     onChange={(e) => updateProduct(product.id, 'name', e.target.value)}
                                     placeholder="Ex: Combo Premium"
@@ -171,6 +172,7 @@ export function ProductList({ products = [], onChange, maxProducts = 5 }) {
                 <button
                     type="button"
                     onClick={addProduct}
+                    data-testid="v2-add-product"
                     className="w-full p-4 border-2 border-dashed border-white/10 rounded-xl text-gray-500 hover:text-white hover:border-white/30 transition-all flex items-center justify-center gap-2 group"
                 >
                     <Plus size={20} className="group-hover:scale-110 transition-transform" />

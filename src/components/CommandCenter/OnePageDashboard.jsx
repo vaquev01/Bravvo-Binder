@@ -834,7 +834,12 @@ export function OnePageDashboard({
                         { id: 'V4', label: t('os.vaults.team'), val: appData?.vaults?.S4?.matrix?.[0]?.who || 'N/A', class: 'border-l-2 border-green-500/50' },
                         { id: 'V5', label: t('os.vaults.ideas'), val: appData?.vaults?.S5?.ideas?.[0]?.title || 'N/A', class: 'border-l-2 border-purple-500/50' },
                     ].map(v => (
-                        <div key={v.id} onClick={() => setActiveTab(v.id)} className={`bento-grid p-4 hover:bg-[var(--bg-surface)] cursor-pointer transition-colors ${v.class}`}>
+                        <div
+                            key={v.id}
+                            data-testid={`os-vault-card-${v.id}`}
+                            onClick={() => setActiveTab(v.id)}
+                            className={`bento-grid p-4 hover:bg-[var(--bg-surface)] cursor-pointer transition-colors ${v.class}`}
+                        >
                             <div className="text-label mb-2">{v.label}</div>
                             <div className="text-sm font-medium text-white truncate">{v.val}</div>
                             <div className="mt-2 text-[10px] text-gray-600 font-mono">VAULT {v.id}</div>

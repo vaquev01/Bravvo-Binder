@@ -32,6 +32,7 @@ export function LandingPage({ onLogin }) {
 
                     <button
                         onClick={onLogin}
+                        data-testid="landing-login"
                         className="px-4 py-2 bg-white/10 hover:bg-white/20 border border-white/20 rounded text-[13px] font-bold text-white transition-all flex items-center gap-2"
                     >
                         <User size={14} />

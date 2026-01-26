@@ -154,47 +154,52 @@ export function AgencyDashboard({ onSelectClient, onLogout }) {
                             </div>
                         </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-px bg-[var(--border-subtle)] border border-[var(--border-subtle)] rounded-lg overflow-hidden">
-                        {clients.map((client) => (
-                            <div key={client.id} className="bg-[var(--bg-surface)] hover:bg-[#151515] p-6 transition-all group flex flex-col justify-between h-48 relative">
-                                <div>
-                                    <div className="flex justify-between items-start mb-4">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-8 h-8 rounded bg-white/5 border border-white/10 flex items-center justify-center text-xs font-bold text-gray-300">
-                                                {client.name.substring(0, 2).toUpperCase()}
-                                            </div>
-                                            <div>
-                                                <h4 className="font-bold text-sm text-gray-200 group-hover:text-white">{client.name}</h4>
-                                                <div className="flex items-center gap-2 mt-1">
-                                                    <span className={`w-1.5 h-1.5 rounded-full ${client.status === 'critical' ? 'bg-red-500' : client.status === 'attention' ? 'bg-orange-500' : 'bg-green-500'}`}></span>
-                                                    <span className="text-[10px] text-gray-500 uppercase tracking-widest leading-none">{client.status}</span>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-px bg-[var(--border-subtle)] border border-[var(--border-subtle)] rounded-lg overflow-hidden">
+                            {clients.map((client) => (
+                                <div
+                                    key={client.id}
+                                    data-testid={`agency-client-card-${client.id}`}
+                                    className="bg-[var(--bg-surface)] hover:bg-[#151515] p-6 transition-all group flex flex-col justify-between h-48 relative"
+                                >
+                                    <div>
+                                        <div className="flex justify-between items-start mb-4">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-8 h-8 rounded bg-white/5 border border-white/10 flex items-center justify-center text-xs font-bold text-gray-300">
+                                                    {client.name.substring(0, 2).toUpperCase()}
+                                                </div>
+                                                <div>
+                                                    <h4 className="font-bold text-sm text-gray-200 group-hover:text-white">{client.name}</h4>
+                                                    <div className="flex items-center gap-2 mt-1">
+                                                        <span className={`w-1.5 h-1.5 rounded-full ${client.status === 'critical' ? 'bg-red-500' : client.status === 'attention' ? 'bg-orange-500' : 'bg-green-500'}`}></span>
+                                                        <span className="text-[10px] text-gray-500 uppercase tracking-widest leading-none">{client.status}</span>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
+
+                                        <div className="grid grid-cols-2 gap-4 mt-6">
+                                            <div>
+                                                <p className="text-label">{t('dashboard.agency.monthly_rev')}</p>
+                                                <p className="text-mono-data text-white">{(client.revenue || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p>
+                                            </div>
+                                            <div>
+                                                <p className="text-label">{t('dashboard.agency.head')}</p>
+                                                <p className="text-mono-data text-white">{client.responsible}</p>
+                                            </div>
+                                        </div>
                                     </div>
 
-                                    <div className="grid grid-cols-2 gap-4 mt-6">
-                                        <div>
-                                            <p className="text-label">{t('dashboard.agency.monthly_rev')}</p>
-                                            <p className="text-mono-data text-white">{(client.revenue || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p>
-                                        </div>
-                                        <div>
-                                            <p className="text-label">{t('dashboard.agency.head')}</p>
-                                            <p className="text-mono-data text-white">{client.responsible}</p>
-                                        </div>
-                                    </div>
+                                    <button
+                                        onClick={() => onSelectClient(client)}
+                                        data-testid={`agency-access-os-${client.id}`}
+                                        className="mt-4 w-full h-8 flex items-center justify-center gap-2 text-[11px] font-bold uppercase tracking-wide border border-white/10 rounded hover:bg-white hover:text-black transition-all text-gray-500 opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 duration-200"
+                                    >
+                                        {t('dashboard.actions.access_os')} <ArrowRight size={12} />
+                                    </button>
                                 </div>
-
-                                <button
-                                    onClick={() => onSelectClient(client)}
-                                    className="mt-4 w-full h-8 flex items-center justify-center gap-2 text-[11px] font-bold uppercase tracking-wide border border-white/10 rounded hover:bg-white hover:text-black transition-all text-gray-500 opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 duration-200"
-                                >
-                                    {t('dashboard.actions.access_os')} <ArrowRight size={12} />
-                                </button>
-                            </div>
-                        ))}
+                            ))}
+                        </div>
                     </div>
-                </div>
                 )}
 
                 {/* Financials Tab */}

@@ -51,11 +51,24 @@ class StorageService {
     /**
      * Carrega os dados do cliente atual
      */
-    loadClientData() {
-        // Tenta carregar do local, se não existir, usa o Mock inicial
-        const saved = this.load(STORAGE_KEYS.APP_DATA);
+    loadClientData(clientId = null, fallbackData = null) {
+        const perClientKey = clientId ? `${STORAGE_KEYS.APP_DATA}:${clientId}` : null;
+        const saved = perClientKey ? this.load(perClientKey) : null;
+        if (saved) return this.normalizeClientData(saved);
 
-        return this.normalizeClientData(saved || CARACA_BAR_DATA);
+        const legacy = this.load(STORAGE_KEYS.APP_DATA);
+        if (clientId) {
+            if (legacy && legacy.id === clientId) {
+                return this.normalizeClientData(legacy);
+            }
+            if (fallbackData) return this.normalizeClientData(fallbackData);
+        }
+
+        // Backward compatible fallback (no client selected)
+        if (legacy) return this.normalizeClientData(legacy);
+
+        if (fallbackData) return this.normalizeClientData(fallbackData);
+        return this.normalizeClientData(CARACA_BAR_DATA);
     }
 
     normalizeClientData(rawData) {
@@ -260,7 +273,12 @@ class StorageService {
      * Salva os dados do cliente
      */
     saveClientData(data) {
-        return this.save(STORAGE_KEYS.APP_DATA, this.normalizeClientData(data));
+        const normalized = this.normalizeClientData(data);
+        const ok = this.save(STORAGE_KEYS.APP_DATA, normalized);
+        if (normalized?.id) {
+            this.save(`${STORAGE_KEYS.APP_DATA}:${normalized.id}`, normalized);
+        }
+        return ok;
     }
 
     /**

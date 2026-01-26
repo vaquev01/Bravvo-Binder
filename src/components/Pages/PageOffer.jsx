@@ -287,6 +287,7 @@ export function PageOffer({ formData, setFormData, onNext }) {
             <div className="pt-6 border-t border-white/5 flex justify-end sticky bottom-0 bg-[#050505] pb-6 z-10 shadow-[0_-10px_20px_rgba(0,0,0,0.5)]">
                 <button
                     type="submit"
+                    data-testid="v2-save-next"
                     className="bg-orange-500 hover:bg-orange-600 text-white px-8 py-4 rounded-xl font-bold flex items-center gap-3 transition-all hover:scale-105 shadow-lg shadow-orange-500/20"
                 >
                     Salvar e Avançar para V3 <ArrowRight size={20} />
