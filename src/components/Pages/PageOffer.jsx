@@ -1,6 +1,7 @@
 import React from 'react';
-import { ShoppingBag, ArrowRight, TrendingUp, Target, Zap } from 'lucide-react';
+import { ShoppingBag, ArrowRight, TrendingUp, Target, Zap, CheckCircle2 } from 'lucide-react';
 import { ProductList } from '../ui/ProductList';
+import { useVaultForm } from '../../hooks/useVaultForm';
 
 const UPSELL_STRATEGIES = [
     { value: 'none', label: 'Nenhuma estratégia definida' },
@@ -11,14 +12,16 @@ const UPSELL_STRATEGIES = [
     { value: 'assinatura', label: '🔄 Assinatura / Recorrência' },
 ];
 
-export function PageOffer({ formData, setFormData, onNext }) {
+export function PageOffer({ formData: externalFormData, setFormData: externalSetFormData, onNext }) {
+    // Use unified vault form hook
+    const { formData: vaultFormData, updateField: vaultUpdateField, isSynced, saveAndAdvance } = useVaultForm('V2');
+    
+    const formData = vaultFormData || externalFormData || {};
+    const updateField = vaultUpdateField || ((field, value) => externalSetFormData?.({ ...formData, [field]: value }));
+
     const handleSubmit = (e) => {
         e.preventDefault();
-        onNext();
-    };
-
-    const updateField = (field, value) => {
-        setFormData({ ...formData, [field]: value });
+        saveAndAdvance(onNext, 'Vault 2 (Commerce)');
     };
 
     // Initialize products if empty
@@ -284,7 +287,18 @@ export function PageOffer({ formData, setFormData, onNext }) {
             </section>
 
             {/* Submit */}
-            <div className="pt-6 border-t border-white/5 flex justify-end sticky bottom-0 bg-[#050505] pb-6 z-10 shadow-[0_-10px_20px_rgba(0,0,0,0.5)]">
+            <div className="pt-6 border-t border-white/5 flex justify-between items-center sticky bottom-0 bg-[#050505] pb-6 z-10 shadow-[0_-10px_20px_rgba(0,0,0,0.5)]">
+                <div className="flex items-center gap-2 text-sm">
+                    {isSynced ? (
+                        <span className="flex items-center gap-1.5 text-green-400">
+                            <CheckCircle2 size={14} /> Sincronizado
+                        </span>
+                    ) : (
+                        <span className="flex items-center gap-1.5 text-yellow-400 animate-pulse">
+                            <span className="w-2 h-2 bg-yellow-400 rounded-full"></span> Salvando...
+                        </span>
+                    )}
+                </div>
                 <button
                     type="submit"
                     data-testid="v2-save-next"

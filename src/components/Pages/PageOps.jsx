@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { Users, Shield, Sparkles, Calendar, UserCheck, Zap, Target } from 'lucide-react';
+import { Users, Shield, Sparkles, Calendar, UserCheck, Zap, Target, CheckCircle2 } from 'lucide-react';
 import { StakeholderList } from '../ui/StakeholderList';
 import { CompetitorList } from '../ui/CompetitorList';
+import { useVaultForm } from '../../hooks/useVaultForm';
 
 const POSTING_FREQUENCIES = [
     { value: 'diario', label: '📆 Diário (1 post/dia)', posts: 30 },
@@ -28,19 +29,21 @@ const TIME_SLOTS = [
     { value: 'noite', label: '🌙 Noite (18h-22h)' },
 ];
 
-export function PageOps({ formData, setFormData, onComplete }) {
+export function PageOps({ formData: externalFormData, setFormData: externalSetFormData, onComplete }) {
+    // Use unified vault form hook
+    const { formData: vaultFormData, updateField: vaultUpdateField, isSynced, saveAndAdvance } = useVaultForm('V4');
+    
+    const formData = vaultFormData || externalFormData || {};
+    const updateField = vaultUpdateField || ((field, value) => externalSetFormData?.({ ...formData, [field]: value }));
+    
     const [isProcessing, setIsProcessing] = useState(false);
 
     const handleSubmit = (e) => {
         e.preventDefault();
         setIsProcessing(true);
         setTimeout(() => {
-            onComplete();
-        }, 2000);
-    };
-
-    const updateField = (field, value) => {
-        setFormData({ ...formData, [field]: value });
+            saveAndAdvance(onComplete, 'Vault 4 (Ops)');
+        }, 1500);
     };
 
     const toggleArrayValue = (field, value) => {
@@ -376,13 +379,25 @@ export function PageOps({ formData, setFormData, onComplete }) {
             </section>
 
             {/* Submit */}
-            <div className="pt-6 border-t border-white/5 flex justify-end sticky bottom-0 bg-[#050505] pb-6 z-10 shadow-[0_-10px_20px_rgba(0,0,0,0.5)]">
+            <div className="pt-6 border-t border-white/5 flex justify-between items-center sticky bottom-0 bg-[#050505] pb-6 z-10 shadow-[0_-10px_20px_rgba(0,0,0,0.5)]">
+                <div className="flex items-center gap-2 text-sm">
+                    {isSynced ? (
+                        <span className="flex items-center gap-1.5 text-green-400">
+                            <CheckCircle2 size={14} /> Sincronizado
+                        </span>
+                    ) : (
+                        <span className="flex items-center gap-1.5 text-yellow-400 animate-pulse">
+                            <span className="w-2 h-2 bg-yellow-400 rounded-full"></span> Salvando...
+                        </span>
+                    )}
+                </div>
                 <button
                     type="submit"
-                    className="bg-purple-600 hover:bg-purple-700 text-white px-8 py-4 rounded-xl font-bold flex items-center gap-3 transition-all hover:scale-105 shadow-lg shadow-purple-600/20"
+                    disabled={isProcessing}
+                    className="bg-purple-600 hover:bg-purple-700 text-white px-8 py-4 rounded-xl font-bold flex items-center gap-3 transition-all hover:scale-105 shadow-lg shadow-purple-600/20 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                    <Sparkles size={20} />
-                    Finalizar & Gerar Bravvo Binder
+                    <Sparkles size={20} className={isProcessing ? 'animate-spin' : ''} />
+                    {isProcessing ? 'Processando...' : 'Finalizar & Gerar Bravvo Binder'}
                 </button>
             </div>
         </form>

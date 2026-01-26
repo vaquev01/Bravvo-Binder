@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import {
     Target, ArrowRight, Palette, Users, Sparkles, Upload, Image,
-    Music, Tag, X, Plus
+    Music, Tag, X, Plus, CheckCircle2
 } from 'lucide-react';
 import { TagInput } from '../ui/TagInput';
 import { RadioCards } from '../ui/RadioCards';
 import { AssetUploader } from '../ui/AssetUploader';
+import { useVaultForm } from '../../hooks/useVaultForm';
 
 const ARCHETYPES = [
     { value: 'O Criador', emoji: '🎨', label: 'O Criador', description: 'Inovação e originalidade' },
@@ -53,36 +54,33 @@ const MUSICAL_SUGGESTIONS = [
     'MPB', 'Indie', 'Hip-Hop', 'Bossa Nova', 'Reggae', 'House', 'Trap'
 ];
 
-export function PageBrand({ formData, setFormData, onNext }) {
+export function PageBrand({ formData: externalFormData, setFormData: externalSetFormData, onNext }) {
+    // Use unified vault form hook - reads/writes directly to appData
+    const { formData: vaultFormData, updateField: vaultUpdateField, updateFields, isSynced, saveAndAdvance } = useVaultForm('V1');
+    
+    // Use vault data if available, fallback to external props for compatibility
+    const formData = vaultFormData || externalFormData || {};
+    const updateField = vaultUpdateField || ((field, value) => externalSetFormData?.({ ...formData, [field]: value }));
+    
     const [activeAssetTab, setActiveAssetTab] = useState('logos');
     const [newKeyElement, setNewKeyElement] = useState('');
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        onNext();
-    };
-
-    const updateField = (field, value) => {
-        setFormData({ ...formData, [field]: value });
+        saveAndAdvance(onNext, 'Vault 1 (Brand)');
     };
 
     const updateBrandIdentity = (field, value) => {
-        setFormData({
-            ...formData,
-            brandIdentity: {
-                ...(formData.brandIdentity || {}),
-                [field]: value
-            }
+        updateField('brandIdentity', {
+            ...(formData.brandIdentity || {}),
+            [field]: value
         });
     };
 
     const updateBrandAssets = (assetType, value) => {
-        setFormData({
-            ...formData,
-            brandAssets: {
-                ...(formData.brandAssets || {}),
-                [assetType]: value
-            }
+        updateField('brandAssets', {
+            ...(formData.brandAssets || {}),
+            [assetType]: value
         });
     };
 
@@ -129,16 +127,24 @@ export function PageBrand({ formData, setFormData, onNext }) {
         const defaultSecondary = "#1E293B";
         const defaultAccent = "#10B981";
 
-        setFormData({
-            ...formData,
-            // Only fill if empty or default
-            tone: (!formData.tone || formData.tone === defaultTone) ? random.tone : formData.tone,
-            mood: (!formData.mood || formData.mood === defaultMood) ? random.mood : formData.mood,
-            archetype: (!formData.archetype || formData.archetype === defaultArchetype) ? random.archetype : formData.archetype,
-            primaryColor: (!formData.primaryColor || formData.primaryColor === defaultPrimary) ? random.primary : formData.primaryColor,
-            secondaryColor: (!formData.secondaryColor || formData.secondaryColor === defaultSecondary) ? random.secondary : formData.secondaryColor,
-            accentColor: (!formData.accentColor || formData.accentColor === defaultAccent) ? random.accent : formData.accentColor
-        });
+        // Use updateFields for batch update if available
+        if (updateFields) {
+            updateFields({
+                tone: (!formData.tone || formData.tone === defaultTone) ? random.tone : formData.tone,
+                mood: (!formData.mood || formData.mood === defaultMood) ? random.mood : formData.mood,
+                archetype: (!formData.archetype || formData.archetype === defaultArchetype) ? random.archetype : formData.archetype,
+                primaryColor: (!formData.primaryColor || formData.primaryColor === defaultPrimary) ? random.primary : formData.primaryColor,
+                secondaryColor: (!formData.secondaryColor || formData.secondaryColor === defaultSecondary) ? random.secondary : formData.secondaryColor,
+                accentColor: (!formData.accentColor || formData.accentColor === defaultAccent) ? random.accent : formData.accentColor
+            });
+        } else {
+            updateField('tone', (!formData.tone || formData.tone === defaultTone) ? random.tone : formData.tone);
+            updateField('mood', (!formData.mood || formData.mood === defaultMood) ? random.mood : formData.mood);
+            updateField('archetype', (!formData.archetype || formData.archetype === defaultArchetype) ? random.archetype : formData.archetype);
+            updateField('primaryColor', (!formData.primaryColor || formData.primaryColor === defaultPrimary) ? random.primary : formData.primaryColor);
+            updateField('secondaryColor', (!formData.secondaryColor || formData.secondaryColor === defaultSecondary) ? random.secondary : formData.secondaryColor);
+            updateField('accentColor', (!formData.accentColor || formData.accentColor === defaultAccent) ? random.accent : formData.accentColor);
+        }
     };
 
     const assetTabs = [
@@ -601,7 +607,18 @@ export function PageBrand({ formData, setFormData, onNext }) {
             </section>
 
             {/* Submit */}
-            <div className="pt-6 border-t border-white/5 flex justify-end sticky bottom-0 bg-[#050505] pb-6 z-10 shadow-[0_-10px_20px_rgba(0,0,0,0.5)]">
+            <div className="pt-6 border-t border-white/5 flex justify-between items-center sticky bottom-0 bg-[#050505] pb-6 z-10 shadow-[0_-10px_20px_rgba(0,0,0,0.5)]">
+                <div className="flex items-center gap-2 text-sm">
+                    {isSynced ? (
+                        <span className="flex items-center gap-1.5 text-green-400">
+                            <CheckCircle2 size={14} /> Sincronizado
+                        </span>
+                    ) : (
+                        <span className="flex items-center gap-1.5 text-yellow-400 animate-pulse">
+                            <span className="w-2 h-2 bg-yellow-400 rounded-full"></span> Salvando...
+                        </span>
+                    )}
+                </div>
                 <button
                     type="submit"
                     className="bg-red-500 hover:bg-red-600 text-white px-8 py-4 rounded-xl font-bold flex items-center gap-3 transition-all hover:scale-105 shadow-lg shadow-red-500/20"

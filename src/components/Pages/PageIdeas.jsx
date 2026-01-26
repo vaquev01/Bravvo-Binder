@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Lightbulb, Link2, FileText, Plus, Trash2, ExternalLink, Sparkles } from 'lucide-react';
+import { Lightbulb, Link2, FileText, Plus, Trash2, ExternalLink, Sparkles, CheckCircle2 } from 'lucide-react';
+import { useVaultForm } from '../../hooks/useVaultForm';
 
 const IDEA_TAGS = [
     'Conteúdo', 'Promoção', 'Lançamento', 'Sazonal', 'Tendência', 'Reels', 'Stories', 'Carrossel', 'Collab'
@@ -14,14 +15,21 @@ const REFERENCE_TYPES = [
     { value: 'inspiration', label: '✨ Inspiração' },
 ];
 
-export function PageIdeas({ formData, setFormData, onComplete }) {
+export function PageIdeas({ formData: externalFormData, setFormData: externalSetFormData, onComplete }) {
+    // Use unified vault form hook
+    const { formData: vaultFormData, updateField: vaultUpdateField, isSynced, saveAndAdvance } = useVaultForm('V5');
+    
+    const formData = vaultFormData || externalFormData || {};
+    const updateField = vaultUpdateField || ((field, value) => externalSetFormData?.({ ...formData, [field]: value }));
+    
     const [showIdeaForm, setShowIdeaForm] = useState(false);
     const [showRefForm, setShowRefForm] = useState(false);
     const [newIdea, setNewIdea] = useState({ title: '', description: '', url: '', tags: [] });
     const [newRef, setNewRef] = useState({ title: '', url: '', type: 'post', notes: '' });
 
-    const updateField = (field, value) => {
-        setFormData({ ...formData, [field]: value });
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        saveAndAdvance(onComplete, 'Vault 5 (Ideas)');
     };
 
     // Ideas CRUD
@@ -67,7 +75,7 @@ export function PageIdeas({ formData, setFormData, onComplete }) {
     };
 
     return (
-        <form className="space-y-10 animate-fadeIn pb-24" onSubmit={(e) => { e.preventDefault(); onComplete?.(); }}>
+        <form className="space-y-10 animate-fadeIn pb-24" onSubmit={handleSubmit}>
             {/* Header */}
             <div className="space-y-2">
                 <div className="flex items-center gap-3">
@@ -408,9 +416,17 @@ export function PageIdeas({ formData, setFormData, onComplete }) {
 
             {/* Submit */}
             <div className="pt-6 border-t border-white/5 flex justify-between items-center sticky bottom-0 bg-[#050505] pb-6 z-10 shadow-[0_-10px_20px_rgba(0,0,0,0.5)]">
-                <p className="text-sm text-gray-500">
-                    💡 Seus assets e configurações ficam salvos automaticamente
-                </p>
+                <div className="flex items-center gap-2 text-sm">
+                    {isSynced ? (
+                        <span className="flex items-center gap-1.5 text-green-400">
+                            <CheckCircle2 size={14} /> Sincronizado
+                        </span>
+                    ) : (
+                        <span className="flex items-center gap-1.5 text-yellow-400 animate-pulse">
+                            <span className="w-2 h-2 bg-yellow-400 rounded-full"></span> Salvando...
+                        </span>
+                    )}
+                </div>
                 <button
                     type="submit"
                     data-testid="v5-complete"

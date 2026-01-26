@@ -1,6 +1,7 @@
 import React from 'react';
-import { GitBranch, ArrowRight, Link as LinkIcon, Target, BarChart3, MousePointer } from 'lucide-react';
+import { GitBranch, ArrowRight, Link as LinkIcon, Target, BarChart3, MousePointer, CheckCircle2 } from 'lucide-react';
 import { ChannelGrid } from '../ui/ChannelGrid';
+import { useVaultForm } from '../../hooks/useVaultForm';
 
 const CTA_OPTIONS = [
     { value: 'whatsapp', label: '💬 Falar no WhatsApp' },
@@ -14,7 +15,20 @@ const CTA_OPTIONS = [
     { value: 'inscrever', label: '✉️ Inscrever-se' },
 ];
 
-export function PageFunnel({ formData, setFormData, onNext }) {
+export function PageFunnel({ formData: externalFormData, setFormData: externalSetFormData, onNext }) {
+    // Use unified vault form hook
+    const { formData: vaultFormData, updateField: vaultUpdateField, isSynced, saveAndAdvance } = useVaultForm('V3');
+    
+    const formData = vaultFormData || externalFormData || {};
+    const updateField = (field, value) => {
+        if (vaultUpdateField) {
+            vaultUpdateField(field, value);
+        } else {
+            externalSetFormData?.({ ...formData, [field]: value });
+        }
+        if (field === 'conversionLink' && value) setValidationError(false);
+    };
+    
     const [validationError, setValidationError] = React.useState(false);
 
     const handleSubmit = (e) => {
@@ -24,12 +38,7 @@ export function PageFunnel({ formData, setFormData, onNext }) {
             alert("⚠️ Por favor, insira o Link de Conversão (WhatsApp ou Site) para continuar.");
             return;
         }
-        onNext();
-    };
-
-    const updateField = (field, value) => {
-        setFormData({ ...formData, [field]: value });
-        if (field === 'conversionLink' && value) setValidationError(false);
+        saveAndAdvance(onNext, 'Vault 3 (Funnel)');
     };
 
     const activeChannels = formData.channels || [];
@@ -344,7 +353,18 @@ export function PageFunnel({ formData, setFormData, onNext }) {
             </section>
 
             {/* Submit */}
-            <div className="pt-6 border-t border-white/5 flex justify-end sticky bottom-0 bg-[#050505] pb-6 z-10 shadow-[0_-10px_20px_rgba(0,0,0,0.5)]">
+            <div className="pt-6 border-t border-white/5 flex justify-between items-center sticky bottom-0 bg-[#050505] pb-6 z-10 shadow-[0_-10px_20px_rgba(0,0,0,0.5)]">
+                <div className="flex items-center gap-2 text-sm">
+                    {isSynced ? (
+                        <span className="flex items-center gap-1.5 text-green-400">
+                            <CheckCircle2 size={14} /> Sincronizado
+                        </span>
+                    ) : (
+                        <span className="flex items-center gap-1.5 text-yellow-400 animate-pulse">
+                            <span className="w-2 h-2 bg-yellow-400 rounded-full"></span> Salvando...
+                        </span>
+                    )}
+                </div>
                 <button
                     type="submit"
                     className="bg-blue-500 hover:bg-blue-600 text-white px-8 py-4 rounded-xl font-bold flex items-center gap-3 transition-all hover:scale-105 shadow-lg shadow-blue-500/20"

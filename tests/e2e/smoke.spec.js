@@ -53,8 +53,8 @@ test('smoke: login, navigation, and UI flow', async ({ page }) => {
     await expect(page.getByTestId('quickadd-modal')).toBeVisible();
     await page.getByTestId('quickadd-initiative').fill(quickInitiative);
     await page.getByTestId('quickadd-submit').click();
-    // Wait for success toast (deterministic signal that item was created)
-    await expect(page.getByTestId('toast-success')).toBeVisible();
+    // Wait for success toast (use .first() to avoid strict mode violation with multiple toasts)
+    await expect(page.getByTestId('toast-success').first()).toBeVisible();
     // Wait for modal to close
     await expect(page.getByTestId('quickadd-modal')).toHaveCount(0);
 
