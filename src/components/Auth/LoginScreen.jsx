@@ -60,7 +60,7 @@ function PricingModal({ open, onClose }) {
 
     return (
         <div className="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-4 animate-fadeIn">
-            <div className="max-w-5xl w-full bg-[#050505] border border-white/10 rounded-2xl overflow-hidden shadow-2xl relative flex flex-col max-h-[90vh]">
+            <div className="max-w-5xl w-full bg-[var(--bg-deep)] border border-[var(--border-subtle)] rounded-2xl overflow-hidden shadow-2xl relative flex flex-col max-h-[90vh]">
                 <button
                     onClick={onClose}
                     className="absolute top-4 right-4 p-2 text-gray-500 hover:text-white transition-colors z-10"
@@ -79,18 +79,18 @@ function PricingModal({ open, onClose }) {
                             <div
                                 key={idx}
                                 className={`relative flex flex-col p-6 rounded-xl border transition-all duration-300 ${plan.highlight
-                                    ? 'bg-white/[0.03] border-purple-500/50 shadow-[0_0_30px_rgba(168,85,247,0.1)] scale-105 z-10'
-                                    : 'bg-white/[0.01] border-white/10 hover:border-white/20'
+                                    ? 'bg-white/[0.03] border-[var(--border-active)] shadow-[0_0_30px_rgba(0,0,0,0.25)] scale-105 z-10'
+                                    : 'bg-white/[0.01] border-[var(--border-subtle)] hover:border-[var(--border-active)]'
                                     }`}
                             >
                                 {plan.highlight && (
-                                    <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-purple-600 text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest shadow-lg">
+                                    <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-[var(--brand-accent)] text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest shadow-lg">
                                         Mais Escolhido
                                     </div>
                                 )}
 
                                 <div className="mb-6">
-                                    <div className="inline-block px-2 py-1 rounded border border-white/10 text-[10px] text-gray-400 font-mono mb-3 uppercase tracking-wider">
+                                    <div className="inline-block px-2 py-1 rounded border border-[var(--border-subtle)] text-[10px] text-gray-400 font-mono mb-3 uppercase tracking-wider">
                                         {plan.badge}
                                     </div>
                                     <h3 className="text-xl font-bold text-white mb-2">{plan.name}</h3>
@@ -106,14 +106,14 @@ function PricingModal({ open, onClose }) {
                                 <div className="space-y-3 mb-8 flex-1">
                                     {plan.features.map((feat, i) => (
                                         <div key={i} className="flex items-start gap-2 text-xs text-gray-300">
-                                            <Check size={14} className={`shrink-0 ${plan.highlight ? 'text-purple-400' : 'text-gray-600'}`} />
+                                            <Check size={14} className={`shrink-0 ${plan.highlight ? 'text-[var(--brand-accent)]' : 'text-gray-600'}`} />
                                             <span>{feat}</span>
                                         </div>
                                     ))}
                                 </div>
 
                                 <button className={`w-full py-3 rounded-lg text-xs font-bold uppercase tracking-wide transition-all ${plan.highlight
-                                    ? 'bg-purple-600 hover:bg-purple-500 text-white shadow-lg'
+                                    ? 'bg-[var(--brand-accent)] hover:brightness-110 text-white shadow-lg'
                                     : 'bg-white text-black hover:bg-gray-200'
                                     }`}>
                                     {plan.cta}
@@ -149,16 +149,16 @@ export function LoginScreen({ onLogin }) {
     };
 
     return (
-        <div className="min-h-screen bg-[#050505] flex items-center justify-center p-4 relative overflow-hidden font-sans selection:bg-purple-500/30">
+        <div className="min-h-screen bg-[var(--bg-deep)] flex items-center justify-center p-4 relative overflow-hidden font-sans selection:bg-white/20">
             {/* Background Effects */}
-            <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-purple-600/10 blur-[150px] rounded-full animate-pulse"></div>
-            <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-600/5 blur-[120px] rounded-full"></div>
+            <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-[color:var(--brand-accent)]/10 blur-[150px] rounded-full animate-pulse"></div>
+            <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-[color:var(--brand-accent)]/5 blur-[120px] rounded-full"></div>
             <div className="absolute inset-0 opacity-20 mix-blend-soft-light bg-[radial-gradient(circle_at_1px_1px,rgba(255,255,255,0.06)_1px,transparent_0)] bg-[size:3px_3px]" />
 
             <div className="relative z-10 w-full max-w-5xl grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
                 {/* Left Side: Brand */}
                 <div className="space-y-8 md:pr-8">
-                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-xs font-bold text-gray-400 backdrop-blur-sm">
+                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-[var(--border-subtle)] text-xs font-bold text-gray-400 backdrop-blur-sm">
                         <Zap size={12} className="text-yellow-500" />
                         <span>{t('auth.login.badge')}</span>
                     </div>
@@ -166,7 +166,7 @@ export function LoginScreen({ onLogin }) {
                     <div className="space-y-4">
                         <h1 className="text-5xl md:text-6xl font-black text-white tracking-tight leading-[1.1]">
                             {t('auth.login.title_line1')} <br />
-                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-blue-400">{t('auth.login.title_line2')}</span>
+                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[color:var(--brand-accent)] to-blue-400">{t('auth.login.title_line2')}</span>
                         </h1>
                         <p className="text-lg text-gray-400 max-w-md leading-relaxed font-light">
                             {t('auth.login.subtitle')}
@@ -182,9 +182,9 @@ export function LoginScreen({ onLogin }) {
                         </button>
                     </div>
 
-                    <div className="grid grid-cols-3 gap-6 pt-8 border-t border-white/5">
+                    <div className="grid grid-cols-3 gap-6 pt-8 border-t border-[var(--border-subtle)]">
                         <div className="group cursor-default">
-                            <h4 className="text-2xl font-bold text-white group-hover:text-purple-400 transition-colors">15+</h4>
+                            <h4 className="text-2xl font-bold text-white group-hover:text-[var(--brand-accent)] transition-colors">15+</h4>
                             <span className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">Agências</span>
                         </div>
                         <div className="group cursor-default">
@@ -200,8 +200,8 @@ export function LoginScreen({ onLogin }) {
 
                 <div className="space-y-4">
                     {/* Unified Login Form */}
-                    <div className="bg-[#0A0A0A] border border-white/10 rounded-xl p-8 shadow-2xl relative overflow-hidden group">
-                        <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500/5 blur-3xl rounded-full group-hover:bg-purple-500/10 transition-colors"></div>
+                    <div className="bg-[var(--bg-panel)] border border-[var(--border-subtle)] rounded-xl p-8 shadow-2xl relative overflow-hidden group">
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-[color:var(--brand-accent)]/5 blur-3xl rounded-full group-hover:bg-[color:var(--brand-accent)]/10 transition-colors"></div>
 
                         <h3 className="text-xl font-bold text-white mb-6">{t('auth.login.form_title')}</h3>
 
@@ -228,7 +228,7 @@ export function LoginScreen({ onLogin }) {
                                         name="username"
                                         type="text"
                                         placeholder={t('auth.login.placeholder_user')}
-                                        className="w-full bg-[#111] border border-white/10 rounded-lg py-2 pl-10 pr-4 text-sm text-white focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500/20 transition-all placeholder-gray-700"
+                                        className="w-full bg-[var(--bg-deep)] border border-[var(--border-subtle)] rounded-lg py-2 pl-10 pr-4 text-sm text-white focus:border-[var(--border-active)] focus:outline-none focus:ring-1 focus:ring-white/10 transition-all placeholder-[var(--text-tertiary)]"
                                         required
                                     />
                                 </div>
@@ -242,7 +242,7 @@ export function LoginScreen({ onLogin }) {
                                         name="password"
                                         type="password"
                                         placeholder={t('auth.login.placeholder_pass')}
-                                        className="w-full bg-[#111] border border-white/10 rounded-lg py-2 pl-10 pr-4 text-sm text-white focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500/20 transition-all placeholder-gray-700"
+                                        className="w-full bg-[var(--bg-deep)] border border-[var(--border-subtle)] rounded-lg py-2 pl-10 pr-4 text-sm text-white focus:border-[var(--border-active)] focus:outline-none focus:ring-1 focus:ring-white/10 transition-all placeholder-[var(--text-tertiary)]"
                                         required
                                     />
                                 </div>
@@ -253,7 +253,7 @@ export function LoginScreen({ onLogin }) {
                                     type="checkbox"
                                     name="remember"
                                     id="remember"
-                                    className="rounded bg-[#111] border-white/10 text-purple-600 focus:ring-purple-500/20 focus:ring-offset-0"
+                                    className="rounded bg-[var(--bg-deep)] border-[var(--border-subtle)] text-[var(--brand-accent)] focus:ring-white/10 focus:ring-offset-0"
                                 />
                                 <label htmlFor="remember" className="text-xs text-gray-400 select-none cursor-pointer hover:text-white transition-colors">
                                     {t('auth.login.remember')}
@@ -263,9 +263,9 @@ export function LoginScreen({ onLogin }) {
                             <button
                                 type="submit"
                                 data-testid="login-submit"
-                                className="w-full bg-white text-black font-bold h-10 rounded-lg hover:bg-gray-200 transition-colors flex items-center justify-center gap-2 mt-4"
+                                className="w-full bg-[var(--brand-accent)] text-white font-bold h-10 rounded-lg hover:brightness-110 transition-all flex items-center justify-center gap-2 mt-4"
                             >
-                                <Zap size={16} className="fill-black" />
+                                <Zap size={16} className="text-white" />
                                 {t('auth.login.submit')}
                             </button>
                         </form>

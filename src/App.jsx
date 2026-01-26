@@ -200,6 +200,31 @@ function ClientWorkspaceContent({ onBackToAgency, isAgencyView: _isAgencyView, c
     });
 
     useEffect(() => {
+        if (typeof document === 'undefined') return;
+        const root = document.documentElement;
+        const enabled = Boolean(appData?.customThemeEnabled);
+        const palette = appData?.vaults?.S5?.palette;
+
+        const applyVar = (name, value) => {
+            if (enabled && typeof value === 'string' && value.trim()) {
+                root.style.setProperty(name, value.trim());
+            } else {
+                root.style.removeProperty(name);
+            }
+        };
+
+        applyVar('--brand-primary', palette?.primary);
+        applyVar('--brand-secondary', palette?.secondary);
+        applyVar('--brand-accent', palette?.accent);
+
+        if (enabled && typeof palette?.accent === 'string' && palette.accent.trim()) {
+            root.style.setProperty('--accent-purple', palette.accent.trim());
+        } else {
+            root.style.removeProperty('--accent-purple');
+        }
+    }, [appData]);
+
+    useEffect(() => {
         if (!clientId) return;
         const legacyKey = 'bravvo_form_data';
         const scopedKey = `bravvo_form_data:${clientId}`;

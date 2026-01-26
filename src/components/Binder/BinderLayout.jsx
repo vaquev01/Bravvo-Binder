@@ -14,12 +14,12 @@ export function BinderLayout({ activeTab, setActiveTab, completedTabs, children,
     ];
 
     return (
-        <div className="flex h-screen bg-[#0a0a0a] text-gray-100 overflow-hidden font-sans">
+        <div className="flex h-screen bg-[var(--bg-deep)] text-gray-100 overflow-hidden font-sans">
 
             {/* Left Binder Tabs */}
-            <div className="w-16 flex flex-col items-center py-6 gap-3 border-r border-white/5 bg-[#030303] z-10 shrink-0">
+            <div className="w-16 flex flex-col items-center py-6 gap-3 border-r border-[var(--border-subtle)] bg-[var(--bg-deep)] z-10 shrink-0">
                 {/* Minimal Logo Mark */}
-                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-bravvo-primary/30 to-transparent border border-white/10 flex items-center justify-center mb-4">
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-bravvo-primary/30 to-transparent border border-[var(--border-subtle)] flex items-center justify-center mb-4">
                     <span className="text-[9px] font-bold text-white/50">B</span>
                 </div>
 
@@ -37,7 +37,7 @@ export function BinderLayout({ activeTab, setActiveTab, completedTabs, children,
                             onClick={() => setActiveTab(tab.id)}
                             className={`
                                 relative w-14 h-14 rounded-xl flex flex-col items-center justify-center transition-all duration-300 group
-                                ${isActive ? `${tab.bg} ${tab.border} border-2 shadow-[0_0_20px_rgba(0,0,0,0.5)] scale-110 z-20` : 'bg-white/5 border border-white/5 hover:bg-white/10'}
+                                ${isActive ? `${tab.bg} ${tab.border} border-2 shadow-[0_0_20px_rgba(0,0,0,0.5)] scale-110 z-20` : 'bg-white/5 border border-[var(--border-subtle)] hover:bg-white/10'}
                                 ${!canClick && !isActive ? 'opacity-30 cursor-not-allowed grayscale' : 'opacity-100 cursor-pointer'}
                             `}
                         >
@@ -65,13 +65,13 @@ export function BinderLayout({ activeTab, setActiveTab, completedTabs, children,
             {/* Main Content Area (The "Paper") */}
             <main className="flex-1 overflow-hidden relative flex flex-col">
                 {/* Header */}
-                <header className="h-16 border-b border-white/5 flex items-center justify-between px-8 bg-[#0a0a0a]/50 backdrop-blur-sm shrink-0">
+                <header className="h-16 border-b border-[var(--border-subtle)] flex items-center justify-between px-8 bg-[var(--bg-deep-nav)] backdrop-blur-sm shrink-0">
                     <div className="flex items-center gap-4">
                         {onBack && (
                             <button
                                 onClick={onBack}
                                 data-testid="binder-back-to-agency"
-                                className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/10 transition-colors"
+                                className="w-8 h-8 rounded-lg bg-white/5 border border-[var(--border-subtle)] flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/10 transition-colors"
                                 title={t('binder.actions.back_to_agency')}
                             >
                                 <ArrowLeft size={16} />
@@ -106,7 +106,7 @@ export function BinderLayout({ activeTab, setActiveTab, completedTabs, children,
 
                     <div className="flex items-center gap-4">
                         {/* Progress Indicator */}
-                        <div className="hidden md:flex items-center gap-3 bg-white/5 px-4 py-2 rounded-xl border border-white/10">
+                        <div className="hidden md:flex items-center gap-3 bg-white/5 px-4 py-2 rounded-xl border border-[var(--border-subtle)]">
                             <div className="flex gap-1">
                                 {['V1', 'V2', 'V3', 'V4'].map((vaultId) => {
                                     const isComplete = completedTabs.includes(vaultId);
@@ -139,7 +139,7 @@ export function BinderLayout({ activeTab, setActiveTab, completedTabs, children,
                 </header>
 
                 {/* Page Content Container */}
-                <div className="flex-1 overflow-y-auto custom-scrollbar relative bg-[#050505]">
+                <div className="flex-1 overflow-y-auto custom-scrollbar relative bg-[var(--bg-deep)]">
                     {/* Clean Background (Pattern removed for professional look) */}
 
                     {/* Conditional Wrapper: Dashboard gets full width, others get focused document view */}
@@ -147,7 +147,7 @@ export function BinderLayout({ activeTab, setActiveTab, completedTabs, children,
                         {/* The "Sheet" Effect */}
                         <div className={`
                             relative overflow-hidden animate-fadeIn h-full
-                            ${activeTab === 'OS' ? 'bg-[#050505] p-0' : 'bg-[#111] border border-white/10 rounded-2xl shadow-2xl p-8'}
+                            ${activeTab === 'OS' ? 'bg-[var(--bg-deep)] p-0' : 'bg-[var(--bg-panel)] border border-[var(--border-subtle)] rounded-2xl shadow-2xl p-8'}
                         `}>
                             {/* Top Accent Line (Only for non-OS) */}
                             {activeTab !== 'OS' && <div className={`absolute top-0 left-0 right-0 h-1 ${tabs.find(t => t.id === activeTab)?.bg.replace('/10', '')}`} />}

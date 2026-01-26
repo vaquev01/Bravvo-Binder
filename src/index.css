@@ -4,15 +4,20 @@
 
 @layer base {
   :root {
-    --bg-deep: #030303;
-    --bg-surface: #0A0A0A;
-    --bg-panel: #111111;
-    --border-subtle: rgba(255, 255, 255, 0.08);
-    --border-active: rgba(255, 255, 255, 0.15);
-    --text-primary: #E5E5E5;
-    --text-secondary: #888888;
-    --text-tertiary: #555555;
-    --accent-purple: #9333ea;
+    --bg-deep: #0B0E14;
+    --bg-deep-nav: rgba(11, 14, 20, 0.85);
+    --bg-deep-alpha: rgba(11, 14, 20, 0.72);
+    --bg-surface: #11161F;
+    --bg-panel: #151B26;
+    --border-subtle: #1F2633;
+    --border-active: #2A3445;
+    --text-primary: #E6EAF0;
+    --text-secondary: #9AA4B2;
+    --text-tertiary: #667085;
+    --brand-primary: #FF5733;
+    --brand-secondary: #1E293B;
+    --brand-accent: #FF5733;
+    --accent-purple: var(--brand-accent);
   }
 
   body {
@@ -57,7 +62,7 @@
 
   /* Common UI Elements */
   .btn-primary {
-    @apply h-9 px-4 bg-white text-black text-xs font-bold rounded hover:bg-gray-200 transition-colors flex items-center gap-2 justify-center;
+    @apply h-9 px-4 bg-[var(--brand-accent)] text-white text-xs font-bold rounded hover:brightness-110 active:brightness-95 transition-all flex items-center gap-2 justify-center;
   }
 
   .btn-ghost {
@@ -65,7 +70,7 @@
   }
 
   .premium-input {
-    @apply w-full bg-[#050505] border border-[var(--border-subtle)] rounded px-3 py-2 text-sm text-white placeholder-[var(--text-tertiary)] focus:outline-none focus:border-[var(--border-active)] focus:ring-1 focus:ring-white/5 transition-all;
+    @apply w-full bg-[var(--bg-deep)] border border-[var(--border-subtle)] rounded px-3 py-2 text-sm text-white placeholder-[var(--text-tertiary)] focus:outline-none focus:border-[var(--border-active)] focus:ring-1 focus:ring-white/5 transition-all;
   }
 
   /* Animations - The 10/10 Polish */
