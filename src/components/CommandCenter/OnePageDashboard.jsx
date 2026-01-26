@@ -832,6 +832,7 @@ export function OnePageDashboard({
                         { id: 'V2', label: t('os.vaults.offer'), val: appData?.vaults?.S2?.products?.[0]?.name || 'N/A', class: 'border-l-2 border-orange-500/50' },
                         { id: 'V3', label: t('os.vaults.traffic'), val: appData?.vaults?.S3?.traffic?.primarySource || 'N/A', class: 'border-l-2 border-blue-500/50' },
                         { id: 'V4', label: t('os.vaults.team'), val: appData?.vaults?.S4?.matrix?.[0]?.who || 'N/A', class: 'border-l-2 border-green-500/50' },
+                        { id: 'V5', label: t('os.vaults.ideas'), val: appData?.vaults?.S5?.ideas?.[0]?.title || 'N/A', class: 'border-l-2 border-purple-500/50' },
                     ].map(v => (
                         <div key={v.id} onClick={() => setActiveTab(v.id)} className={`bento-grid p-4 hover:bg-[var(--bg-surface)] cursor-pointer transition-colors ${v.class}`}>
                             <div className="text-label mb-2">{v.label}</div>

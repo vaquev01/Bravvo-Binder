@@ -94,7 +94,7 @@ function ClientWorkspaceContent({ onBackToAgency, isAgencyView: _isAgencyView, c
         tagline: appData?.vaults?.S1?.fields?.tagline || "",
         promise: appData?.vaults?.S1?.fields?.promise || "",
         enemy: appData?.vaults?.S1?.fields?.enemy || "",
-        brandValues: appData?.vaults?.S1?.fields?.brandValues || [],
+        brandValues: appData?.vaults?.S1?.fields?.brandValues || appData?.vaults?.S1?.fields?.values || [],
         audienceAge: appData?.vaults?.S1?.fields?.audienceAge || "25-34",
         audienceGender: appData?.vaults?.S1?.fields?.audienceGender || "todos",
         audienceClass: appData?.vaults?.S1?.fields?.audienceClass || "bc",
@@ -176,8 +176,104 @@ function ClientWorkspaceContent({ onBackToAgency, isAgencyView: _isAgencyView, c
         },
 
         // --- Theme Customization ---
-        customThemeEnabled: appData.customThemeEnabled || false
+        customThemeEnabled: appData.customThemeEnabled || false,
+        _schemaVersion: 1
     });
+
+    useEffect(() => {
+        setFormData(prev => {
+            const isPlainObject = (value) => Boolean(value) && typeof value === 'object' && !Array.isArray(value);
+            const safePrev = isPlainObject(prev) ? prev : {};
+            let changed = false;
+
+            const next = { ...safePrev };
+            if (next._schemaVersion !== 1) {
+                next._schemaVersion = 1;
+                changed = true;
+            }
+
+            if (!Array.isArray(next.brandValues)) {
+                next.brandValues = [];
+                changed = true;
+            }
+            if (!Array.isArray(next.channels)) {
+                next.channels = [];
+                changed = true;
+            }
+            if (!Array.isArray(next.products)) {
+                next.products = [];
+                changed = true;
+            }
+            if (!Array.isArray(next.bestDays)) {
+                next.bestDays = [];
+                changed = true;
+            }
+            if (!Array.isArray(next.bestTimes)) {
+                next.bestTimes = [];
+                changed = true;
+            }
+            if (!Array.isArray(next.stakeholders)) {
+                next.stakeholders = [];
+                changed = true;
+            }
+            if (!Array.isArray(next.competitors)) {
+                next.competitors = [];
+                changed = true;
+            }
+            if (!Array.isArray(next.ideas)) {
+                next.ideas = [];
+                changed = true;
+            }
+            if (!Array.isArray(next.references)) {
+                next.references = [];
+                changed = true;
+            }
+            if (typeof next.notepad !== 'string') {
+                next.notepad = '';
+                changed = true;
+            }
+
+            const brandAssets = next.brandAssets;
+            const normalizedBrandAssets = {
+                logos: Array.isArray(brandAssets?.logos) ? brandAssets.logos : [],
+                textures: Array.isArray(brandAssets?.textures) ? brandAssets.textures : [],
+                icons: Array.isArray(brandAssets?.icons) ? brandAssets.icons : [],
+                postTemplates: Array.isArray(brandAssets?.postTemplates) ? brandAssets.postTemplates : []
+            };
+            if (!isPlainObject(brandAssets)
+                || normalizedBrandAssets.logos !== brandAssets.logos
+                || normalizedBrandAssets.textures !== brandAssets.textures
+                || normalizedBrandAssets.icons !== brandAssets.icons
+                || normalizedBrandAssets.postTemplates !== brandAssets.postTemplates) {
+                next.brandAssets = normalizedBrandAssets;
+                changed = true;
+            }
+
+            const brandIdentity = next.brandIdentity;
+            const normalizedBrandIdentity = {
+                musicalStyle: typeof brandIdentity?.musicalStyle === 'string' ? brandIdentity.musicalStyle : '',
+                visualVibes: Array.isArray(brandIdentity?.visualVibes) ? brandIdentity.visualVibes : [],
+                keyElements: Array.isArray(brandIdentity?.keyElements) ? brandIdentity.keyElements : [],
+                prohibitedElements: Array.isArray(brandIdentity?.prohibitedElements) ? brandIdentity.prohibitedElements : [],
+                colorMeanings: typeof brandIdentity?.colorMeanings === 'string' ? brandIdentity.colorMeanings : '',
+                photoStyle: typeof brandIdentity?.photoStyle === 'string' ? brandIdentity.photoStyle : '',
+                typographyNotes: typeof brandIdentity?.typographyNotes === 'string' ? brandIdentity.typographyNotes : ''
+            };
+            if (!isPlainObject(brandIdentity)
+                || normalizedBrandIdentity.musicalStyle !== brandIdentity.musicalStyle
+                || normalizedBrandIdentity.visualVibes !== brandIdentity.visualVibes
+                || normalizedBrandIdentity.keyElements !== brandIdentity.keyElements
+                || normalizedBrandIdentity.prohibitedElements !== brandIdentity.prohibitedElements
+                || normalizedBrandIdentity.colorMeanings !== brandIdentity.colorMeanings
+                || normalizedBrandIdentity.photoStyle !== brandIdentity.photoStyle
+                || normalizedBrandIdentity.typographyNotes !== brandIdentity.typographyNotes) {
+                next.brandIdentity = normalizedBrandIdentity;
+                changed = true;
+            }
+
+            return changed ? next : prev;
+        });
+    }, [setFormData]);
 
     // Handlers
     const handleGeneratePrompt = useCallback(async (item) => {
@@ -222,143 +318,233 @@ function ClientWorkspaceContent({ onBackToAgency, isAgencyView: _isAgencyView, c
         }
     }, [selectedPrompt, promptTab, addToast]);
 
-    const handleOnboardingComplete = (newClientData) => {
-        // --- 1. VAULT GENERATION (SOURCE OF TRUTH) ---
+    const syncFormDataToAppData = useCallback((newClientData, options = {}) => {
+        const { regeneratePlanIfEmpty = false } = options;
 
-        // S1: Brand Vault
-        const newS1 = {
-            ...(appData?.vaults?.S1 || {}),
-            fields: {
-                ...(appData?.vaults?.S1?.fields || {}),
-                promise: newClientData.promise, // From V1
-                enemy: newClientData.enemy,     // From V1
-                tone: Array.isArray(newClientData.tone) ? newClientData.tone : (newClientData.tone || '').split(','),
-                archetype: newClientData.archetype // From V1
-            }
-        };
+        setAppData(prev => {
+            const prevVaults = prev?.vaults || {};
 
-        // S2: Commerce Vault
-        const inputProducts = newClientData.products || [];
-        const heroProduct = inputProducts[0] || { name: "Produto Exemplo", price: 0, margin: "Medium" };
+            const nextS1 = {
+                ...(prevVaults.S1 || {}),
+                fields: {
+                    ...(prevVaults.S1?.fields || {}),
+                    niche: newClientData.niche,
+                    tagline: newClientData.tagline,
+                    promise: newClientData.promise,
+                    enemy: newClientData.enemy,
+                    tone: Array.isArray(newClientData.tone) ? newClientData.tone : (newClientData.tone || '').split(',').map(t => t.trim()).filter(Boolean),
+                    archetype: newClientData.archetype,
+                    audienceAge: newClientData.audienceAge,
+                    audienceGender: newClientData.audienceGender,
+                    audienceClass: newClientData.audienceClass,
+                    audiencePain: newClientData.audiencePain,
+                    bio: newClientData.bio,
+                    brandValues: newClientData.brandValues,
+                    values: newClientData.brandValues
+                }
+            };
 
-        const newS2 = {
-            ...(appData?.vaults?.S2 || {}),
-            products: inputProducts.length > 0 ? inputProducts : [
-                { id: "P_NEW_1", name: "Produto Inicial", role: "Hero", margin: "High", price: 100 },
-            ],
-            strategy: {
-                format: newClientData.saleFormat || "presencial",
-                seasonality: "Evergreen"
-            }
-        };
+            const nextS2 = {
+                ...(prevVaults.S2 || {}),
+                products: newClientData.products || [],
+                metrics: {
+                    ...(prevVaults.S2?.metrics || {}),
+                    currentTicket: newClientData.currentTicket,
+                    targetTicket: newClientData.targetTicket,
+                    currentRevenue: newClientData.currentRevenue
+                },
+                strategy: {
+                    ...(prevVaults.S2?.strategy || {}),
+                    upsell: newClientData.upsellStrategy,
+                    format: newClientData.saleFormat
+                },
+                bait: {
+                    ...(prevVaults.S2?.bait || {}),
+                    product: newClientData.baitProduct,
+                    price: newClientData.baitPrice
+                }
+            };
 
-        // S3: Funnel Vault
-        const newS3 = {
-            ...(appData?.vaults?.S3 || {}),
-            steps: [
-                { step: "Atenção", kpi: "CPM", goal: "R$ 10,00" },
-                { step: "Interesse", kpi: "CTR", goal: "2%" },
-                { step: "Desejo", kpi: "Click Whatsapp", goal: newClientData.conversionLink } // From V3
-            ],
-            traffic: {
-                primarySource: newClientData.trafficType
-            }
-        };
+            const conversionGoal = newClientData.conversionLink;
+            const prevSteps = Array.isArray(prevVaults.S3?.steps) ? prevVaults.S3.steps : [];
+            const nextSteps = prevSteps.length
+                ? prevSteps.map(s => (s?.step === 'Desejo' ? { ...s, goal: conversionGoal } : s))
+                : [
+                    { step: 'Atenção', kpi: 'CPM', goal: 'R$ 10,00' },
+                    { step: 'Interesse', kpi: 'CTR', goal: '2%' },
+                    { step: 'Desejo', kpi: 'Click Whatsapp', goal: conversionGoal }
+                ];
 
-        // S4: Ops Vault
-        const newS4 = {
-            ...(appData?.vaults?.S4 || {}),
-            matrix: [
-                { role: "Aprovador Final", who: newClientData.approverName }, // From V4
-                { role: "Estrategista", who: "Bravvo Agent" },
-                { role: "Time", who: newClientData.teamStructure }
-            ],
-            slas: {
-                ...(appData?.vaults?.S4?.slas || {}),
-                approval: `${newClientData.slaHours}h` // From V4
-            }
-        };
+            const nextS3 = {
+                ...(prevVaults.S3 || {}),
+                channels: newClientData.channels || [],
+                steps: nextSteps,
+                social: {
+                    ...(prevVaults.S3?.social || {}),
+                    instagram: newClientData.instagramHandle,
+                    website: newClientData.websiteUrl
+                },
+                cta: {
+                    ...(prevVaults.S3?.cta || {}),
+                    primary: newClientData.primaryCTA,
+                    secondary: newClientData.secondaryCTA,
+                    text: newClientData.ctaText
+                },
+                traffic: {
+                    ...(prevVaults.S3?.traffic || {}),
+                    primarySource: newClientData.trafficType,
+                    utmCampaign: newClientData.utmCampaign
+                },
+                metrics: {
+                    ...(prevVaults.S3?.metrics || {}),
+                    monthlyGoal: newClientData.monthlyGoal,
+                    currentConversion: newClientData.currentConversion,
+                    targetConversion: newClientData.targetConversion,
+                    cpl: newClientData.cpl
+                }
+            };
 
-        // S5: Design Vault
-        const newS5 = {
-            ...(appData?.vaults?.S5 || {}),
-            palette: {
-                ...(appData?.vaults?.S5?.palette || {}),
-                primary: newClientData.primaryColor // From V1
-            },
-            rules: {
-                ...(appData?.vaults?.S5?.rules || {}),
-                mood: newClientData.mood
-            }
-        };
+            const nextS4 = {
+                ...(prevVaults.S4 || {}),
+                matrix: [
+                    { role: 'Aprovador Final', who: newClientData.approverName },
+                    { role: 'Estrategista', who: prevVaults.S4?.matrix?.find(m => m.role === 'Estrategista')?.who || 'Bravvo Agent' },
+                    { role: 'Time', who: newClientData.teamStructure }
+                ],
+                slas: {
+                    ...(prevVaults.S4?.slas || {}),
+                    approval: `${newClientData.slaHours}h`
+                },
+                owners: {
+                    ...(prevVaults.S4?.owners || {}),
+                    content: newClientData.contentOwner,
+                    traffic: newClientData.trafficOwner,
+                    support: newClientData.supportOwner
+                },
+                contacts: {
+                    ...(prevVaults.S4?.contacts || {}),
+                    emergency: newClientData.emergencyContact
+                },
+                schedule: {
+                    ...(prevVaults.S4?.schedule || {}),
+                    frequency: newClientData.postingFrequency,
+                    bestDays: newClientData.bestDays || [],
+                    bestTimes: newClientData.bestTimes || [],
+                    startDate: newClientData.startDate,
+                    cycleDuration: newClientData.cycleDuration
+                },
+                stakeholders: newClientData.stakeholders || [],
+                competitors: newClientData.competitors || []
+            };
 
-        // --- 2. DASHBOARD GENERATION (DERIVED FROM VAULTS) ---
+            const nextS5 = {
+                ...(prevVaults.S5 || {}),
+                palette: {
+                    ...(prevVaults.S5?.palette || {}),
+                    primary: newClientData.primaryColor,
+                    secondary: newClientData.secondaryColor,
+                    accent: newClientData.accentColor
+                },
+                rules: {
+                    ...(prevVaults.S5?.rules || {}),
+                    mood: newClientData.mood
+                },
+                ideas: newClientData.ideas || [],
+                references: newClientData.references || [],
+                notepad: newClientData.notepad || '',
+                brandAssets: newClientData.brandAssets || (prevVaults.S5?.brandAssets || undefined),
+                brandIdentity: newClientData.brandIdentity || (prevVaults.S5?.brandIdentity || undefined)
+            };
 
-        // D1 (Economy): STRICTLY derived from S2 Products
-        const newD1 = newS2.products.map(p => ({
-            id: p.id,
-            product: p.name,
-            type: "Produto",
-            price: p.price,
-            margin: p.margin,
-            offer_strategy: p.role === 'Hero' ? 'Tráfego Frio' : 'Upsell',
-            status: "Active"
-        }));
+            const nextVaults = {
+                ...prevVaults,
+                S1: nextS1,
+                S2: nextS2,
+                S3: nextS3,
+                S4: nextS4,
+                S5: nextS5
+            };
 
-        // D3 (Matrix): STRICTLY derived from S4 Matrix
-        const newD3 = [
-            { id: 1, task: "Aprovação de Criativos", owner: "Agência", approver: newS4.matrix[0].who, sla: newS4.slas.approval, status: "Active" },
-            { id: 2, task: "Definição de Oferta", owner: "Cliente", approver: "Agência", sla: "48h", status: "Active" }
-        ];
+            const nextD1 = (nextS2.products || []).map(p => ({
+                id: p.id,
+                product: p.name,
+                type: p.category || 'Produto',
+                price: p.price,
+                margin: p.margin,
+                offer_strategy: p.role === 'Hero' ? 'Tráfego Frio' : 'Upsell',
+                status: 'Active'
+            }));
 
-        // D2 (Plan): Uses S1 (Message) + S2 (Product) + S3 (Link)
-        const newD2 = [
-            {
-                id: 1,
-                date: "2024-03-01",
-                initiative: `Lançamento: ${newS1.fields.promise}`, // Uses S1
-                channel: "Instagram Reel",
-                format: "reel",
-                offerId: heroProduct.id || "P_NEW_1", // Uses S2
-                ctaId: "CTA_MAIN", // Implicitly linked to S3 Goal
-                responsible: "IA Agent",
-                status: "scheduled",
-                visual_output: "Pending"
-            },
-            {
-                id: 2,
-                date: "2024-03-03",
-                initiative: `Combater: ${newS1.fields.enemy}`, // Uses S1
-                channel: "Instagram Story",
-                format: "story",
-                offerId: heroProduct.id || "P_NEW_1",
-                ctaId: "CTA_MAIN",
-                responsible: "IA Agent",
-                status: "draft",
-                visual_output: "Pending"
-            }
-        ];
+            const nextD3 = [
+                {
+                    id: 1,
+                    task: 'Aprovação de Criativos',
+                    owner: 'Agência',
+                    approver: nextS4.matrix?.find(m => m.role === 'Aprovador Final')?.who || '',
+                    sla: nextS4.slas?.approval,
+                    status: 'Active'
+                },
+                {
+                    id: 2,
+                    task: 'Definição de Oferta',
+                    owner: 'Cliente',
+                    approver: 'Agência',
+                    sla: '48h',
+                    status: 'Active'
+                }
+            ];
 
-        // Update Global State
-        setAppData({
-            ...appData,
-            clientName: newClientData.clientName,
-            vaults: {
-                S1: newS1,
-                S2: newS2,
-                S3: newS3,
-                S4: newS4,
-                S5: newS5
-            },
-            dashboard: {
-                ...appData.dashboard,
-                D1: newD1, // Derived
-                D2: newD2, // Derived
-                D3: newD3, // Derived
-                D4: appData.dashboard.D4, // Keep existing template for blocks
-                D5: appData.dashboard.D5  // Keep existing template for KPIs
-            }
+            const prevD2 = prev?.dashboard?.D2;
+            const shouldGenerateD2 = regeneratePlanIfEmpty && (!Array.isArray(prevD2) || prevD2.length === 0);
+            const heroProduct = (nextS2.products || [])[0];
+
+            const nextD2 = shouldGenerateD2
+                ? [
+                    {
+                        id: 1,
+                        date: '2024-03-01',
+                        initiative: `Lançamento: ${nextS1.fields.promise}`,
+                        channel: 'Instagram Reel',
+                        format: 'reel',
+                        offerId: heroProduct?.id,
+                        ctaId: 'CTA_MAIN',
+                        responsible: 'IA Agent',
+                        status: 'scheduled',
+                        visual_output: 'Pending'
+                    },
+                    {
+                        id: 2,
+                        date: '2024-03-03',
+                        initiative: `Combater: ${nextS1.fields.enemy}`,
+                        channel: 'Instagram Story',
+                        format: 'story',
+                        offerId: heroProduct?.id,
+                        ctaId: 'CTA_MAIN',
+                        responsible: 'IA Agent',
+                        status: 'draft',
+                        visual_output: 'Pending'
+                    }
+                ]
+                : prevD2;
+
+            return {
+                ...prev,
+                clientName: newClientData.clientName ?? prev.clientName,
+                customThemeEnabled: newClientData.customThemeEnabled ?? prev.customThemeEnabled,
+                governanceHistory: newClientData.governanceHistory ?? prev.governanceHistory,
+                vaults: nextVaults,
+                dashboard: {
+                    ...(prev?.dashboard || {}),
+                    D1: nextD1,
+                    D2: nextD2,
+                    D3: nextD3
+                }
+            };
         });
+    }, [setAppData]);
+
+    const handleOnboardingComplete = (newClientData) => {
+        syncFormDataToAppData(newClientData, { regeneratePlanIfEmpty: true });
 
         addToast({
             title: 'Dados Salvos e Processados',
@@ -382,9 +568,18 @@ function ClientWorkspaceContent({ onBackToAgency, isAgencyView: _isAgencyView, c
     };
 
     // Renamed Handlers from R to V
-    const handleV1Next = () => advanceTab('V1', 'V2');
-    const handleV2Next = () => advanceTab('V2', 'V3');
-    const handleV3Next = () => advanceTab('V3', 'V4');
+    const handleV1Next = () => {
+        syncFormDataToAppData(formData);
+        advanceTab('V1', 'V2');
+    };
+    const handleV2Next = () => {
+        syncFormDataToAppData(formData);
+        advanceTab('V2', 'V3');
+    };
+    const handleV3Next = () => {
+        syncFormDataToAppData(formData);
+        advanceTab('V3', 'V4');
+    };
     const handleV4Complete = () => {
         handleOnboardingComplete(formData);
         advanceTab('V4', 'OS');
@@ -415,7 +610,14 @@ function ClientWorkspaceContent({ onBackToAgency, isAgencyView: _isAgencyView, c
             )}
 
             {binderTab === 'V5' && (
-                <PageIdeas formData={formData} setFormData={setFormData} onComplete={() => setBinderTab('OS')} />
+                <PageIdeas
+                    formData={formData}
+                    setFormData={setFormData}
+                    onComplete={() => {
+                        syncFormDataToAppData(formData);
+                        setBinderTab('OS');
+                    }}
+                />
             )}
 
             {binderTab === 'OS' && (

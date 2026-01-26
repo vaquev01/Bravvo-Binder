@@ -14,7 +14,7 @@ export const VaultProvider = ({ children, initialData, onSave }) => {
             // mas o ideal é que o service seja a fonte da verdade.
             // Para simplificar e manter compatibilidade, usaremos a lógica do service se ele tiver methods públicos de normalização, 
             // ou apenas garantimos que o initialData seja tratado.
-            return initialData; // Assumindo que o App.jsx já passa dados válidos ou normalizados
+            return storageService.normalizeClientData(initialData);
         }
         return storageService.loadClientData();
     });
@@ -22,7 +22,7 @@ export const VaultProvider = ({ children, initialData, onSave }) => {
     // Update state when initialData changes (Client Switch)
     useEffect(() => {
         if (initialData) {
-            setAppData(initialData);
+            setAppData(storageService.normalizeClientData(initialData));
         }
     }, [initialData]);
 

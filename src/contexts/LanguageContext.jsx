@@ -19,9 +19,13 @@ export const LanguageProvider = ({ children }) => {
         const keys = path.split('.');
         let current = translations[language];
 
+        const shouldWarn = typeof import.meta !== 'undefined' && Boolean(import.meta?.env?.DEV);
+
         for (let key of keys) {
             if (current[key] === undefined) {
-                console.warn(`Translation missing for key: ${path} in language: ${language}`);
+                if (shouldWarn) {
+                    console.warn(`Translation missing for key: ${path} in language: ${language}`);
+                }
                 // Fallback to English if missing
                 let fallback = translations['en'];
                 for (let fbKey of keys) {

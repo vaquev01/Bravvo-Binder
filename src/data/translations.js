@@ -208,7 +208,8 @@ export const translations = {
                 brand_dna: "DNA DA MARCA",
                 offer: "OFERTA",
                 traffic: "TRÁFEGO",
-                team: "TIME"
+                team: "TIME",
+                ideas: "IDEIAS"
             },
             channels: {
                 instagram_feed: "Instagram Feed",
