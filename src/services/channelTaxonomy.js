@@ -84,7 +84,155 @@ export const CHANNELS = {
                 label: 'Display',
                 legacyLabel: 'Google Ads Display',
                 defaultContentType: 'ad',
-                allowedCreativeFormats: ['feed_1_1', 'feed_4_5']
+                allowedCreativeFormats: ['display_300_250', 'display_728_90', 'display_160_600', 'display_320_50']
+            },
+            youtube_ads: {
+                id: 'youtube_ads',
+                label: 'YouTube Ads',
+                legacyLabel: 'Google YouTube Ads',
+                defaultContentType: 'video_ad',
+                allowedCreativeFormats: ['landscape_16_9', 'youtube_thumbnail']
+            }
+        }
+    },
+    youtube: {
+        id: 'youtube',
+        label: 'YouTube',
+        subchannels: {
+            video: {
+                id: 'video',
+                label: 'Video',
+                legacyLabel: 'YouTube Video',
+                defaultContentType: 'video',
+                allowedCreativeFormats: ['landscape_16_9', 'youtube_thumbnail']
+            },
+            shorts: {
+                id: 'shorts',
+                label: 'Shorts',
+                legacyLabel: 'YouTube Shorts',
+                defaultContentType: 'short',
+                allowedCreativeFormats: ['story_9_16']
+            },
+            community: {
+                id: 'community',
+                label: 'Community',
+                legacyLabel: 'YouTube Community',
+                defaultContentType: 'post',
+                allowedCreativeFormats: ['feed_1_1', 'landscape_16_9']
+            }
+        }
+    },
+    linkedin: {
+        id: 'linkedin',
+        label: 'LinkedIn',
+        subchannels: {
+            post: {
+                id: 'post',
+                label: 'Post',
+                legacyLabel: 'LinkedIn Post',
+                defaultContentType: 'post',
+                allowedCreativeFormats: ['linkedin_post', 'feed_1_1']
+            },
+            article: {
+                id: 'article',
+                label: 'Article',
+                legacyLabel: 'LinkedIn Article',
+                defaultContentType: 'article',
+                allowedCreativeFormats: ['linkedin_post']
+            },
+            ads: {
+                id: 'ads',
+                label: 'Ads',
+                legacyLabel: 'LinkedIn Ads',
+                defaultContentType: 'ad',
+                allowedCreativeFormats: ['linkedin_post', 'feed_1_1']
+            }
+        }
+    },
+    facebook: {
+        id: 'facebook',
+        label: 'Facebook',
+        subchannels: {
+            feed: {
+                id: 'feed',
+                label: 'Feed',
+                legacyLabel: 'Facebook Feed',
+                defaultContentType: 'post',
+                allowedCreativeFormats: ['feed_4_5', 'feed_1_1', 'landscape_16_9']
+            },
+            stories: {
+                id: 'stories',
+                label: 'Stories',
+                legacyLabel: 'Facebook Stories',
+                defaultContentType: 'story',
+                allowedCreativeFormats: ['story_9_16']
+            },
+            reels: {
+                id: 'reels',
+                label: 'Reels',
+                legacyLabel: 'Facebook Reels',
+                defaultContentType: 'reel',
+                allowedCreativeFormats: ['story_9_16']
+            },
+            ads: {
+                id: 'ads',
+                label: 'Ads',
+                legacyLabel: 'Facebook Ads',
+                defaultContentType: 'ad',
+                allowedCreativeFormats: ['feed_4_5', 'feed_1_1', 'story_9_16']
+            }
+        }
+    },
+    twitter: {
+        id: 'twitter',
+        label: 'X (Twitter)',
+        subchannels: {
+            tweet: {
+                id: 'tweet',
+                label: 'Tweet',
+                legacyLabel: 'Twitter Tweet',
+                defaultContentType: 'post',
+                allowedCreativeFormats: ['feed_1_1', 'landscape_16_9']
+            },
+            ads: {
+                id: 'ads',
+                label: 'Ads',
+                legacyLabel: 'Twitter Ads',
+                defaultContentType: 'ad',
+                allowedCreativeFormats: ['feed_1_1', 'landscape_16_9']
+            }
+        }
+    },
+    email: {
+        id: 'email',
+        label: 'Email',
+        subchannels: {
+            newsletter: {
+                id: 'newsletter',
+                label: 'Newsletter',
+                legacyLabel: 'Email Newsletter',
+                defaultContentType: 'email',
+                allowedCreativeFormats: ['email_600']
+            },
+            promotional: {
+                id: 'promotional',
+                label: 'Promotional',
+                legacyLabel: 'Email Promocional',
+                defaultContentType: 'email',
+                allowedCreativeFormats: ['email_600']
+            }
+        }
+    },
+    blog: {
+        id: 'blog',
+        label: 'Blog',
+        subchannels: {
+            article: {
+                id: 'article',
+                label: 'Article',
+                legacyLabel: 'Blog Article',
+                defaultContentType: 'article',
+                allowedCreativeFormats: ['landscape_16_9', 'linkedin_post']
             }
         }
     }
