@@ -1,21 +1,18 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useLanguage } from '../../contexts/LanguageContext';
 import {
-    ShoppingBag,
-    Terminal,
     Calendar as CalendarIcon,
     Edit3,
     X,
     Plus,
-    Zap,
     Wand2,
-    TrendingUp,
     History,
     MessageCircle,
     Upload,
-    Book
+    Book,
+    Terminal
 } from 'lucide-react';
-import { DaySummary, formatHumanDate } from './DaySummary';
+import { formatHumanDate } from './DaySummary';
 import { OnboardingChecklist } from '../ui/OnboardingChecklist';
 import { InsightCards } from '../ui/InsightCards';
 import { EmptyState } from '../ui/EmptyState';
@@ -25,6 +22,12 @@ import { GovernanceHistory } from './GovernanceHistory';
 import { ImportDataModal } from './ImportDataModal';
 import { PlaybookModal } from './PlaybookModal';
 import { CreativeStudioModal } from './CreativeStudioModal';
+import { GovernanceModal } from './GovernanceModal';
+import { GovernanceHeader } from './GovernanceHeader';
+import { DaySummaryAI } from './DaySummaryAI';
+import { KPIGrid } from './KPICard';
+import { PriorityActionsCard } from './PriorityActionsCard';
+import { VaultCards } from './VaultCards';
 import { useToast } from '../../contexts/ToastContext';
 import { getFeatureFlag } from '../../utils/featureFlags';
 import { useUndo } from '../../hooks/useUndo';
@@ -37,8 +40,8 @@ import {
     parseLegacyChannelLabel
 } from '../../services/channelTaxonomy';
 
-// Inline Editable Component
-function InlineEdit({ value, onSave, type = 'text', prefix = '', suffix = '', className = '', disabled = false }) {
+// Inline Editable Component (kept for future roadmap inline edits)
+function _InlineEdit({ value, onSave, type = 'text', prefix = '', suffix = '', className = '', disabled = false }) {
     const [editing, setEditing] = useState(false);
     const [tempValue, setTempValue] = useState(value);
     const inputRef = useRef(null);
@@ -448,6 +451,8 @@ export function OnePageDashboard({
     const [creativeItem, setCreativeItem] = useState(null);
     const [highlightedRowId, setHighlightedRowId] = useState(null);
     const highlightTimeoutRef = useRef(null);
+    const [showGovernanceModal, setShowGovernanceModal] = useState(false);
+    const [governanceFrequency, setGovernanceFrequency] = useState(appData.governanceFrequency || 'weekly');
 
     const { executeWithUndo } = useUndo();
 
@@ -552,6 +557,64 @@ export function OnePageDashboard({
         const newActive = !meetingState.active;
         setMeetingState(prev => ({ ...prev, active: newActive }));
         if (newActive) addToast({ title: 'Governance Mode Active', type: 'info' });
+    };
+
+    const handleGovernanceSave = (governanceData) => {
+        // Update KPI goals if adjusted
+        if (governanceData.goalAdjustments) {
+            const newKpis = { ...kpis };
+            Object.entries(governanceData.goalAdjustments).forEach(([key, val]) => {
+                if (val && newKpis[key]) {
+                    newKpis[key].goal = parseFloat(val);
+                }
+            });
+            setKpis(newKpis);
+            setAppData(prev => ({ ...prev, kpis: newKpis }));
+        }
+
+        // Save governance snapshot
+        const snapshot = {
+            id: `GOV-${Date.now()}`,
+            date: new Date().toISOString(),
+            type: 'governance_commit',
+            ...governanceData,
+            kpiSnapshot: kpis,
+        };
+
+        const updatedHistory = [snapshot, ...(appData.governanceHistory || [])];
+        
+        setAppData(prev => ({
+            ...prev,
+            governanceHistory: updatedHistory,
+            lastGovernance: new Date().toISOString(),
+            governanceFrequency
+        }));
+
+        if (setFormData) {
+            setFormData(prev => ({
+                ...prev,
+                governanceHistory: updatedHistory
+            }));
+        }
+
+        // Close governance mode if checklist complete
+        if (governanceData.checklistProgress >= 1) {
+            setMeetingState({ active: false, comments: { general: '', revenue: '', traffic: '', sales: '' } });
+            addToast({ title: 'Ciclo Fechado', description: 'Governança salva com sucesso.', type: 'success' });
+        } else {
+            addToast({ title: 'Rascunho Salvo', description: 'Continue o checklist depois.', type: 'info' });
+        }
+    };
+
+    const handleFrequencyChange = (newFreq) => {
+        setGovernanceFrequency(newFreq);
+        setAppData(prev => ({ ...prev, governanceFrequency: newFreq }));
+    };
+
+    const handlePriorityAction = (action) => {
+        if (action.items && action.items.length > 0) {
+            setEditingItem(action.items[0]);
+        }
     };
 
     const statusOptions = [
@@ -960,11 +1023,21 @@ export function OnePageDashboard({
             {/* SCROLLABLE CONTENT */}
             <div className="flex-1 overflow-y-auto custom-scrollbar p-4 md:p-6">
 
-                {/* 0. DAY SUMMARY - ONDA 1.1 PRD */}
-                <DaySummary 
+                {/* 0. GOVERNANCE HEADER - PRD 3.1 */}
+                <GovernanceHeader
+                    frequency={governanceFrequency}
+                    lastGovernance={appData.lastGovernance}
+                    isGovernanceActive={meetingState.active}
+                    onOpenGovernance={() => setShowGovernanceModal(true)}
+                    onToggleGovernance={toggleGovernanceMode}
+                    onChangeFrequency={handleFrequencyChange}
+                />
+
+                {/* 1. DAY SUMMARY AI - PRD 3.2 */}
+                <DaySummaryAI 
                     items={appData?.dashboard?.D2 || []}
+                    kpis={kpis}
                     clientName={appData?.clientName}
-                    onPriorityClick={(item) => setEditingItem(item)}
                 />
 
                 {/* PHASE 1 (read-only): Onboarding */}
@@ -990,68 +1063,19 @@ export function OnePageDashboard({
                     </div>
                 )}
 
-                {/* 1. KPIs - Responsive Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                    <div className="bento-grid p-4 bento-cell">
-                        <div className="flex justify-between mb-4">
-                            <span className="text-label">{t('os.kpis.revenue')}</span>
-                            <span className="text-mono-data text-green-500">+12%</span>
-                        </div>
-                        <InlineEdit
-                            value={kpis.revenue.value}
-                            onSave={(v) => handleKpiUpdate('revenue', v)}
-                            className="text-2xl font-mono font-medium text-white tracking-tight"
-                            prefix="R$ "
-                            disabled={!meetingState.active}
-                        />
-                        <div className="mt-2 h-1 bg-white/5 rounded-full overflow-hidden">
-                            <div className="h-full bg-green-500" style={{ width: '65%' }}></div>
-                        </div>
-                    </div>
+                {/* 2. KPIs - PRD 3.3 (Meta vs Realizado) */}
+                <KPIGrid
+                    kpis={kpis}
+                    onKpiUpdate={handleKpiUpdate}
+                    disabled={!meetingState.active}
+                />
 
-                    <div className="bento-grid p-4 bento-cell">
-                        <div className="flex justify-between mb-4">
-                            <span className="text-label">{t('os.kpis.traffic')}</span>
-                            <TrendingUp size={12} className="text-blue-500" />
-                        </div>
-                        <InlineEdit
-                            value={kpis.traffic.value}
-                            onSave={(v) => handleKpiUpdate('traffic', v)}
-                            className="text-2xl font-mono font-medium text-white tracking-tight"
-                            prefix="R$ "
-                            disabled={!meetingState.active}
-                        />
-                        <div className="mt-2 text-[10px] text-gray-600 font-mono">
-                            Goal: R$ {kpis.traffic.goal}
-                        </div>
-                    </div>
-
-                    <div className="bento-grid p-4 bento-cell">
-                        <div className="flex justify-between mb-4">
-                            <span className="text-label">{t('os.kpis.sales')}</span>
-                            <ShoppingBag size={12} className="text-orange-500" />
-                        </div>
-                        <InlineEdit
-                            value={kpis.sales.value}
-                            onSave={(v) => handleKpiUpdate('sales', v)}
-                            className="text-2xl font-mono font-medium text-white tracking-tight"
-                            disabled={!meetingState.active}
-                        />
-                        <div className="mt-2 h-1 bg-white/5 rounded-full overflow-hidden">
-                            <div className="h-full bg-orange-500" style={{ width: '82%' }}></div>
-                        </div>
-                    </div>
-
-                    <div className="bento-grid p-4 bento-cell bg-gradient-to-br from-[var(--bg-surface)] to-blue-900/10">
-                        <div className="flex justify-between mb-2">
-                            <span className="text-label text-blue-400">{t('os.kpis.next_priority')}</span>
-                            <Zap size={12} className="text-blue-500" />
-                        </div>
-                        <div className="text-sm font-medium text-white truncate">
-                            {filteredCalendar[0]?.initiative || t('os.kpis.no_items_scheduled')}
-                        </div>
-                    </div>
-                </div>
+                {/* 3. PRIORITY ACTIONS - PRD 3.4 (Top 3) */}
+                <PriorityActionsCard
+                    items={appData?.dashboard?.D2 || []}
+                    kpis={kpis}
+                    onActionClick={handlePriorityAction}
+                />
 
                 {/* 2. TACTICAL GRID (The "Linear" List) */}
                 <div className="bento-grid mb-6 overflow-hidden">
@@ -1169,27 +1193,18 @@ export function OnePageDashboard({
                     </div>
                 </div>
 
-                {/* 3. VAULTS & RESOURCES - Responsive Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    {[
-                        { id: 'V1', label: t('os.vaults.brand_dna'), val: appData?.vaults?.S1?.fields?.archetype || 'N/A', class: 'border-l-2 border-red-500/50' },
-                        { id: 'V2', label: t('os.vaults.offer'), val: appData?.vaults?.S2?.products?.[0]?.name || 'N/A', class: 'border-l-2 border-orange-500/50' },
-                        { id: 'V3', label: t('os.vaults.traffic'), val: appData?.vaults?.S3?.traffic?.primarySource || 'N/A', class: 'border-l-2 border-blue-500/50' },
-                        { id: 'V4', label: t('os.vaults.team'), val: appData?.vaults?.S4?.matrix?.[0]?.who || 'N/A', class: 'border-l-2 border-green-500/50' },
-                        { id: 'V5', label: t('os.vaults.ideas'), val: appData?.vaults?.S5?.ideas?.[0]?.title || 'N/A', class: 'border-l-2 border-purple-500/50' },
-                    ].map(v => (
-                        <div
-                            key={v.id}
-                            data-testid={`os-vault-card-${v.id}`}
-                            onClick={() => setActiveTab(v.id)}
-                            className={`bento-grid p-4 hover:bg-[var(--bg-surface)] cursor-pointer transition-colors ${v.class}`}
-                        >
-                            <div className="text-label mb-2">{v.label}</div>
-                            <div className="text-sm font-medium text-white truncate">{v.val}</div>
-                            <div className="mt-2 text-[10px] text-gray-600 font-mono">VAULT {v.id}</div>
-                        </div>
-                    ))}
-                </div>
+                {/* 5. VAULTS - PRD 3.6 (Rework Visual) */}
+                <VaultCards
+                    vaults={appData?.vaults}
+                    labels={{
+                        brand_dna: t('os.vaults.brand_dna'),
+                        offer: t('os.vaults.offer'),
+                        traffic: t('os.vaults.traffic'),
+                        team: t('os.vaults.team'),
+                        ideas: t('os.vaults.ideas'),
+                    }}
+                    onVaultClick={(vaultId) => setActiveTab(vaultId)}
+                />
 
                 {/* Modal Mounts */}
                 {FLAG_DASH_QUICKADD_DRAWER ? (
@@ -1239,6 +1254,14 @@ export function OnePageDashboard({
                     item={creativeItem}
                     vaults={appData?.vaults}
                     onSave={handleSaveCreativeAsset}
+                />
+                {/* GOVERNANCE MODAL - PRD 4.1 */}
+                <GovernanceModal
+                    open={showGovernanceModal}
+                    onClose={() => setShowGovernanceModal(false)}
+                    onSave={handleGovernanceSave}
+                    governanceData={appData?.lastGovernanceData}
+                    kpis={kpis}
                 />
             </div>
         </div>
