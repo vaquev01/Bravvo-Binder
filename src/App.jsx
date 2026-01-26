@@ -36,19 +36,20 @@ import { VaultProvider } from './contexts/VaultContext';
 // ============================================================================
 // CLIENT WORKSPACE (THE ORIGINAL APP "OS")
 // ============================================================================
-function ClientWorkspace({ onBackToAgency, isAgencyView, initialData, onSave }) {
+function ClientWorkspace({ onBackToAgency, isAgencyView, initialData, onSave, currentUser }) {
     // We wrap the internal content with VaultProvider so it can accept initialData
     return (
         <VaultProvider initialData={initialData} onSave={onSave}>
             <ClientWorkspaceContent
                 onBackToAgency={onBackToAgency}
                 isAgencyView={isAgencyView}
+                currentUser={currentUser}
             />
         </VaultProvider>
     );
 }
 
-function ClientWorkspaceContent({ onBackToAgency, isAgencyView: _isAgencyView }) {
+function ClientWorkspaceContent({ onBackToAgency, isAgencyView: _isAgencyView, currentUser }) {
     const { addToast } = useToast();
 
     // State
@@ -622,6 +623,7 @@ function AppContent() {
                     isAgencyView={currentUser?.role !== 'client'}
                     initialData={clientData}
                     onSave={handleSaveClientData}
+                    currentUser={currentUser}
                 />
             );
 
