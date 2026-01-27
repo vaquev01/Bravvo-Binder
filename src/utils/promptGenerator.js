@@ -33,7 +33,7 @@ export function generatePrompt(item, vaults) {
 function generateIDFPrompt(item, vaults) {
     const s1 = vaults?.S1?.fields || {};
     const s5 = vaults?.S5 || {};
-    const brandIdentity = vaults?.brandIdentity || {}; // NEW: Access Brand Identity
+    const brandIdentity = s5.brandIdentity || {}; // NEW: Access Brand Identity
     const products = vaults?.S2?.items || vaults?.S2?.products || [];
     const product = products.find(p => p.id === item.offerId) || products[0] || { name: 'Product Name' };
 

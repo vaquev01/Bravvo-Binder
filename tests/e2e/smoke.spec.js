@@ -40,7 +40,13 @@ test('smoke: login, navigation, and UI flow', async ({ page }) => {
     // 2. V2 (Produto) - fill and navigate
     const productName = `E2E Product ${Date.now()}`;
     await page.getByTestId('binder-tab-V2').click();
-    await expect(page.getByTestId('v2-product-name-0')).toBeVisible();
+
+    await expect(page.getByTestId('v2-add-product').or(page.getByTestId('v2-product-name-0'))).toBeVisible();
+    if (await page.getByTestId('v2-product-name-0').count() === 0) {
+        await page.getByTestId('v2-add-product').click();
+        await expect(page.getByTestId('v2-product-name-0')).toBeVisible();
+    }
+
     await page.getByTestId('v2-product-name-0').fill(productName);
     await page.getByTestId('v2-save-next').click();
     // Wait for navigation confirmation (next tab or UI feedback)

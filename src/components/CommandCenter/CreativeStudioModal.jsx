@@ -40,7 +40,7 @@ async function svgUrlToPngDataUrl(svgUrl, width, height) {
     return canvas.toDataURL('image/png');
 }
 
-export function CreativeStudioModal({ open, onClose, item, vaults, onSave }) {
+export function CreativeStudioModal({ open, onClose, item, vaults, onSave, onGeneratePrompt }) {
     const allFormats = useMemo(() => listCreativeFormats(), []);
     const brandPromise = vaults?.S1?.fields?.promise || '';
 
@@ -102,6 +102,18 @@ export function CreativeStudioModal({ open, onClose, item, vaults, onSave }) {
         : null;
 
     const selected = assets.find(a => a.id === selectedId) || assets[0] || null;
+
+    const handleGeneratePrompt = async () => {
+        if (typeof onGeneratePrompt !== 'function') return;
+        const itemWithTaxonomy = {
+            ...item,
+            channelId,
+            subchannelId,
+            channel: toLegacyChannelLabel(channelId, subchannelId)
+        };
+        await onGeneratePrompt(itemWithTaxonomy);
+        onClose();
+    };
 
     const handleGenerate = async () => {
         setLoading(true);
@@ -180,7 +192,7 @@ export function CreativeStudioModal({ open, onClose, item, vaults, onSave }) {
                                     data-testid="creative-provider"
                                 >
                                     <option value="template">Template</option>
-                                    <option value="ai">AI (em breve)</option>
+                                    <option value="ai">IDF Prompt</option>
                                 </select>
                             </div>
 
@@ -277,15 +289,28 @@ export function CreativeStudioModal({ open, onClose, item, vaults, onSave }) {
                                 )}
                             </div>
 
-                            <button
-                                onClick={handleGenerate}
-                                className="btn-primary w-full flex items-center justify-center gap-2"
-                                disabled={loading}
-                                data-testid="creative-generate"
-                            >
-                                <Wand2 size={14} />
-                                {loading ? 'Gerando...' : 'Gerar variações'}
-                            </button>
+                            {providerId === 'ai' ? (
+                                <button
+                                    type="button"
+                                    onClick={handleGeneratePrompt}
+                                    className="btn-primary w-full flex items-center justify-center gap-2"
+                                    disabled={loading}
+                                    data-testid="creative-generate-prompt"
+                                >
+                                    <Wand2 size={14} />
+                                    {loading ? 'Gerando...' : 'Gerar Prompt (IDF)'}
+                                </button>
+                            ) : (
+                                <button
+                                    onClick={handleGenerate}
+                                    className="btn-primary w-full flex items-center justify-center gap-2"
+                                    disabled={loading}
+                                    data-testid="creative-generate"
+                                >
+                                    <Wand2 size={14} />
+                                    {loading ? 'Gerando...' : 'Gerar variações'}
+                                </button>
+                            )}
 
                             <div className="grid grid-cols-3 gap-2">
                                 {assets.map(a => (

@@ -16,8 +16,6 @@ import {
 } from 'lucide-react';
 
 import { useVaults } from './contexts/VaultContext';
-
-import { api } from './data/mockDB';
 // Import VaultProvider to wrap the workspace instance
 import { VaultProvider } from './contexts/VaultContext';
 
@@ -77,21 +75,6 @@ function ClientWorkspaceContent({ onBackToAgency, isAgencyView: _isAgencyView, c
             sales: ''
         }
     });
-
-    useEffect(() => {
-        if (!clientId) return;
-        const legacyKey = 'bravvo_meeting_state';
-        const scopedKey = `bravvo_meeting_state:${clientId}`;
-        if (localStorage.getItem(scopedKey)) return;
-        const legacyValue = localStorage.getItem(legacyKey);
-        if (!legacyValue) return;
-        try {
-            const parsed = JSON.parse(legacyValue);
-            setMeetingState(parsed);
-        } catch {
-            // ignore
-        }
-    }, [clientId, setMeetingState]);
 
     // --- BINDER STATE ---
     // Start at OS (One Page Dashboard) as requested by user ("painel de gestao quero que seja inicial")
@@ -233,21 +216,6 @@ function ClientWorkspaceContent({ onBackToAgency, isAgencyView: _isAgencyView, c
     }, [appData]);
 
     useEffect(() => {
-        if (!clientId) return;
-        const legacyKey = 'bravvo_form_data';
-        const scopedKey = `bravvo_form_data:${clientId}`;
-        if (localStorage.getItem(scopedKey)) return;
-        const legacyValue = localStorage.getItem(legacyKey);
-        if (!legacyValue) return;
-        try {
-            const parsed = JSON.parse(legacyValue);
-            setFormData(parsed);
-        } catch {
-            // ignore
-        }
-    }, [clientId, setFormData]);
-
-    useEffect(() => {
         setFormData(prev => {
             const isPlainObject = (value) => Boolean(value) && typeof value === 'object' && !Array.isArray(value);
             const safePrev = isPlainObject(prev) ? prev : {};
@@ -385,7 +353,7 @@ function ClientWorkspaceContent({ onBackToAgency, isAgencyView: _isAgencyView, c
         }
     }, [selectedPrompt, promptTab, addToast]);
 
-    const syncFormDataToAppData = useCallback((newClientData, options = {}) => {
+    const _syncFormDataToAppData = useCallback((newClientData, options = {}) => {
         const { regeneratePlanIfEmpty = false } = options;
 
         setAppData(prev => {
@@ -610,8 +578,88 @@ function ClientWorkspaceContent({ onBackToAgency, isAgencyView: _isAgencyView, c
         });
     }, [setAppData]);
 
-    const handleOnboardingComplete = (newClientData) => {
-        syncFormDataToAppData(newClientData, { regeneratePlanIfEmpty: true });
+    const refreshDashboardsFromVaults = useCallback(({ regeneratePlanIfEmpty = false } = {}) => {
+        setAppData(prev => {
+            const prevVaults = prev?.vaults || {};
+            const s1Fields = prevVaults.S1?.fields || {};
+            const products = Array.isArray(prevVaults.S2?.products) ? prevVaults.S2.products : [];
+
+            const nextD1 = products.map(p => ({
+                id: p.id,
+                product: p.name,
+                type: p.category || 'Produto',
+                price: p.price,
+                margin: p.margin,
+                offer_strategy: p.role === 'Hero' ? 'Tráfego Frio' : 'Upsell',
+                status: 'Active'
+            }));
+
+            const nextD3 = [
+                {
+                    id: 1,
+                    task: 'Aprovação de Criativos',
+                    owner: 'Agência',
+                    approver: prevVaults.S4?.matrix?.find(m => m.role === 'Aprovador Final')?.who || '',
+                    sla: prevVaults.S4?.slas?.approval,
+                    status: 'Active'
+                },
+                {
+                    id: 2,
+                    task: 'Definição de Oferta',
+                    owner: 'Cliente',
+                    approver: 'Agência',
+                    sla: '48h',
+                    status: 'Active'
+                }
+            ];
+
+            const prevD2 = prev?.dashboard?.D2;
+            const shouldGenerateD2 = regeneratePlanIfEmpty && (!Array.isArray(prevD2) || prevD2.length === 0);
+            const heroProduct = products[0];
+
+            const nextD2 = shouldGenerateD2
+                ? [
+                    {
+                        id: 1,
+                        date: '2024-03-01',
+                        initiative: `Lançamento: ${s1Fields.promise || ''}`,
+                        channel: 'Instagram Reel',
+                        format: 'reel',
+                        offerId: heroProduct?.id,
+                        ctaId: 'CTA_MAIN',
+                        responsible: 'IA Agent',
+                        status: 'scheduled',
+                        visual_output: 'Pending'
+                    },
+                    {
+                        id: 2,
+                        date: '2024-03-03',
+                        initiative: `Combater: ${s1Fields.enemy || ''}`,
+                        channel: 'Instagram Story',
+                        format: 'story',
+                        offerId: heroProduct?.id,
+                        ctaId: 'CTA_MAIN',
+                        responsible: 'IA Agent',
+                        status: 'draft',
+                        visual_output: 'Pending'
+                    }
+                ]
+                : prevD2;
+
+            return {
+                ...prev,
+                dashboard: {
+                    ...(prev?.dashboard || {}),
+                    D1: nextD1,
+                    D2: nextD2,
+                    D3: nextD3
+                }
+            };
+        });
+    }, [setAppData]);
+
+    const handleOnboardingComplete = () => {
+        refreshDashboardsFromVaults({ regeneratePlanIfEmpty: true });
 
         addToast({
             title: 'Dados Salvos e Processados',
@@ -636,19 +684,16 @@ function ClientWorkspaceContent({ onBackToAgency, isAgencyView: _isAgencyView, c
 
     // Renamed Handlers from R to V
     const handleV1Next = () => {
-        syncFormDataToAppData(formData);
         advanceTab('V1', 'V2');
     };
     const handleV2Next = () => {
-        syncFormDataToAppData(formData);
         advanceTab('V2', 'V3');
     };
     const handleV3Next = () => {
-        syncFormDataToAppData(formData);
         advanceTab('V3', 'V4');
     };
     const handleV4Complete = () => {
-        handleOnboardingComplete(formData);
+        handleOnboardingComplete();
         advanceTab('V4', 'OS');
     };
 
@@ -681,7 +726,6 @@ function ClientWorkspaceContent({ onBackToAgency, isAgencyView: _isAgencyView, c
                     formData={formData}
                     setFormData={setFormData}
                     onComplete={() => {
-                        syncFormDataToAppData(formData);
                         setBinderTab('OS');
                     }}
                 />
@@ -704,7 +748,7 @@ function ClientWorkspaceContent({ onBackToAgency, isAgencyView: _isAgencyView, c
 
             {/* GLOBAL PROMPT OVERLAY - IDF ENGINE v1 */}
             {(selectedPrompt || isGenerating) && (
-                <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-fadeIn">
+                <div data-testid="prompt-overlay" className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-fadeIn">
                     <div className="bg-[#111] border border-white/10 rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh] min-h-[400px]">
                         
                         {isGenerating ? (
@@ -726,7 +770,7 @@ function ClientWorkspaceContent({ onBackToAgency, isAgencyView: _isAgencyView, c
                                         <Wand2 className="text-purple-500" size={18} />
                                         <span className="font-bold text-gray-200">Bravvo Binder - IDF Engine v1</span>
                                     </div>
-                                    <button onClick={() => setSelectedPrompt(null)} className="p-2 hover:bg-white/10 rounded-full transition-colors">
+                                    <button data-testid="prompt-close" onClick={() => setSelectedPrompt(null)} className="p-2 hover:bg-white/10 rounded-full transition-colors">
                                         <PlusCircle className="rotate-45 text-gray-400" size={20} />
                                     </button>
                                 </div>
@@ -734,6 +778,7 @@ function ClientWorkspaceContent({ onBackToAgency, isAgencyView: _isAgencyView, c
                                 {/* Tabs */}
                                 <div className="flex border-b border-white/5 bg-[#080808]">
                                     <button
+                                        data-testid="prompt-tab-ai"
                                         onClick={() => setPromptTab('ai')}
                                         className={`flex-1 h-12 text-xs font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-2 ${promptTab === 'ai'
                                             ? 'bg-[#111] text-purple-400 border-b-2 border-purple-500'
@@ -744,6 +789,7 @@ function ClientWorkspaceContent({ onBackToAgency, isAgencyView: _isAgencyView, c
                                         AI PROMPT (MIDJOURNEY)
                                     </button>
                                     <button
+                                        data-testid="prompt-tab-human"
                                         onClick={() => setPromptTab('human')}
                                         className={`flex-1 h-12 text-xs font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-2 ${promptTab === 'human'
                                             ? 'bg-[#111] text-orange-400 border-b-2 border-orange-500'
@@ -756,7 +802,7 @@ function ClientWorkspaceContent({ onBackToAgency, isAgencyView: _isAgencyView, c
                                 </div>
 
                                 {/* Editor Area */}
-                                <div className="flex-1 overflow-auto p-6 bg-[#050505] font-mono text-sm text-gray-300 relative group">
+                                <div data-testid="prompt-content" className="flex-1 overflow-auto p-6 bg-[#050505] font-mono text-sm text-gray-300 relative group">
                                     <div className="whitespace-pre-wrap leading-relaxed">
                                         {promptTab === 'ai' ? selectedPrompt.aiPrompt : selectedPrompt.humanGuide}
                                     </div>
@@ -769,6 +815,7 @@ function ClientWorkspaceContent({ onBackToAgency, isAgencyView: _isAgencyView, c
                                         <span>{promptTab === 'ai' ? 'Modo: Gerador Instrucional (9-Block)' : 'Modo: Guia Operacional Humano'}</span>
                                     </div>
                                     <button
+                                        data-testid="prompt-copy"
                                         onClick={handleCopy}
                                         className={`flex items-center gap-2 px-6 py-2 rounded-full font-bold transition-all ${copied ? 'bg-green-500 text-black' : 'bg-white text-black hover:scale-105'}`}
                                     >
@@ -851,8 +898,7 @@ function AppContent() {
             setCurrentUser({ role: 'master', client: null });
         } else {
             // Client login - for demo, we pick C1
-            const seed = api.getClientData('C1');
-            const data = storageService.loadClientData('C1', seed);
+            const data = storageService.loadClientData('C1');
             setIsClientLoading(true);
             setClientData(data);
             setViewMode('client_workspace');
@@ -861,9 +907,7 @@ function AppContent() {
     };
 
     const handleSelectClient = (client) => {
-        // Fetch fresh data for the selected client from Mock DB
-        const seed = api.getClientData(client.id);
-        const data = storageService.loadClientData(client.id, seed);
+        const data = storageService.loadClientData(client.id);
         setIsClientLoading(true);
         setClientData(data);
         setCurrentUser(prev => ({ ...prev, client: client }));
@@ -876,11 +920,7 @@ function AppContent() {
         setIsClientLoading(false);
     }, [viewMode, isClientLoading]);
 
-    const handleSaveClientData = (newData) => {
-        if (clientData && clientData.id) {
-            api.updateClientData(clientData.id, newData);
-        }
-    };
+    const handleSaveClientData = () => {};
 
     const handleLogout = () => {
         localStorage.removeItem('bravvo_session');

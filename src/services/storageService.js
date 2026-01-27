@@ -5,8 +5,6 @@
  * Permite trocar localStorage por Supabase/Firebase sem quebrar a UI.
  */
 
-import { CARACA_BAR_DATA } from '../data/mockData';
-
 const CURRENT_SCHEMA_VERSION = 1;
 
 const isPlainObject = (value) => Boolean(value) && typeof value === 'object' && !Array.isArray(value);
@@ -17,6 +15,45 @@ const STORAGE_KEYS = {
     APP_DATA: 'bravvo_app_data',
     USER_PREFS: 'bravvo_user_prefs',
     AUTH: 'bravvo_auth_session'
+};
+
+const BLANK_CLIENT_TEMPLATE = {
+    clientName: '',
+    vaults: {
+        S1: { id: 'S1', fields: {} },
+        S2: { id: 'S2', products: [], metrics: {}, strategy: {}, bait: {} },
+        S3: { id: 'S3', steps: [], channels: [], traffic: {}, social: {}, cta: {}, metrics: {} },
+        S4: { id: 'S4', matrix: [], slas: {}, owners: {}, contacts: {}, schedule: {}, governanceCalendar: {}, stakeholders: [], competitors: [] },
+        S5: { id: 'S5', palette: {}, rules: {}, ideas: [], references: [], notepad: '', brandAssets: {}, brandIdentity: {} }
+    },
+    dashboard: {
+        D1: [],
+        D2: [],
+        D3: [],
+        D4: [],
+        D5: []
+    },
+    kpis: {
+        revenue: { value: 0, goal: 0 },
+        traffic: { value: 0, goal: 0 },
+        sales: { value: 0, goal: 0 }
+    },
+    measurementContract: {
+        lastUpdate: '',
+        cycle: { id: '', label: '', status: 'active' },
+        objectives: [],
+        dashboardLayout: { topKpis: ['revenue', 'sales', 'traffic'], secondaryKpis: [] },
+        kpis: [
+            { id: 'revenue', label: 'Receita', format: 'currency', source: 'manual', target: 0, active: true },
+            { id: 'traffic', label: 'Tráfego', format: 'decimal', source: 'manual', target: 0, active: true },
+            { id: 'sales', label: 'Vendas', format: 'integer', source: 'manual', target: 0, active: true }
+        ],
+        auditLog: []
+    },
+    creativeAssets: [],
+    governanceHistory: [],
+    promptHistory: [],
+    customThemeEnabled: false
 };
 
 const resolveTestMode = () => {
@@ -96,23 +133,31 @@ class StorageService {
      * Carrega os dados do cliente atual
      */
     loadClientData(clientId = null, fallbackData = null) {
+        const withClientId = (data) => {
+            if (!clientId) return data;
+            const safe = ensureObject(data, {});
+            if (typeof safe.id === 'string' && safe.id.trim()) return safe;
+            return { ...safe, id: clientId };
+        };
+
         const perClientKey = clientId ? `${STORAGE_KEYS.APP_DATA}:${clientId}` : null;
         const saved = perClientKey ? this.load(perClientKey) : null;
-        if (saved) return this.normalizeClientData(saved);
+        if (saved) return this.normalizeClientData(withClientId(saved));
 
         const legacy = this.load(STORAGE_KEYS.APP_DATA);
         if (clientId) {
             if (legacy && legacy.id === clientId) {
-                return this.normalizeClientData(legacy);
+                return this.normalizeClientData(withClientId(legacy));
             }
             if (fallbackData) return this.normalizeClientData(fallbackData);
+            return this.normalizeClientData(withClientId(BLANK_CLIENT_TEMPLATE));
         }
 
         // Backward compatible fallback (no client selected)
         if (legacy) return this.normalizeClientData(legacy);
 
         if (fallbackData) return this.normalizeClientData(fallbackData);
-        return this.normalizeClientData(CARACA_BAR_DATA);
+        return this.normalizeClientData(BLANK_CLIENT_TEMPLATE);
     }
 
     normalizeClientData(rawData) {
@@ -122,7 +167,7 @@ class StorageService {
             ? safeRaw
             : this.migrateClientData(safeRaw, incomingVersion);
 
-        const base = CARACA_BAR_DATA;
+        const base = BLANK_CLIENT_TEMPLATE;
         const merged = {
             ...base,
             ...migrated,
@@ -342,7 +387,38 @@ class StorageService {
      */
     clearClientData() {
         localStorage.removeItem(STORAGE_KEYS.APP_DATA);
-        return this.normalizeClientData(CARACA_BAR_DATA);
+        return this.normalizeClientData(BLANK_CLIENT_TEMPLATE);
+    }
+
+    resetClientData(clientId, options = {}) {
+        const resolvedClientId = typeof clientId === 'string' && clientId.trim() ? clientId.trim() : null;
+
+        const legacy = this.load(STORAGE_KEYS.APP_DATA);
+        if (!resolvedClientId || (legacy && legacy.id === resolvedClientId)) {
+            localStorage.removeItem(STORAGE_KEYS.APP_DATA);
+        }
+
+        localStorage.removeItem('bravvo_form_data');
+        localStorage.removeItem('bravvo_meeting_state');
+
+        if (resolvedClientId) {
+            localStorage.removeItem(`${STORAGE_KEYS.APP_DATA}:${resolvedClientId}`);
+            localStorage.removeItem(`bravvo_form_data:${resolvedClientId}`);
+            localStorage.removeItem(`bravvo_meeting_state:${resolvedClientId}`);
+        }
+
+        const blank = this.normalizeClientData({
+            ...BLANK_CLIENT_TEMPLATE,
+            id: resolvedClientId || undefined,
+            clientName: typeof options.clientName === 'string' ? options.clientName : ''
+        });
+
+        this.save(STORAGE_KEYS.APP_DATA, blank);
+        if (resolvedClientId) {
+            this.save(`${STORAGE_KEYS.APP_DATA}:${resolvedClientId}`, blank);
+        }
+
+        return blank;
     }
 }
 

@@ -174,8 +174,9 @@ test.describe('4. OSA Dashboard - PRD Big Tech', () => {
     });
 
     test('4.2 Day Summary AI section exists', async ({ page }) => {
-        // Should have day summary with AI bullets
-        await expect(page.locator('text=Resumo do Dia')).toBeVisible();
+        await expect(
+            page.getByRole('button', { name: /HOJE|Hoje|Today/i }).first()
+        ).toBeVisible();
     });
 
     test('4.3 KPI Grid shows meta vs realizado', async ({ page }) => {
@@ -184,8 +185,19 @@ test.describe('4. OSA Dashboard - PRD Big Tech', () => {
     });
 
     test('4.4 Priority Actions card shows top 3', async ({ page }) => {
-        // Priority actions section
-        await expect(page.locator('text=Ações Prioritárias').or(page.locator('text=Tudo em dia'))).toBeVisible();
+        await page.getByTestId('binder-tab-OS').click();
+        await expect(page.getByTestId('os-quick-add')).toBeVisible();
+
+        const quickInitiative = `E2E Priority Action ${Date.now()}`;
+        await page.getByTestId('os-quick-add').click();
+        const quickAddContainer = page.getByTestId('quickadd-drawer').or(page.getByTestId('quickadd-modal'));
+        await expect(quickAddContainer).toBeVisible();
+        await page.getByTestId('quickadd-initiative').fill(quickInitiative);
+        await page.getByTestId('quickadd-submit').click();
+        await expect(page.locator('[data-toast-type="success"]').first()).toBeVisible();
+        await expect(quickAddContainer).toHaveCount(0);
+
+        await expect(page.locator('text=Ações Prioritárias').first()).toBeVisible();
     });
 
     test('4.5 Vault cards show status indicators', async ({ page }) => {

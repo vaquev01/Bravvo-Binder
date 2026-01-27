@@ -51,15 +51,15 @@ test('flags: drawers + insights actions + undo', async ({ page }) => {
 
     // 3) QuickAdd opens in Drawer
     const quickInitiative = `E2E Roadmap Flags ${Date.now()}`;
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    const tomorrowStr = tomorrow.toISOString().split('T')[0];
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayStr = yesterday.toISOString().split('T')[0];
 
     await page.getByTestId('os-quick-add').click();
     await expect(page.getByTestId('quickadd-drawer')).toBeVisible();
 
     await page.getByTestId('quickadd-initiative').fill(quickInitiative);
-    await page.getByTestId('quickadd-date').fill(tomorrowStr);
+    await page.getByTestId('quickadd-date').fill(yesterdayStr);
     await page.getByTestId('quickadd-submit').click();
 
     await expect(page.locator('[data-toast-type="success"]').first()).toBeVisible();
@@ -67,6 +67,7 @@ test('flags: drawers + insights actions + undo', async ({ page }) => {
 
     // 4) Insight action triggers focus/scroll + row highlight
     const insightAction = page.getByRole('button', { name: /Ver atrasados|Ver produção|Gerar arte|Iniciar produção|Ver entregas/ }).first();
+    await insightAction.scrollIntoViewIfNeeded();
     await expect(insightAction).toBeVisible();
     await insightAction.click();
 

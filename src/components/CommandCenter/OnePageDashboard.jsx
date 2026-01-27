@@ -10,7 +10,8 @@ import {
     MessageCircle,
     Upload,
     Book,
-    Palette
+    Palette,
+    Trash2
 } from 'lucide-react';
 import { formatHumanDate } from './DaySummary';
 import { OnboardingChecklist } from '../ui/OnboardingChecklist';
@@ -32,6 +33,7 @@ import { useToast } from '../../contexts/ToastContext';
 import { getFeatureFlag } from '../../utils/featureFlags';
 import { useUndo } from '../../hooks/useUndo';
 import { generateNextGovernanceWindow } from '../../services/governanceService';
+import { storageService } from '../../services/storageService';
 import {
     listChannels,
     listSubchannels,
@@ -503,6 +505,7 @@ export function OnePageDashboard({
     appData,
     setAppData,
     setActiveTab,
+    onGeneratePrompt,
     formData,
     setFormData,
     meetingState,
@@ -512,6 +515,103 @@ export function OnePageDashboard({
 }) {
     const { t } = useLanguage();
     const { addToast } = useToast();
+
+    const handleResetWorkspace = () => {
+        const clientId = currentUser?.client?.id || appData?.id || null;
+        if (!clientId) {
+            addToast({ title: 'Reset indisponível', description: 'Nenhum cliente ativo.', type: 'error' });
+            return;
+        }
+
+        const ok = window.confirm('Isso vai zerar TODOS os dados do workspace deste cliente (Vaults, Dashboards, KPIs, Governança). Deseja continuar?');
+        if (!ok) return;
+
+        const blank = storageService.resetClientData(clientId, { clientName: currentUser?.client?.name || '' });
+
+        const blankBinderFormData = {
+            clientName: currentUser?.client?.name || '',
+            niche: 'gastronomia',
+            tagline: '',
+            promise: '',
+            enemy: '',
+            brandValues: [],
+            audienceAge: '25-34',
+            audienceGender: 'todos',
+            audienceClass: 'bc',
+            audiencePain: '',
+            archetype: 'O Cara Comum',
+            tone: 'casual',
+            mood: 'moderno',
+            primaryColor: '#F97316',
+            secondaryColor: '#1E293B',
+            accentColor: '#10B981',
+            bio: '',
+            products: [],
+            currentTicket: '',
+            targetTicket: '',
+            currentRevenue: '',
+            upsellStrategy: 'none',
+            saleFormat: 'presencial',
+            baitProduct: '',
+            baitPrice: '',
+            channels: [],
+            conversionLink: '',
+            instagramHandle: '',
+            websiteUrl: '',
+            primaryCTA: 'whatsapp',
+            secondaryCTA: 'saibamais',
+            ctaText: '',
+            monthlyGoal: '',
+            trafficType: 'Misto',
+            utmCampaign: '',
+            currentConversion: '',
+            targetConversion: '',
+            cpl: '',
+            approverName: '',
+            teamStructure: 'Enxuta',
+            slaHours: 24,
+            contentOwner: '',
+            trafficOwner: '',
+            supportOwner: '',
+            emergencyContact: '',
+            postingFrequency: '3x',
+            bestDays: [],
+            bestTimes: [],
+            startDate: '',
+            cycleDuration: '30',
+            stakeholders: [],
+            competitors: [],
+            ideas: [],
+            references: [],
+            notepad: '',
+            governanceHistory: [],
+            brandAssets: {
+                logos: [],
+                textures: [],
+                icons: [],
+                postTemplates: []
+            },
+            brandIdentity: {
+                musicalStyle: '',
+                visualVibes: [],
+                keyElements: [],
+                prohibitedElements: [],
+                colorMeanings: '',
+                photoStyle: '',
+                typographyNotes: ''
+            },
+            customThemeEnabled: false,
+            _schemaVersion: 1
+        };
+
+        setMeetingState({ active: false, comments: { general: '', revenue: '', traffic: '', sales: '' } });
+        if (setFormData) {
+            setFormData(blankBinderFormData);
+        }
+        setAppData(blank);
+
+        addToast({ title: 'Workspace zerado', description: 'Dados de teste/simulação removidos. Pode preencher novamente.', type: 'success' });
+    };
 
     const governanceHistory = useMemo(() => {
         if (Array.isArray(appData?.governanceHistory) && appData.governanceHistory.length > 0) {
@@ -1293,6 +1393,14 @@ export function OnePageDashboard({
                         <Upload size={14} />
                     </button>
                     <button
+                        data-testid="os-reset-workspace"
+                        onClick={handleResetWorkspace}
+                        className="btn-ghost !h-7 !px-2 !border-red-500/30 text-red-400 hover:text-red-300"
+                        title="Zerar dados do workspace"
+                    >
+                        <Trash2 size={14} />
+                    </button>
+                    <button
                         onClick={() => {
                             setAppData(prev => ({ ...prev, customThemeEnabled: !prev?.customThemeEnabled }));
                         }}
@@ -1751,6 +1859,7 @@ export function OnePageDashboard({
                     item={creativeItem}
                     vaults={appData?.vaults}
                     onSave={handleSaveCreativeAsset}
+                    onGeneratePrompt={onGeneratePrompt}
                 />
                 {/* GOVERNANCE MODAL - PRD 4.1 */}
                 <GovernanceModal
