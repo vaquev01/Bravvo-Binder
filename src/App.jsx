@@ -206,6 +206,12 @@ function ClientWorkspaceContent({ onBackToAgency, isAgencyView: _isAgencyView, c
         const palette = appData?.vaults?.S5?.palette;
         const brandIdentity = appData?.vaults?.S5?.brandIdentity;
 
+        if (enabled) {
+            root.setAttribute('data-theme', 'custom');
+        } else {
+            root.removeAttribute('data-theme');
+        }
+
         const applyVar = (name, value) => {
             if (enabled && typeof value === 'string' && value.trim()) {
                 root.style.setProperty(name, value.trim());
