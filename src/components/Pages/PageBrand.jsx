@@ -7,6 +7,8 @@ import { TagInput } from '../ui/TagInput';
 import { RadioCards } from '../ui/RadioCards';
 import { AssetUploader } from '../ui/AssetUploader';
 import { useVaultForm } from '../../hooks/useVaultForm';
+import { useVaults } from '../../contexts/VaultContext';
+import { useToast } from '../../contexts/ToastContext';
 
 const ARCHETYPES = [
     { value: 'O Criador', emoji: '🎨', label: 'O Criador', description: 'Inovação e originalidade' },
@@ -57,6 +59,9 @@ const MUSICAL_SUGGESTIONS = [
 export function PageBrand({ formData: externalFormData, setFormData: externalSetFormData, onNext }) {
     // Use unified vault form hook - reads/writes directly to appData
     const { formData: vaultFormData, updateField: vaultUpdateField, updateFields, isSynced, saveAndAdvance } = useVaultForm('V1');
+
+    const { appData } = useVaults();
+    const { addToast } = useToast();
     
     // Use vault data if available, fallback to external props for compatibility
     const formData = vaultFormData || externalFormData || {};
@@ -109,6 +114,16 @@ export function PageBrand({ formData: externalFormData, setFormData: externalSet
     };
 
     const handleRandomMood = () => {
+        const allowInspire = Boolean(appData?.workspacePrefs?.autoInspire);
+        if (!allowInspire) {
+            addToast({
+                title: 'Auto-Inspirar desativado',
+                description: 'Ative em Workspace Tools para usar templates automaticamente.',
+                type: 'info'
+            });
+            return;
+        }
+
         const moods = [
             { tone: "divertido", mood: "colorido", archetype: "O Bobo da Corte", primary: "#FF0055", secondary: "#FFFF00", accent: "#00FFFF" },
             { tone: "luxo", mood: "elegante", archetype: "O Governante", primary: "#D4AF37", secondary: "#1A1A1A", accent: "#FFFFFF" },

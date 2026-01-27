@@ -2,6 +2,8 @@ import React from 'react';
 import { ShoppingBag, ArrowRight, TrendingUp, Target, Zap, CheckCircle2 } from 'lucide-react';
 import { ProductList } from '../ui/ProductList';
 import { useVaultForm } from '../../hooks/useVaultForm';
+import { useVaults } from '../../contexts/VaultContext';
+import { useToast } from '../../contexts/ToastContext';
 
 const UPSELL_STRATEGIES = [
     { value: 'none', label: 'Nenhuma estratégia definida' },
@@ -15,6 +17,9 @@ const UPSELL_STRATEGIES = [
 export function PageOffer({ formData: externalFormData, setFormData: externalSetFormData, onNext }) {
     // Use unified vault form hook
     const { formData: vaultFormData, updateField: vaultUpdateField, isSynced, saveAndAdvance } = useVaultForm('V2');
+
+    const { appData } = useVaults();
+    const { addToast } = useToast();
     
     const formData = vaultFormData || externalFormData || {};
     const updateField = vaultUpdateField || ((field, value) => externalSetFormData?.({ ...formData, [field]: value }));
@@ -50,6 +55,16 @@ export function PageOffer({ formData: externalFormData, setFormData: externalSet
                     <button
                         type="button"
                         onClick={() => {
+                            const allowInspire = Boolean(appData?.workspacePrefs?.autoInspire);
+                            if (!allowInspire) {
+                                addToast({
+                                    title: 'Auto-Inspirar desativado',
+                                    description: 'Ative em Workspace Tools para usar templates automaticamente.',
+                                    type: 'info'
+                                });
+                                return;
+                            }
+
                             // Smart Fill Logic for Products
                             const niche = formData.niche ? formData.niche.toLowerCase() : 'geral';
                             let suggestedProducts = [];

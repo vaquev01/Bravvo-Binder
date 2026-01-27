@@ -19,8 +19,20 @@ const STORAGE_KEYS = {
     AUTH: 'bravvo_auth_session'
 };
 
+const fnv1a = (str) => {
+    let hash = 2166136261;
+    for (let i = 0; i < str.length; i += 1) {
+        hash ^= str.charCodeAt(i);
+        hash = Math.imul(hash, 16777619);
+    }
+    return (hash >>> 0).toString(16).padStart(8, '0');
+};
+
 const BLANK_CLIENT_TEMPLATE = {
     clientName: '',
+    workspacePrefs: {
+        autoInspire: false
+    },
     vaults: {
         S1: { id: 'S1', fields: {} },
         S2: { id: 'S2', products: [], metrics: {}, strategy: {}, bait: {} },
@@ -198,6 +210,62 @@ class StorageService {
         }
     }
 
+    getSnapshots(clientId) {
+        if (!clientId) return [];
+        const key = `${STORAGE_KEYS.APP_DATA_SNAPSHOTS}:${clientId}`;
+        const snaps = this.load(key, []);
+        return Array.isArray(snaps) ? snaps : [];
+    }
+
+    restoreSnapshot(clientId, snapshotTs) {
+        if (!clientId) return null;
+        const snaps = this.getSnapshots(clientId);
+        const entry = snaps.find(s => s?.ts === snapshotTs);
+        if (!entry?.data) return null;
+        const normalized = this.normalizeClientData({ ...entry.data, id: clientId });
+        this.saveClientData(normalized);
+        return normalized;
+    }
+
+    createWorkspaceExport(clientId) {
+        if (!clientId) return '';
+        const data = this.normalizeClientData({ ...this.loadClientData(clientId), id: clientId });
+        const payloadString = JSON.stringify(data);
+        const checksum = fnv1a(payloadString);
+        const bundle = {
+            type: 'bravvo_workspace_export',
+            version: 1,
+            exportedAt: new Date().toISOString(),
+            clientId,
+            schemaVersion: data.schemaVersion,
+            checksum,
+            payload: data
+        };
+        return JSON.stringify(bundle, null, 2);
+    }
+
+    importWorkspaceExport(targetClientId, rawText, options = {}) {
+        if (!targetClientId) throw new Error('Missing clientId');
+        const parsed = JSON.parse(rawText);
+        if (!parsed || parsed.type !== 'bravvo_workspace_export' || parsed.version !== 1) {
+            throw new Error('Invalid export format');
+        }
+        const payload = ensureObject(parsed.payload, null);
+        if (!payload) throw new Error('Missing payload');
+        const checksum = String(parsed.checksum || '');
+        const computed = fnv1a(JSON.stringify(payload));
+        if (checksum && checksum !== computed) {
+            throw new Error('Checksum mismatch');
+        }
+        const normalized = this.normalizeClientData({
+            ...payload,
+            id: targetClientId,
+            clientName: typeof options.clientName === 'string' ? options.clientName : payload.clientName
+        });
+        this.saveClientData(normalized);
+        return normalized;
+    }
+
     exportClientData(clientId) {
         const data = this.loadClientData(clientId);
         return JSON.stringify(this.normalizeClientData({ ...data, id: clientId }), null, 2);
@@ -249,6 +317,8 @@ class StorageService {
         const s3 = ensureObject(merged.vaults.S3, {});
         const s4 = ensureObject(merged.vaults.S4, {});
         const s5 = ensureObject(merged.vaults.S5, {});
+
+        const prefs = ensureObject(merged.workspacePrefs, {});
 
         const s1Fields = ensureObject(s1.fields, {});
         const s2Metrics = ensureObject(s2.metrics, {});
@@ -390,6 +460,15 @@ class StorageService {
 
         merged.governanceHistory = ensureArray(merged.governanceHistory);
         merged.promptHistory = ensureArray(merged.promptHistory);
+
+        merged.workspacePrefs = {
+            autoInspire: typeof prefs.autoInspire === 'boolean' ? prefs.autoInspire : false
+        };
+
+        merged.measurementContract = {
+            ...merged.measurementContract,
+            auditLog: ensureArray(merged.measurementContract?.auditLog)
+        };
 
         if (typeof merged.customThemeEnabled !== 'boolean') {
             merged.customThemeEnabled = false;

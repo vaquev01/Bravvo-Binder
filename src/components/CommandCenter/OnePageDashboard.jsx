@@ -11,7 +11,8 @@ import {
     Upload,
     Book,
     Palette,
-    Trash2
+    Trash2,
+    Settings
 } from 'lucide-react';
 import { formatHumanDate } from './DaySummary';
 import { OnboardingChecklist } from '../ui/OnboardingChecklist';
@@ -29,6 +30,7 @@ import { GovernanceHeader } from './GovernanceHeader';
 import { KPIGrid } from './KPICard';
 import { PriorityActionsCard } from './PriorityActionsCard';
 import { VaultCards } from './VaultCards';
+import { WorkspaceToolsModal } from './WorkspaceToolsModal';
 import { useToast } from '../../contexts/ToastContext';
 import { getFeatureFlag } from '../../utils/featureFlags';
 import { useUndo } from '../../hooks/useUndo';
@@ -516,6 +518,8 @@ export function OnePageDashboard({
     const { t } = useLanguage();
     const { addToast } = useToast();
 
+    const activeClientId = currentUser?.client?.id || appData?.id || null;
+
     const handleResetWorkspace = () => {
         const clientId = currentUser?.client?.id || appData?.id || null;
         if (!clientId) {
@@ -651,6 +655,7 @@ export function OnePageDashboard({
     const [editingItem, setEditingItem] = useState(null);
     const [showHistory, setShowHistory] = useState(false);
     const [showImport, setShowImport] = useState(false);
+    const [showWorkspaceTools, setShowWorkspaceTools] = useState(false);
     const [showPlaybooks, setShowPlaybooks] = useState(false);
     const [showCreativeStudio, setShowCreativeStudio] = useState(false);
     const [creativeItem, setCreativeItem] = useState(null);
@@ -1393,6 +1398,14 @@ export function OnePageDashboard({
                         <Upload size={14} />
                     </button>
                     <button
+                        onClick={() => setShowWorkspaceTools(true)}
+                        className="btn-ghost !h-7 !px-2"
+                        title="Workspace Tools"
+                        data-testid="os-open-workspace-tools"
+                    >
+                        <Settings size={14} />
+                    </button>
+                    <button
                         data-testid="os-reset-workspace"
                         onClick={handleResetWorkspace}
                         className="btn-ghost !h-7 !px-2 !border-red-500/30 text-red-400 hover:text-red-300"
@@ -1850,6 +1863,14 @@ export function OnePageDashboard({
                     focusEntryId={historyFocusEntryId}
                 />
                 <ImportDataModal open={showImport} onClose={() => setShowImport(false)} contract={appData.measurementContract} onImport={handleImport} />
+                <WorkspaceToolsModal
+                    open={showWorkspaceTools}
+                    onClose={() => setShowWorkspaceTools(false)}
+                    clientId={activeClientId}
+                    appData={appData}
+                    setAppData={setAppData}
+                    currentUser={currentUser}
+                />
                 <PlaybookModal open={showPlaybooks} onClose={() => setShowPlaybooks(false)} onApply={handleApplyPlaybook} />
                 <CreativeStudioModal
                     open={showCreativeStudio}
