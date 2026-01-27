@@ -10,24 +10,53 @@ import {
     Command,
     TrendingUp,
 } from 'lucide-react';
-import { api } from '../../data/mockDB';
+import { storageService } from '../../services/storageService';
 
 export function AgencyDashboard({ onSelectClient, onLogout }) {
     const { t } = useLanguage();
     const [activeTab, setActiveTab] = useState('overview');
-    // Mock Agency Data (Agency A1 for demo)
-    const agencyId = 'A1';
+    const clients = useMemo(() => {
+        const discoveredIds = typeof storageService.listClientIds === 'function'
+            ? storageService.listClientIds()
+            : [];
+        const baselineIds = ['C1', 'C2'];
+        const clientIds = Array.from(new Set([...baselineIds, ...discoveredIds])).filter(Boolean);
 
-    // Fetch clients from Mock DB
-    const clients = useMemo(() => api.getAgencyClients(agencyId), []);
+        return clientIds.map((id) => {
+            const data = storageService.loadClientData(id);
+            const revenueValue = Number(data?.kpis?.revenue?.value || 0);
+            const revenueGoal = Number(data?.kpis?.revenue?.goal || 0);
+            const status = revenueGoal > 0 && revenueValue < revenueGoal * 0.8 ? 'attention' : 'healthy';
+
+            const responsible =
+                data?.vaults?.S4?.matrix?.find(m => m?.role === 'Aprovador Final')?.who
+                || data?.vaults?.S4?.owners?.content
+                || data?.vaults?.S4?.owners?.traffic
+                || '';
+
+            return {
+                id,
+                name: data?.clientName || `Client ${id}`,
+                kpis: data?.kpis,
+                revenue: revenueValue,
+                responsible,
+                status,
+            };
+        });
+    }, []);
 
     // Calculate aggregated stats
     const agencyStats = {
         totalRevenue: clients.reduce((acc, c) => acc + (c.kpis?.revenue?.value || 0), 0),
         activeClients: clients.length,
-        pendingApprovals: 8,
-        teamOnline: 4,
-        avgHealth: 94
+        pendingApprovals: 0,
+        teamOnline: 0,
+        avgHealth: clients.length > 0 ? Math.round(clients.reduce((acc, c) => {
+            const goal = Number(c?.kpis?.revenue?.goal || 0);
+            const value = Number(c?.kpis?.revenue?.value || 0);
+            if (goal <= 0) return acc + 100;
+            return acc + Math.min(100, Math.round((value / goal) * 100));
+        }, 0) / clients.length) : 100
     };
 
     return (
@@ -192,7 +221,7 @@ export function AgencyDashboard({ onSelectClient, onLogout }) {
                                     <button
                                         onClick={() => onSelectClient(client)}
                                         data-testid={`agency-access-os-${client.id}`}
-                                        className="mt-4 w-full h-8 flex items-center justify-center gap-2 text-[11px] font-bold uppercase tracking-wide border border-white/10 rounded hover:bg-white hover:text-black transition-all text-gray-500 opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 duration-200"
+                                        className="mt-4 w-full h-8 flex items-center justify-center gap-2 text-[11px] font-bold uppercase tracking-wide border border-white/10 rounded transition-all text-gray-500 opacity-100 translate-y-0 active:bg-white active:text-black md:hover:bg-white md:hover:text-black md:opacity-0 md:group-hover:opacity-100 md:translate-y-2 md:group-hover:translate-y-0 duration-200"
                                     >
                                         {t('dashboard.actions.access_os')} <ArrowRight size={12} />
                                     </button>

@@ -1,6 +1,29 @@
 import React from 'react';
 import { reportError } from '../services/errorReportingService';
 
+const shouldRecoverFromChunkError = (err) => {
+    const msg = String(err?.message || err || '');
+    if (!msg) return false;
+    return (
+        msg.includes('Failed to fetch dynamically imported module') ||
+        msg.includes('Importing a module script failed')
+    );
+};
+
+const recoverFromChunkErrorOnce = () => {
+    if (typeof window === 'undefined') return;
+    try {
+        const key = 'bravvo_chunk_recover_once';
+        if (sessionStorage.getItem(key)) return;
+        sessionStorage.setItem(key, '1');
+        const url = new URL(window.location.href);
+        url.searchParams.set('v', String(Date.now()));
+        window.location.replace(url.toString());
+    } catch {
+        window.location.reload();
+    }
+};
+
 export class ErrorBoundary extends React.Component {
     constructor(props) {
         super(props);
@@ -17,6 +40,10 @@ export class ErrorBoundary extends React.Component {
             componentStack: errorInfo?.componentStack
         });
         this.setState({ error, errorInfo });
+
+        if (shouldRecoverFromChunkError(error)) {
+            recoverFromChunkErrorOnce();
+        }
     }
 
     render() {
@@ -30,7 +57,13 @@ export class ErrorBoundary extends React.Component {
                         {this.state.errorInfo && this.state.errorInfo.componentStack}
                     </details>
                     <button
-                        onClick={() => window.location.reload()}
+                        onClick={() => {
+                            if (shouldRecoverFromChunkError(this.state.error)) {
+                                recoverFromChunkErrorOnce();
+                            } else {
+                                window.location.reload();
+                            }
+                        }}
                         style={{ marginTop: '20px', padding: '10px 20px', background: '#333', color: 'white', border: 'none', cursor: 'pointer' }}
                     >
                         Recarregar Página

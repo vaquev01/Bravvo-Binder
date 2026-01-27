@@ -668,9 +668,9 @@ export function OnePageDashboard({
 
     // Editable KPI State - Linked to Global Data
     const [kpis, setKpis] = useState(appData.kpis || {
-        revenue: { value: 32500, goal: 50000 },
-        traffic: { value: 12, goal: 15 },
-        sales: { value: 154, goal: 120 },
+        revenue: { value: 0, goal: 0 },
+        traffic: { value: 0, goal: 0 },
+        sales: { value: 0, goal: 0 },
     });
 
     // Update local state when appData changes (e.g. client switch)
@@ -907,14 +907,10 @@ export function OnePageDashboard({
             }));
         }
 
-        // Exit governance mode
-        setMeetingState({ active: false, comments: { general: '', revenue: '', traffic: '', sales: '' } });
-        setShowGovernanceModeModal(false);
-        
-        addToast({ 
-            title: 'Governança Concluída', 
-            description: 'ATA gerada e sistema recalibrado.', 
-            type: 'success' 
+        addToast({
+            title: 'Governança Concluída',
+            description: 'ATA gerada e sistema recalibrado.',
+            type: 'success'
         });
     };
 
@@ -1255,6 +1251,10 @@ export function OnePageDashboard({
     };
 
     const handleApplyPlaybook = (playbook) => {
+        const products = appData?.vaults?.S2?.products || [];
+        const heroProduct = products.find(p => p?.isHero) || products.find(p => String(p?.role || '').toLowerCase() === 'hero') || products[0] || null;
+        const heroProductId = heroProduct?.id != null ? heroProduct.id : 'hero';
+
         // Generate tasks starting from tomorrow
         const newTasks = playbook.tasks.map((task, idx) => {
             const date = new Date();
@@ -1272,7 +1272,7 @@ export function OnePageDashboard({
                 subchannelId,
                 channel: toLegacyChannelLabel(channelId, subchannelId),
                 format: getDefaultContentType(channelId, subchannelId),
-                offerId: 'hero', // Default to hero
+                offerId: heroProductId,
                 ctaId: 'whatsapp',
                 responsible: task.role,
                 status: 'draft',
@@ -1413,6 +1413,7 @@ export function OnePageDashboard({
                     {meetingState.active && (
                         <button
                             onClick={() => setShowPlaybooks(true)}
+                            data-testid="os-open-playbooks"
                             className="btn-ghost !h-7 !px-3 !border-blue-500/30 text-blue-400 hover:text-blue-300"
                             title="Gerar Plano (Playbooks)"
                         >

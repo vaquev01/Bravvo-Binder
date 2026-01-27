@@ -577,6 +577,7 @@ export function GovernanceModeModal({
                                                         <input
                                                             type="number"
                                                             className="bg-black/30 border border-white/10 rounded px-2 py-1 w-[110px] text-[11px] font-mono text-gray-200 focus:outline-none focus:border-purple-500/50"
+                                                            data-testid={`gov-goal-${key}`}
                                                             value={goalValue}
                                                             onChange={e => {
                                                                 const next = parseFloat(e.target.value);
@@ -1032,6 +1033,7 @@ export function GovernanceModeModal({
                                             <input
                                                 className="input-field flex-1"
                                                 placeholder={`Prioridade ${idx + 1}`}
+                                                data-testid={`gov-priority-${idx}`}
                                                 value={priority}
                                                 onChange={e => updateArrayField(setPriorities, idx, e.target.value)}
                                             />
@@ -1056,13 +1058,14 @@ export function GovernanceModeModal({
                         </button>
                     )}
                     {currentStep < GOVERNANCE_STEPS.length - 1 ? (
-                        <button onClick={nextStep} className="btn-primary">
+                        <button onClick={nextStep} className="btn-primary" data-testid="governance-next">
                             Próximo <ChevronRight size={14} className="ml-1" />
                         </button>
                     ) : (
                         <button 
                             onClick={handleComplete} 
                             disabled={isProcessing}
+                            data-testid="governance-complete"
                             className="btn-primary !bg-green-600 hover:!bg-green-500"
                         >
                             {isProcessing ? (

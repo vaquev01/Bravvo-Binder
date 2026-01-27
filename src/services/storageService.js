@@ -13,6 +13,8 @@ const ensureObject = (value, fallback = {}) => (isPlainObject(value) ? value : f
 
 const STORAGE_KEYS = {
     APP_DATA: 'bravvo_app_data',
+    APP_DATA_BACKUP: 'bravvo_app_data_backup',
+    APP_DATA_SNAPSHOTS: 'bravvo_app_data_snapshots',
     USER_PREFS: 'bravvo_user_prefs',
     AUTH: 'bravvo_auth_session'
 };
@@ -68,12 +70,16 @@ class StorageService {
         this.pendingSaves = 0;
         this.lastSaveAt = 0;
         this.saveSequence = 0;
+        this.lastSaveOk = true;
+        this.lastSaveError = '';
         this.saveQueue = Promise.resolve();
         this.testMode = resolveTestMode();
         if (this.testMode && typeof window !== 'undefined') {
             window.__PENDING_SAVES__ = this.pendingSaves;
             window.__LAST_SAVE_AT__ = this.lastSaveAt;
             window.__SAVE_SEQ__ = this.saveSequence;
+            window.__LAST_SAVE_OK__ = this.lastSaveOk;
+            window.__LAST_SAVE_ERROR__ = this.lastSaveError;
             window.__flushPersistence__ = () => this.flush();
         }
     }
@@ -83,6 +89,8 @@ class StorageService {
         window.__PENDING_SAVES__ = this.pendingSaves;
         window.__LAST_SAVE_AT__ = this.lastSaveAt;
         window.__SAVE_SEQ__ = this.saveSequence;
+        window.__LAST_SAVE_OK__ = this.lastSaveOk;
+        window.__LAST_SAVE_ERROR__ = this.lastSaveError;
     }
 
     markSaveStart() {
@@ -144,10 +152,18 @@ class StorageService {
         const saved = perClientKey ? this.load(perClientKey) : null;
         if (saved) return this.normalizeClientData(withClientId(saved));
 
+        const perClientBackupKey = clientId ? `${STORAGE_KEYS.APP_DATA_BACKUP}:${clientId}` : null;
+        const backup = perClientBackupKey ? this.load(perClientBackupKey) : null;
+        if (backup) return this.normalizeClientData(withClientId(backup));
+
         const legacy = this.load(STORAGE_KEYS.APP_DATA);
         if (clientId) {
             if (legacy && legacy.id === clientId) {
                 return this.normalizeClientData(withClientId(legacy));
+            }
+            const legacyBackup = this.load(STORAGE_KEYS.APP_DATA_BACKUP);
+            if (legacyBackup && legacyBackup.id === clientId) {
+                return this.normalizeClientData(withClientId(legacyBackup));
             }
             if (fallbackData) return this.normalizeClientData(fallbackData);
             return this.normalizeClientData(withClientId(BLANK_CLIENT_TEMPLATE));
@@ -156,8 +172,45 @@ class StorageService {
         // Backward compatible fallback (no client selected)
         if (legacy) return this.normalizeClientData(legacy);
 
+        const legacyBackup = this.load(STORAGE_KEYS.APP_DATA_BACKUP);
+        if (legacyBackup) return this.normalizeClientData(legacyBackup);
+
         if (fallbackData) return this.normalizeClientData(fallbackData);
         return this.normalizeClientData(BLANK_CLIENT_TEMPLATE);
+    }
+
+    listClientIds() {
+        try {
+            const ids = new Set();
+            for (let i = 0; i < localStorage.length; i += 1) {
+                const key = localStorage.key(i);
+                if (!key) continue;
+                if (key.startsWith(`${STORAGE_KEYS.APP_DATA}:`)) {
+                    ids.add(key.slice(`${STORAGE_KEYS.APP_DATA}:`.length));
+                }
+                if (key.startsWith(`${STORAGE_KEYS.APP_DATA_BACKUP}:`)) {
+                    ids.add(key.slice(`${STORAGE_KEYS.APP_DATA_BACKUP}:`.length));
+                }
+            }
+            return Array.from(ids).filter(Boolean).sort();
+        } catch {
+            return [];
+        }
+    }
+
+    exportClientData(clientId) {
+        const data = this.loadClientData(clientId);
+        return JSON.stringify(this.normalizeClientData({ ...data, id: clientId }), null, 2);
+    }
+
+    appendSnapshot(clientId, normalized) {
+        if (!clientId) return;
+        const key = `${STORAGE_KEYS.APP_DATA_SNAPSHOTS}:${clientId}`;
+        const prev = this.load(key, []);
+        const safePrev = Array.isArray(prev) ? prev : [];
+        const entry = { ts: new Date().toISOString(), data: normalized };
+        const next = [entry, ...safePrev].slice(0, 5);
+        this.save(key, next);
     }
 
     normalizeClientData(rawData) {
@@ -375,10 +428,18 @@ class StorageService {
         const normalized = this.normalizeClientData(data);
         this.markSaveStart();
         const ok = this.save(STORAGE_KEYS.APP_DATA, normalized);
+        this.lastSaveOk = Boolean(ok);
+        this.lastSaveError = ok ? '' : 'Save failed';
         if (normalized?.id) {
             this.save(`${STORAGE_KEYS.APP_DATA}:${normalized.id}`, normalized);
+            this.save(`${STORAGE_KEYS.APP_DATA_BACKUP}:${normalized.id}`, normalized);
+            this.appendSnapshot(normalized.id, normalized);
         }
+
+        // Legacy/global backup as last resort
+        this.save(STORAGE_KEYS.APP_DATA_BACKUP, normalized);
         this.enqueueSaveCompletion();
+        this.updateDebugState();
         return ok;
     }
 
@@ -387,6 +448,24 @@ class StorageService {
      */
     clearClientData() {
         localStorage.removeItem(STORAGE_KEYS.APP_DATA);
+        localStorage.removeItem(STORAGE_KEYS.APP_DATA_BACKUP);
+        try {
+            for (let i = localStorage.length - 1; i >= 0; i -= 1) {
+                const key = localStorage.key(i);
+                if (!key) continue;
+                if (key.startsWith(`${STORAGE_KEYS.APP_DATA}:`)) {
+                    localStorage.removeItem(key);
+                }
+                if (key.startsWith(`${STORAGE_KEYS.APP_DATA_BACKUP}:`)) {
+                    localStorage.removeItem(key);
+                }
+                if (key.startsWith(`${STORAGE_KEYS.APP_DATA_SNAPSHOTS}:`)) {
+                    localStorage.removeItem(key);
+                }
+            }
+        } catch {
+            // no-op
+        }
         return this.normalizeClientData(BLANK_CLIENT_TEMPLATE);
     }
 
@@ -396,6 +475,7 @@ class StorageService {
         const legacy = this.load(STORAGE_KEYS.APP_DATA);
         if (!resolvedClientId || (legacy && legacy.id === resolvedClientId)) {
             localStorage.removeItem(STORAGE_KEYS.APP_DATA);
+            localStorage.removeItem(STORAGE_KEYS.APP_DATA_BACKUP);
         }
 
         localStorage.removeItem('bravvo_form_data');
@@ -403,6 +483,8 @@ class StorageService {
 
         if (resolvedClientId) {
             localStorage.removeItem(`${STORAGE_KEYS.APP_DATA}:${resolvedClientId}`);
+            localStorage.removeItem(`${STORAGE_KEYS.APP_DATA_BACKUP}:${resolvedClientId}`);
+            localStorage.removeItem(`${STORAGE_KEYS.APP_DATA_SNAPSHOTS}:${resolvedClientId}`);
             localStorage.removeItem(`bravvo_form_data:${resolvedClientId}`);
             localStorage.removeItem(`bravvo_meeting_state:${resolvedClientId}`);
         }
@@ -416,7 +498,11 @@ class StorageService {
         this.save(STORAGE_KEYS.APP_DATA, blank);
         if (resolvedClientId) {
             this.save(`${STORAGE_KEYS.APP_DATA}:${resolvedClientId}`, blank);
+            this.save(`${STORAGE_KEYS.APP_DATA_BACKUP}:${resolvedClientId}`, blank);
+            this.save(`${STORAGE_KEYS.APP_DATA_SNAPSHOTS}:${resolvedClientId}`, []);
         }
+
+        this.save(STORAGE_KEYS.APP_DATA_BACKUP, blank);
 
         return blank;
     }

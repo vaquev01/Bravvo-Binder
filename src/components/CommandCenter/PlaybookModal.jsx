@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Book, Check, X, Play, Info } from 'lucide-react';
-import { PLAYBOOKS } from '../../data/mockData';
+import { PLAYBOOKS } from '../../data/playbooks';
 
 export function PlaybookModal({ open, onClose, onApply }) {
     const [selectedId, setSelectedId] = useState(null);
@@ -19,7 +19,7 @@ export function PlaybookModal({ open, onClose, onApply }) {
     };
 
     return (
-        <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-fadeIn">
+        <div data-testid="playbook-modal" className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-fadeIn">
             <div className="bg-[#0A0A0A] border border-white/10 rounded-xl w-full max-w-4xl shadow-2xl flex flex-col max-h-[90vh]">
                 
                 {/* Header */}
@@ -47,6 +47,7 @@ export function PlaybookModal({ open, onClose, onApply }) {
                             <button
                                 key={pb.id}
                                 onClick={() => setSelectedId(pb.id)}
+                                data-testid={`playbook-select-${pb.id}`}
                                 className={`w-full text-left p-4 border-b border-white/5 transition-colors hover:bg-white/5 ${selectedId === pb.id ? 'bg-white/10 border-l-2 border-l-blue-500' : ''}`}
                             >
                                 <div className="text-sm font-bold text-white mb-1">{pb.name}</div>
@@ -124,6 +125,7 @@ export function PlaybookModal({ open, onClose, onApply }) {
                     <button 
                         onClick={handleApply}
                         disabled={!selectedId}
+                        data-testid="playbook-apply"
                         className="px-6 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded text-xs font-bold uppercase tracking-wider flex items-center gap-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         <Play size={14} />

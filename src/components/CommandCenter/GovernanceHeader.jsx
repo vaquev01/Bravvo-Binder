@@ -191,6 +191,7 @@ export function GovernanceHeader({
                 <div className="flex items-center gap-2">
                     <button
                         onClick={onToggleGovernance}
+                        data-testid="os-toggle-governance"
                         className={isGovernanceActive
                             ? "relative px-4 py-2 rounded-lg text-xs font-bold text-white flex items-center gap-2 border border-purple-500/40 bg-gradient-to-r from-purple-600 via-fuchsia-600 to-purple-600 shadow-lg shadow-purple-500/20 hover:shadow-purple-500/30 transition-all"
                             : "relative px-4 py-2 rounded-lg text-xs font-bold text-purple-200 flex items-center gap-2 border border-purple-500/40 bg-gradient-to-r from-purple-500/20 via-fuchsia-500/10 to-purple-500/20 hover:from-purple-500/25 hover:via-fuchsia-500/20 hover:to-purple-500/25 hover:shadow-md hover:shadow-purple-500/10 transition-all"

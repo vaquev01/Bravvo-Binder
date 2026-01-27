@@ -35,7 +35,9 @@ function generateIDFPrompt(item, vaults) {
     const s5 = vaults?.S5 || {};
     const brandIdentity = s5.brandIdentity || {}; // NEW: Access Brand Identity
     const products = vaults?.S2?.items || vaults?.S2?.products || [];
-    const product = products.find(p => p.id === item.offerId) || products[0] || { name: 'Product Name' };
+    const idMatch = products.find(p => String(p?.id) === String(item?.offerId));
+    const heroMatch = products.find(p => p?.isHero) || products.find(p => String(p?.role || '').toLowerCase() === 'hero');
+    const product = idMatch || (String(item?.offerId).toLowerCase() === 'hero' ? heroMatch : null) || heroMatch || products[0] || { name: 'Product Name' };
 
     // Default Fallbacks
     const primaryColor = s5.palette?.primary || '#FF5733';
@@ -153,7 +155,9 @@ function generateHumanGuide(item, vaults) {
     const s1 = vaults?.S1?.fields || {};
     const s5 = vaults?.S5 || {}; // Design Vault
     const products = vaults?.S2?.items || vaults?.S2?.products || [];
-    const product = products.find(p => p.id === item.offerId) || products[0] || { name: 'Produto Principal' };
+    const idMatch = products.find(p => String(p?.id) === String(item?.offerId));
+    const heroMatch = products.find(p => p?.isHero) || products.find(p => String(p?.role || '').toLowerCase() === 'hero');
+    const product = idMatch || (String(item?.offerId).toLowerCase() === 'hero' ? heroMatch : null) || heroMatch || products[0] || { name: 'Produto Principal' };
 
     const primaryColor = s5.palette?.primary || '#FF5733';
     const archetype = s1.archetype || 'O Cara Comum';

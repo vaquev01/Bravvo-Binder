@@ -10,16 +10,38 @@ import {
     TrendingUp,
     AlertTriangle,
 } from 'lucide-react';
-import { api } from '../../data/mockDB';
+import { storageService } from '../../services/storageService';
 
 export function MasterDashboard({ onSelectClient, onLogout }) {
     const { t } = useLanguage();
     const [searchTerm, setSearchTerm] = useState('');
     const [filterAgency, setFilterAgency] = useState('all');
 
-    // Fetch data
-    const allClients = useMemo(() => api.getAllClients(), []);
-    const agencies = useMemo(() => api.getAgencies(), []);
+    const allClients = useMemo(() => {
+        const discoveredIds = typeof storageService.listClientIds === 'function'
+            ? storageService.listClientIds()
+            : [];
+        const baselineIds = ['C1', 'C2'];
+        const clientIds = Array.from(new Set([...baselineIds, ...discoveredIds])).filter(Boolean);
+
+        return clientIds.map((id) => {
+            const data = storageService.loadClientData(id);
+            const revenueValue = Number(data?.kpis?.revenue?.value || 0);
+            const revenueGoal = Number(data?.kpis?.revenue?.goal || 0);
+            const status = revenueGoal > 0 && revenueValue < revenueGoal * 0.8 ? 'attention' : 'on_track';
+
+            return {
+                id,
+                name: data?.clientName || `Client ${id}`,
+                agency: 'Local',
+                revenue: revenueValue,
+                status,
+                kpis: data?.kpis,
+            };
+        });
+    }, []);
+
+    const agencies = useMemo(() => [{ id: 'LOCAL', name: 'Local', clients: allClients.map(c => c.id) }], [allClients]);
 
     const filteredClients = allClients.filter(c => {
         const matchesSearch = c.name.toLowerCase().includes(searchTerm.toLowerCase());

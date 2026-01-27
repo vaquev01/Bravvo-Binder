@@ -910,7 +910,7 @@ function AppContent() {
         const data = storageService.loadClientData(client.id);
         setIsClientLoading(true);
         setClientData(data);
-        setCurrentUser(prev => ({ ...prev, client: client }));
+        setCurrentUser(prev => ({ ...(prev || {}), client: client }));
         setViewMode('client_workspace');
     };
 
