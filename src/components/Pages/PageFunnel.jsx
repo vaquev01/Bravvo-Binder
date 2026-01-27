@@ -2,6 +2,8 @@ import React from 'react';
 import { GitBranch, ArrowRight, Link as LinkIcon, Target, BarChart3, MousePointer, CheckCircle2 } from 'lucide-react';
 import { ChannelGrid } from '../ui/ChannelGrid';
 import { useVaultForm } from '../../hooks/useVaultForm';
+import { useVaults } from '../../contexts/VaultContext';
+import { useToast } from '../../contexts/ToastContext';
 
 const CTA_OPTIONS = [
     { value: 'whatsapp', label: '💬 Falar no WhatsApp' },
@@ -18,6 +20,9 @@ const CTA_OPTIONS = [
 export function PageFunnel({ formData: externalFormData, setFormData: externalSetFormData, onNext }) {
     // Use unified vault form hook
     const { formData: vaultFormData, updateField: vaultUpdateField, isSynced, saveAndAdvance } = useVaultForm('V3');
+
+    const { appData } = useVaults();
+    const { addToast } = useToast();
     
     const formData = vaultFormData || externalFormData || {};
     const updateField = (field, value) => {
@@ -30,6 +35,34 @@ export function PageFunnel({ formData: externalFormData, setFormData: externalSe
     };
     
     const [validationError, setValidationError] = React.useState(false);
+
+    const handleInspire = () => {
+        const allowInspire = Boolean(appData?.workspacePrefs?.autoInspire);
+        if (!allowInspire) {
+            addToast({
+                title: 'Auto-Inspirar desativado',
+                description: 'Ative em Workspace Tools para usar templates automaticamente.',
+                type: 'info'
+            });
+            return;
+        }
+
+        const next = {};
+        const currentChannels = Array.isArray(formData.channels) ? formData.channels : [];
+        if (currentChannels.length === 0) next.channels = ['instagram', 'whatsapp'];
+        if (!formData.primaryCTA) next.primaryCTA = 'whatsapp';
+        if (!formData.secondaryCTA) next.secondaryCTA = 'saibamais';
+        if (!formData.ctaText) next.ctaText = 'Falar no WhatsApp';
+        if (!formData.trafficType) next.trafficType = 'Misto';
+
+        Object.entries(next).forEach(([field, value]) => updateField(field, value));
+
+        if (Object.keys(next).length > 0) {
+            addToast({ title: 'Templates aplicados', description: 'Preenchi somente campos vazios.', type: 'success' });
+        } else {
+            addToast({ title: 'Nada a preencher', description: 'Todos os campos principais já estão preenchidos.', type: 'info' });
+        }
+    };
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -51,7 +84,12 @@ export function PageFunnel({ formData: externalFormData, setFormData: externalSe
                     <GitBranch size={24} />
                     <span className="text-mono-data uppercase">VAULT 3 • FUNNEL</span>
                 </div>
-                <h2 className="text-title text-2xl">Funil & Conversão</h2>
+                <div className="flex items-center justify-between gap-3">
+                    <h2 className="text-title text-2xl">Funil & Conversão</h2>
+                    <button type="button" onClick={handleInspire} className="btn-ghost !h-8 !px-3" title="Inspirar-me">
+                        🎲 Inspirar-me
+                    </button>
+                </div>
                 <p className="text-body max-w-xl">
                     Onde você está presente e como converte. Dados para o <strong>S3 (Funnel Vault)</strong>.
                 </p>

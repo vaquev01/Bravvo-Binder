@@ -3,6 +3,8 @@ import { Users, Shield, Sparkles, Calendar, UserCheck, Zap, Target, CheckCircle2
 import { StakeholderList } from '../ui/StakeholderList';
 import { CompetitorList } from '../ui/CompetitorList';
 import { useVaultForm } from '../../hooks/useVaultForm';
+import { useVaults } from '../../contexts/VaultContext';
+import { useToast } from '../../contexts/ToastContext';
 
 const POSTING_FREQUENCIES = [
     { value: 'diario', label: '📆 Diário (1 post/dia)', posts: 30 },
@@ -32,11 +34,43 @@ const TIME_SLOTS = [
 export function PageOps({ formData: externalFormData, setFormData: externalSetFormData, onComplete }) {
     // Use unified vault form hook
     const { formData: vaultFormData, updateField: vaultUpdateField, isSynced, saveAndAdvance } = useVaultForm('V4');
+
+    const { appData } = useVaults();
+    const { addToast } = useToast();
     
     const formData = vaultFormData || externalFormData || {};
     const updateField = vaultUpdateField || ((field, value) => externalSetFormData?.({ ...formData, [field]: value }));
     
     const [isProcessing, setIsProcessing] = useState(false);
+
+    const handleInspire = () => {
+        const allowInspire = Boolean(appData?.workspacePrefs?.autoInspire);
+        if (!allowInspire) {
+            addToast({
+                title: 'Auto-Inspirar desativado',
+                description: 'Ative em Workspace Tools para usar templates automaticamente.',
+                type: 'info'
+            });
+            return;
+        }
+
+        const next = {};
+
+        if (!formData.teamStructure) next.teamStructure = 'Enxuta';
+        if (!formData.slaHours) next.slaHours = 24;
+        if (!formData.postingFrequency) next.postingFrequency = '3x';
+        if (!Array.isArray(formData.bestDays) || formData.bestDays.length === 0) next.bestDays = ['ter', 'qui'];
+        if (!Array.isArray(formData.bestTimes) || formData.bestTimes.length === 0) next.bestTimes = ['almoco', 'noite'];
+        if (!formData.cycleDuration) next.cycleDuration = '30';
+
+        Object.entries(next).forEach(([field, value]) => updateField(field, value));
+
+        if (Object.keys(next).length > 0) {
+            addToast({ title: 'Templates aplicados', description: 'Preenchi somente campos vazios.', type: 'success' });
+        } else {
+            addToast({ title: 'Nada a preencher', description: 'Configurações já estão preenchidas.', type: 'info' });
+        }
+    };
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -80,7 +114,12 @@ export function PageOps({ formData: externalFormData, setFormData: externalSetFo
                     <Users size={24} />
                     <span className="text-mono-data uppercase">VAULT 4 • OPS</span>
                 </div>
-                <h2 className="text-title text-2xl">Operação & Governança</h2>
+                <div className="flex items-center justify-between gap-3">
+                    <h2 className="text-title text-2xl">Operação & Governança</h2>
+                    <button type="button" onClick={handleInspire} className="btn-ghost !h-8 !px-3" title="Inspirar-me">
+                        🎲 Inspirar-me
+                    </button>
+                </div>
                 <p className="text-body max-w-xl">
                     Quem faz o quê e quando. Configure o <strong>S4 (Ops Vault)</strong> para organizar a execução.
                 </p>

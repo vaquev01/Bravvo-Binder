@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 
 async function goToLogin(page) {
-    await page.goto('/');
+    await page.goto('./', { waitUntil: 'domcontentloaded' });
     await page.getByTestId('landing-login').click();
     await expect(page.locator('input[name="username"]')).toBeVisible();
 }

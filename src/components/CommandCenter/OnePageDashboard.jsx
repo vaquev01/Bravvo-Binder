@@ -52,6 +52,11 @@ function _InlineEdit({ value, onSave, type = 'text', prefix = '', suffix = '', c
     const inputRef = useRef(null);
 
     useEffect(() => {
+        if (editing) return;
+        setTempValue(value);
+    }, [value, editing]);
+
+    useEffect(() => {
         if (editing && inputRef.current) {
             inputRef.current.focus();
             inputRef.current.select();
@@ -64,7 +69,10 @@ function _InlineEdit({ value, onSave, type = 'text', prefix = '', suffix = '', c
     };
 
     const handleKeyDown = (e) => {
-        if (e.key === 'Enter') handleSave();
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            handleSave();
+        }
         if (e.key === 'Escape') {
             setTempValue(value);
             setEditing(false);
@@ -80,7 +88,11 @@ function _InlineEdit({ value, onSave, type = 'text', prefix = '', suffix = '', c
                     type={type}
                     value={tempValue}
                     onChange={(e) => setTempValue(e.target.value)}
-                    onBlur={handleSave}
+                    onClick={(e) => e.stopPropagation()}
+                    onBlur={(e) => {
+                        e.stopPropagation();
+                        handleSave();
+                    }}
                     onKeyDown={handleKeyDown}
                     className={`bg-black/50 border border-purple-500/50 rounded px-1 min-w-[60px] text-white focus:outline-none ${className}`}
                 />
@@ -91,11 +103,86 @@ function _InlineEdit({ value, onSave, type = 'text', prefix = '', suffix = '', c
 
     return (
         <span
-            onClick={() => !disabled && setEditing(true)}
+            onClick={(e) => {
+                e.stopPropagation();
+                if (!disabled) setEditing(true);
+            }}
             className={`${disabled ? 'cursor-default opacity-90' : 'cursor-pointer hover:bg-white/10'} px-1 rounded transition-colors group relative ${className}`}
             title={disabled ? "Habilite o Modo Governança para editar" : "Clique para editar"}
         >
             {prefix}{value}{suffix}
+        </span>
+    );
+}
+
+function InlineDateEdit({ value, displayValue, onSave, disabled = false, className = '' }) {
+    const [editing, setEditing] = useState(false);
+    const [tempValue, setTempValue] = useState(value || '');
+    const inputRef = useRef(null);
+
+    useEffect(() => {
+        if (editing && inputRef.current) {
+            inputRef.current.focus();
+            inputRef.current.select();
+        }
+    }, [editing]);
+
+    useEffect(() => {
+        if (editing) return;
+        setTempValue(value || '');
+    }, [value, editing]);
+
+    const commit = () => {
+        const next = String(tempValue || '');
+        if (!next) {
+            setEditing(false);
+            setTempValue(value || '');
+            return;
+        }
+        onSave?.(next);
+        setEditing(false);
+    };
+
+    const onKeyDown = (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            commit();
+        }
+        if (e.key === 'Escape') {
+            e.preventDefault();
+            setTempValue(value || '');
+            setEditing(false);
+        }
+    };
+
+    if (editing) {
+        return (
+            <input
+                ref={inputRef}
+                type="date"
+                value={tempValue}
+                onChange={(e) => setTempValue(e.target.value)}
+                onClick={(e) => e.stopPropagation()}
+                onBlur={(e) => {
+                    e.stopPropagation();
+                    commit();
+                }}
+                onKeyDown={onKeyDown}
+                disabled={disabled}
+                className={`bg-black/30 border border-white/10 rounded px-2 py-1 text-[11px] text-gray-200 focus:outline-none focus:border-purple-500/50 ${className}`}
+            />
+        );
+    }
+
+    return (
+        <span
+            onClick={(e) => {
+                e.stopPropagation();
+                if (!disabled) setEditing(true);
+            }}
+            className={`${disabled ? 'cursor-default' : 'cursor-pointer hover:bg-white/10'} rounded px-1 py-0.5 transition-colors ${className}`}
+        >
+            {displayValue}
         </span>
     );
 }
@@ -653,6 +740,8 @@ export function OnePageDashboard({
     const [roadmapStatusFilter, setRoadmapStatusFilter] = useState(null);
     const [showQuickAdd, setShowQuickAdd] = useState(false);
     const [editingItem, setEditingItem] = useState(null);
+    const [editingChannelItemId, setEditingChannelItemId] = useState(null);
+    const [channelDraft, setChannelDraft] = useState({ channelId: 'instagram', subchannelId: 'feed' });
     const [showHistory, setShowHistory] = useState(false);
     const [showImport, setShowImport] = useState(false);
     const [showWorkspaceTools, setShowWorkspaceTools] = useState(false);
@@ -677,6 +766,13 @@ export function OnePageDashboard({
         traffic: { value: 0, goal: 0 },
         sales: { value: 0, goal: 0 },
     });
+
+    const extraKpiCatalog = useMemo(() => ([
+        { id: 'cpm', label: 'CPM', prefix: 'R$ ', suffix: '' },
+        { id: 'cpc', label: 'CPC', prefix: 'R$ ', suffix: '' },
+        { id: 'cpl', label: 'CPL', prefix: 'R$ ', suffix: '' },
+        { id: 'ctr', label: 'CTR', prefix: '', suffix: '%' },
+    ]), []);
 
     // Update local state when appData changes (e.g. client switch)
     useEffect(() => {
@@ -783,6 +879,98 @@ export function OnePageDashboard({
                 ...(prev.measurementContract || {}),
                 kpis: prev.measurementContract?.kpis?.map(k => k.id === key ? { ...k, value: newVal } : k) || [],
                 auditLog: [logEntry, ...(prev.measurementContract?.auditLog || [])]
+            }
+        }));
+    };
+
+    const handleKpiGoalUpdate = (key, val) => {
+        if (!meetingState.active) {
+            addToast({ title: 'Modo Leitura', description: 'Ative a Governança para editar KPIs.', type: 'info' });
+            return;
+        }
+
+        const newGoal = parseFloat(val) || 0;
+        const oldGoal = kpis[key]?.goal;
+        const updatedKpis = {
+            ...kpis,
+            [key]: { ...(kpis[key] || {}), goal: newGoal }
+        };
+
+        setKpis(updatedKpis);
+
+        const logEntry = {
+            id: Date.now(),
+            ts: new Date().toISOString(),
+            actor: currentUser?.role ? `${currentUser.role} (${currentUser.client?.name || 'System'})` : 'Unknown',
+            action: 'UPDATE_KPI_GOAL',
+            target: key,
+            oldValue: oldGoal,
+            newValue: newGoal
+        };
+
+        setAppData(prev => ({
+            ...prev,
+            kpis: updatedKpis,
+            measurementContract: {
+                ...(prev.measurementContract || {}),
+                kpis: prev.measurementContract?.kpis?.map(k => k.id === key ? { ...k, target: newGoal } : k) || [],
+                auditLog: [logEntry, ...(prev.measurementContract?.auditLog || [])]
+            }
+        }));
+    };
+
+    const secondaryKpis = Array.isArray(appData?.measurementContract?.dashboardLayout?.secondaryKpis)
+        ? appData.measurementContract.dashboardLayout.secondaryKpis
+        : [];
+
+    const toggleSecondaryKpi = (kpiId) => {
+        const cfg = extraKpiCatalog.find(k => k.id === kpiId);
+        if (!cfg) return;
+
+        setAppData(prev => {
+            const prevLayout = prev?.measurementContract?.dashboardLayout || {};
+            const prevSecondary = Array.isArray(prevLayout.secondaryKpis) ? prevLayout.secondaryKpis : [];
+            const exists = prevSecondary.includes(kpiId);
+            const nextSecondary = exists
+                ? prevSecondary.filter(id => id !== kpiId)
+                : [...prevSecondary, kpiId];
+
+            const prevContractKpis = Array.isArray(prev?.measurementContract?.kpis) ? prev.measurementContract.kpis : [];
+            const hasDef = prevContractKpis.some(k => k?.id === kpiId);
+            const nextContractKpis = hasDef
+                ? prevContractKpis.map(k => (k.id === kpiId ? { ...k, active: !exists } : k))
+                : [...prevContractKpis, { id: kpiId, label: cfg.label, format: 'decimal', source: 'manual', target: 0, active: true }];
+
+            const prevKpis = prev?.kpis && typeof prev.kpis === 'object' ? prev.kpis : {};
+            const nextKpis = {
+                ...prevKpis,
+                [kpiId]: {
+                    ...(prevKpis?.[kpiId] || {}),
+                    value: Number(prevKpis?.[kpiId]?.value ?? 0),
+                    goal: Number(prevKpis?.[kpiId]?.goal ?? 0)
+                }
+            };
+
+            return {
+                ...prev,
+                kpis: nextKpis,
+                measurementContract: {
+                    ...(prev?.measurementContract || {}),
+                    dashboardLayout: {
+                        ...prevLayout,
+                        secondaryKpis: nextSecondary
+                    },
+                    kpis: nextContractKpis
+                }
+            };
+        });
+
+        setKpis(prev => ({
+            ...prev,
+            [kpiId]: {
+                ...(prev?.[kpiId] || {}),
+                value: Number(prev?.[kpiId]?.value ?? 0),
+                goal: Number(prev?.[kpiId]?.goal ?? 0)
             }
         }));
     };
@@ -1512,6 +1700,71 @@ export function OnePageDashboard({
                     disabled={!meetingState.active}
                 />
 
+                <div className="mb-6 bento-grid p-4">
+                    <div className="flex items-center justify-between gap-3 mb-3">
+                        <div className="text-label">KPIs adicionais (manual)</div>
+                        <div className="text-[10px] text-gray-600">Ative na lista e edite durante a Governança</div>
+                    </div>
+
+                    <div className="flex flex-wrap gap-2 mb-4">
+                        {extraKpiCatalog.map(k => {
+                            const checked = secondaryKpis.includes(k.id);
+                            return (
+                                <button
+                                    key={k.id}
+                                    type="button"
+                                    onClick={() => toggleSecondaryKpi(k.id)}
+                                    className={`text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded border ${checked ? 'bg-purple-500/10 text-purple-300 border-purple-500/30' : 'bg-white/5 text-gray-400 border-white/10 hover:border-white/20'}`}
+                                >
+                                    {k.label}
+                                </button>
+                            );
+                        })}
+                    </div>
+
+                    {secondaryKpis.length > 0 ? (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+                            {secondaryKpis.map(id => {
+                                const cfg = extraKpiCatalog.find(k => k.id === id);
+                                if (!cfg) return null;
+                                const value = kpis?.[id]?.value ?? 0;
+                                const goal = kpis?.[id]?.goal ?? 0;
+                                return (
+                                    <div key={id} className="bg-white/5 border border-white/10 rounded-lg p-3">
+                                        <div className="text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-2">{cfg.label}</div>
+                                        <div className="text-[11px] text-gray-600">Realizado</div>
+                                        <div className="mt-1">
+                                            <_InlineEdit
+                                                value={value}
+                                                type="number"
+                                                prefix={cfg.prefix}
+                                                suffix={cfg.suffix}
+                                                onSave={(v) => handleKpiUpdate(id, v)}
+                                                disabled={!meetingState.active}
+                                                className="text-metric font-mono"
+                                            />
+                                        </div>
+                                        <div className="mt-2 text-[11px] text-gray-600">Meta</div>
+                                        <div className="mt-1">
+                                            <_InlineEdit
+                                                value={goal}
+                                                type="number"
+                                                prefix={cfg.prefix}
+                                                suffix={cfg.suffix}
+                                                onSave={(v) => handleKpiGoalUpdate(id, v)}
+                                                disabled={!meetingState.active}
+                                                className="text-[13px] font-mono text-gray-200"
+                                            />
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    ) : (
+                        <div className="text-[11px] text-gray-600">Nenhum KPI adicional ativo.</div>
+                    )}
+                </div>
+
                 <PriorityActionsCard
                     items={appData?.dashboard?.D2 || []}
                     kpis={kpis}
@@ -1676,6 +1929,8 @@ export function OnePageDashboard({
                                     const noteValue = typeof noteDraft === 'string' ? noteDraft : (item.governanceNote || '');
                                     const previewText = item.microDescription || item.governanceNote || item.origin || String(item.caption || '').split('\n')[0];
 
+                                    const channelIsEditing = editingChannelItemId === item.id;
+
                                     return (
                                     <div
                                         key={item.id}
@@ -1683,7 +1938,14 @@ export function OnePageDashboard({
                                         className={`grid grid-cols-[100px_1fr_150px_120px_120px_120px] gap-4 px-4 py-3 border-b border-[var(--border-subtle)] hover:bg-[var(--bg-surface)] group transition-all duration-200 items-center hover:pl-5 ${highlightedRowId === item.id ? 'bg-purple-500/10 ring-1 ring-purple-500/30' : ''}`}
                                     >
                                         <div className="text-mono-data text-gray-400 group-hover:text-white transition-colors">
-                                            {formatHumanDate(item.date)}
+                                            <InlineDateEdit
+                                                value={item.date}
+                                                displayValue={formatHumanDate(item.date)}
+                                                onSave={(nextDate) => {
+                                                    if (!nextDate) return;
+                                                    handleSaveItem({ ...item, date: nextDate });
+                                                }}
+                                            />
                                         </div>
                                         <div
                                             className="min-w-0 pr-4"
@@ -1697,9 +1959,15 @@ export function OnePageDashboard({
                                             ].filter(Boolean).join(' | ')}
                                             onClick={() => setEditingItem(item)}
                                         >
-                                            <div className="text-sm font-medium text-white truncate group-hover:translate-x-1 transition-transform">
-                                                {item.initiative}
-                                            </div>
+                                            <_InlineEdit
+                                                value={item.initiative || ''}
+                                                onSave={(v) => {
+                                                    const next = String(v || '');
+                                                    if (!next.trim()) return;
+                                                    handleSaveItem({ ...item, initiative: next });
+                                                }}
+                                                className="text-sm font-medium text-white truncate group-hover:translate-x-1 transition-transform block"
+                                            />
                                             {!!previewText && (
                                                 <div className="text-[11px] text-gray-500 truncate mt-0.5 group-hover:hidden">
                                                     {previewText}
@@ -1734,9 +2002,83 @@ export function OnePageDashboard({
                                                 </div>
                                             )}
                                         </div>
-                                        <div className="flex items-center gap-2 text-xs text-gray-500 group-hover:text-gray-400 transition-colors">
-                                            <span>{formatIcons[item.format]?.icon || '🧩'}</span>
-                                            <span className="truncate">{item.channel}</span>
+                                        <div className="text-xs text-gray-500 group-hover:text-gray-400 transition-colors">
+                                            {channelIsEditing ? (
+                                                <div className="space-y-1" onClick={(e) => e.stopPropagation()}>
+                                                    <div className="grid grid-cols-2 gap-2">
+                                                        <select
+                                                            className="bg-black/30 border border-white/10 rounded px-2 py-1 text-[11px] text-gray-200 focus:outline-none focus:border-purple-500/50"
+                                                            value={channelDraft.channelId}
+                                                            onChange={(e) => {
+                                                                const nextChannelId = e.target.value;
+                                                                const nextSub = getDefaultSubchannelId(nextChannelId) || '';
+                                                                setChannelDraft({ channelId: nextChannelId, subchannelId: nextSub });
+                                                            }}
+                                                        >
+                                                            {listChannels().map(c => (
+                                                                <option key={c.id} value={c.id}>{c.label}</option>
+                                                            ))}
+                                                        </select>
+                                                        <select
+                                                            className="bg-black/30 border border-white/10 rounded px-2 py-1 text-[11px] text-gray-200 focus:outline-none focus:border-purple-500/50"
+                                                            value={channelDraft.subchannelId}
+                                                            onChange={(e) => setChannelDraft(prev => ({ ...prev, subchannelId: e.target.value }))}
+                                                        >
+                                                            {listSubchannels(channelDraft.channelId).map(sc => (
+                                                                <option key={sc.id} value={sc.id}>{sc.label}</option>
+                                                            ))}
+                                                        </select>
+                                                    </div>
+                                                    <div className="flex items-center gap-2">
+                                                        <button
+                                                            type="button"
+                                                            className="text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded border bg-white/5 text-gray-300 border-white/10 hover:border-white/20"
+                                                            onClick={() => setEditingChannelItemId(null)}
+                                                        >
+                                                            Cancelar
+                                                        </button>
+                                                        <button
+                                                            type="button"
+                                                            className="text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded border bg-purple-500/10 text-purple-300 border-purple-500/30 hover:border-purple-400/40"
+                                                            onClick={() => {
+                                                                const nextChannelId = channelDraft.channelId;
+                                                                const nextSub = channelDraft.subchannelId || getDefaultSubchannelId(nextChannelId) || '';
+                                                                const legacy = toLegacyChannelLabel(nextChannelId, nextSub);
+                                                                const format = getDefaultContentType(nextChannelId, nextSub);
+                                                                handleSaveItem({
+                                                                    ...item,
+                                                                    channelId: nextChannelId,
+                                                                    subchannelId: nextSub,
+                                                                    channel: legacy,
+                                                                    format
+                                                                });
+                                                                setEditingChannelItemId(null);
+                                                            }}
+                                                        >
+                                                            Salvar
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            ) : (
+                                                <div className="flex items-center gap-2">
+                                                    <span>{formatIcons[item.format]?.icon || '🧩'}</span>
+                                                    <button
+                                                        type="button"
+                                                        className="truncate text-left hover:text-white"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            const parsed = parseLegacyChannelLabel(item.channel || 'Instagram Feed');
+                                                            const channelId = item.channelId || parsed.channelId;
+                                                            const subchannelId = item.subchannelId || parsed.subchannelId || getDefaultSubchannelId(channelId) || '';
+                                                            setChannelDraft({ channelId, subchannelId });
+                                                            setEditingChannelItemId(item.id);
+                                                        }}
+                                                        title="Editar canal"
+                                                    >
+                                                        {item.channel}
+                                                    </button>
+                                                </div>
+                                            )}
                                         </div>
                                         <div>
                                             <StatusDropdown
@@ -1747,7 +2089,11 @@ export function OnePageDashboard({
                                             />
                                         </div>
                                         <div className="text-xs text-gray-600 truncate">
-                                            {item.responsible || t('os.table.unassigned')}
+                                            <_InlineEdit
+                                                value={item.responsible || ''}
+                                                onSave={(v) => handleSaveItem({ ...item, responsible: String(v || '') })}
+                                                className="text-xs text-gray-300"
+                                            />
                                         </div>
                                         <div className="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                             {/* WhatsApp Approval Button */}

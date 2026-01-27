@@ -8,9 +8,7 @@ async function goToLogin(page) {
     const errorReload = page.getByRole('button', { name: /Recarregar Página/i });
 
     for (let attempt = 0; attempt < 2; attempt += 1) {
-        await page.goto('/');
-        await page.waitForLoadState('domcontentloaded');
-        await page.waitForLoadState('networkidle', { timeout: 30000 }).catch(() => null);
+        await page.goto('./', { waitUntil: 'domcontentloaded' });
 
         if (await errorReload.count()) {
             await errorReload.click({ noWaitAfter: true });

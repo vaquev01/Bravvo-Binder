@@ -222,7 +222,17 @@ class StorageService {
         const snaps = this.getSnapshots(clientId);
         const entry = snaps.find(s => s?.ts === snapshotTs);
         if (!entry?.data) return null;
+        const current = this.loadClientData(clientId);
+        const currentAudit = ensureArray(current?.measurementContract?.auditLog);
         const normalized = this.normalizeClientData({ ...entry.data, id: clientId });
+        const restoredAudit = ensureArray(normalized?.measurementContract?.auditLog);
+        const mergedAudit = currentAudit.length
+            ? [...currentAudit, ...restoredAudit]
+            : restoredAudit;
+        normalized.measurementContract = {
+            ...(normalized?.measurementContract || {}),
+            auditLog: mergedAudit
+        };
         this.saveClientData(normalized);
         return normalized;
     }
@@ -257,11 +267,22 @@ class StorageService {
         if (checksum && checksum !== computed) {
             throw new Error('Checksum mismatch');
         }
+
+        const current = this.loadClientData(targetClientId);
+        const currentAudit = ensureArray(current?.measurementContract?.auditLog);
         const normalized = this.normalizeClientData({
             ...payload,
             id: targetClientId,
             clientName: typeof options.clientName === 'string' ? options.clientName : payload.clientName
         });
+
+        const importedAudit = ensureArray(normalized?.measurementContract?.auditLog);
+        normalized.measurementContract = {
+            ...(normalized?.measurementContract || {}),
+            auditLog: currentAudit.length
+                ? [...currentAudit, ...importedAudit]
+                : importedAudit
+        };
         this.saveClientData(normalized);
         return normalized;
     }
@@ -336,6 +357,9 @@ class StorageService {
         const s5Palette = ensureObject(s5.palette, {});
         const s5Rules = ensureObject(s5.rules, {});
         const s5BrandIdentity = ensureObject(s5.brandIdentity, {});
+
+        const contract = ensureObject(merged.measurementContract, {});
+        const dashboardLayout = ensureObject(contract.dashboardLayout, {});
 
         merged.vaults = {
             ...merged.vaults,
@@ -466,8 +490,14 @@ class StorageService {
         };
 
         merged.measurementContract = {
-            ...merged.measurementContract,
-            auditLog: ensureArray(merged.measurementContract?.auditLog)
+            ...contract,
+            dashboardLayout: {
+                ...dashboardLayout,
+                topKpis: ensureArray(dashboardLayout.topKpis),
+                secondaryKpis: ensureArray(dashboardLayout.secondaryKpis)
+            },
+            kpis: ensureArray(contract.kpis),
+            auditLog: ensureArray(contract.auditLog)
         };
 
         if (typeof merged.customThemeEnabled !== 'boolean') {

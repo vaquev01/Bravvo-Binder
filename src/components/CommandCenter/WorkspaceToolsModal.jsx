@@ -9,6 +9,7 @@ export function WorkspaceToolsModal({ open, onClose, clientId, appData, setAppDa
     const [importFile, setImportFile] = useState(null);
     const [importText, setImportText] = useState('');
     const [importError, setImportError] = useState('');
+    const [snapshots, setSnapshots] = useState([]);
 
     useEffect(() => {
         if (!open) return;
@@ -24,10 +25,18 @@ export function WorkspaceToolsModal({ open, onClose, clientId, appData, setAppDa
         return Array.isArray(appData?.measurementContract?.auditLog) ? appData.measurementContract.auditLog : [];
     }, [appData?.measurementContract?.auditLog]);
 
-    const snapshots = useMemo(() => {
-        if (!clientId) return [];
-        return storageService.getSnapshots(clientId);
-    }, [clientId]);
+    useEffect(() => {
+        if (!open || !clientId) {
+            setSnapshots([]);
+            return;
+        }
+
+        const refreshId = window.setTimeout(() => {
+            setSnapshots(storageService.getSnapshots(clientId));
+        }, 0);
+
+        return () => window.clearTimeout(refreshId);
+    }, [open, clientId, auditLog.length]);
 
     const actorLabel = useMemo(() => {
         return currentUser?.role ? `${currentUser.role} (${currentUser.client?.name || 'System'})` : 'System';

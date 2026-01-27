@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Lightbulb, Link2, FileText, Plus, Trash2, ExternalLink, Sparkles, CheckCircle2 } from 'lucide-react';
 import { useVaultForm } from '../../hooks/useVaultForm';
+import { useVaults } from '../../contexts/VaultContext';
+import { useToast } from '../../contexts/ToastContext';
 
 const IDEA_TAGS = [
     'Conteúdo', 'Promoção', 'Lançamento', 'Sazonal', 'Tendência', 'Reels', 'Stories', 'Carrossel', 'Collab'
@@ -18,6 +20,9 @@ const REFERENCE_TYPES = [
 export function PageIdeas({ formData: externalFormData, setFormData: externalSetFormData, onComplete }) {
     // Use unified vault form hook
     const { formData: vaultFormData, updateField: vaultUpdateField, isSynced, saveAndAdvance } = useVaultForm('V5');
+
+    const { appData } = useVaults();
+    const { addToast } = useToast();
     
     const formData = vaultFormData || externalFormData || {};
     const updateField = vaultUpdateField || ((field, value) => externalSetFormData?.({ ...formData, [field]: value }));
@@ -26,6 +31,28 @@ export function PageIdeas({ formData: externalFormData, setFormData: externalSet
     const [showRefForm, setShowRefForm] = useState(false);
     const [newIdea, setNewIdea] = useState({ title: '', description: '', url: '', tags: [] });
     const [newRef, setNewRef] = useState({ title: '', url: '', type: 'post', notes: '' });
+
+    const handleInspire = () => {
+        const allowInspire = Boolean(appData?.workspacePrefs?.autoInspire);
+        if (!allowInspire) {
+            addToast({
+                title: 'Auto-Inspirar desativado',
+                description: 'Ative em Workspace Tools para usar templates automaticamente.',
+                type: 'info'
+            });
+            return;
+        }
+
+        if (!formData.notepad) {
+            updateField('notepad',
+                'OBJETIVO DA SEMANA:\n- \n\nIDEIAS (rascunho):\n- \n\nREFERÊNCIAS / LINKS:\n- \n\nOBSERVAÇÕES:\n- '
+            );
+            addToast({ title: 'Template aplicado', description: 'Estrutura inserida no Notepad.', type: 'success' });
+            return;
+        }
+
+        addToast({ title: 'Nada a preencher', description: 'O Notepad já está preenchido.', type: 'info' });
+    };
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -83,7 +110,12 @@ export function PageIdeas({ formData: externalFormData, setFormData: externalSet
                         <Lightbulb size={20} className="text-warning" />
                     </div>
                     <div>
-                        <h2 className="text-title text-2xl">V5 • Ideas Vault</h2>
+                        <div className="flex items-center justify-between gap-3">
+                            <h2 className="text-title text-2xl">V5 • Ideas Vault</h2>
+                            <button type="button" onClick={handleInspire} className="btn-ghost !h-8 !px-3" title="Inspirar-me">
+                                🎲 Inspirar-me
+                            </button>
+                        </div>
                         <p className="text-body">Banco de ideias, referências e anotações rápidas</p>
                     </div>
                 </div>
