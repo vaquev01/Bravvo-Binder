@@ -146,6 +146,10 @@ test('workspace tools: preferences + backup + snapshots + audit', async ({ page 
     await page.getByTestId('os-open-workspace-tools').click();
     await expect(page.getByTestId('workspace-tools-modal')).toBeVisible();
 
+    // Default tab is now 'Marca', so we need to switch to 'Preferências' (tools) for auto-inspire
+    await expect(page.getByTestId('workspace-tab-brand')).toBeVisible();
+    await page.getByTestId('workspace-tab-tools').click();
+
     const autoInspireCheckbox = page.getByTestId('workspace-auto-inspire').locator('input[type="checkbox"]');
     if (await autoInspireCheckbox.isChecked()) {
         await autoInspireCheckbox.click({ force: true });
@@ -310,6 +314,8 @@ test('workspace tools: preferences + backup + snapshots + audit', async ({ page 
 
     await page.getByTestId('os-open-workspace-tools').click();
     await expect(page.getByTestId('workspace-tools-modal')).toBeVisible();
+
+    await page.getByTestId('workspace-tab-tools').click();
 
     const restoredAutoInspire = await autoInspireCheckbox.isChecked();
     expect(restoredAutoInspire).toBe(Boolean(restoreTarget.expected.autoInspire));

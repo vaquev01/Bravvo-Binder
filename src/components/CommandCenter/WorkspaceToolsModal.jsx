@@ -1,11 +1,11 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Download, Settings, X } from 'lucide-react';
+import { Download, Settings, X, Palette } from 'lucide-react';
 import { useToast } from '../../contexts/ToastContext';
 import { storageService } from '../../services/storageService';
 
-export function WorkspaceToolsModal({ open, onClose, clientId, appData, setAppData, currentUser }) {
+export function WorkspaceToolsModal({ open, onClose, clientId, appData, setAppData, currentUser, initialTab = 'brand' }) {
     const { addToast } = useToast();
-    const [tab, setTab] = useState('tools');
+    const [tab, setTab] = useState(initialTab);
     const [importFile, setImportFile] = useState(null);
     const [importText, setImportText] = useState('');
     const [importError, setImportError] = useState('');
@@ -13,13 +13,14 @@ export function WorkspaceToolsModal({ open, onClose, clientId, appData, setAppDa
 
     useEffect(() => {
         if (!open) return;
-        setTab('tools');
+        setTab(initialTab);
         setImportFile(null);
         setImportText('');
         setImportError('');
-    }, [open]);
+    }, [open, initialTab]);
 
     const autoInspire = Boolean(appData?.workspacePrefs?.autoInspire);
+    const themePrefs = appData?.workspacePrefs?.theme || { enabled: false, primaryColor: '#FF5733', accentColor: '#FF5733', fontFamily: 'Inter' };
 
     const auditLog = useMemo(() => {
         return Array.isArray(appData?.measurementContract?.auditLog) ? appData.measurementContract.auditLog : [];
@@ -50,6 +51,26 @@ export function WorkspaceToolsModal({ open, onClose, clientId, appData, setAppDa
                 auditLog: [entry, ...((prev?.measurementContract?.auditLog) || [])]
             }
         }));
+    };
+
+    const handleThemeChange = (key, value) => {
+        setAppData(prev => {
+            const currentTheme = prev?.workspacePrefs?.theme || { enabled: false, primaryColor: '#FF5733', accentColor: '#FF5733', fontFamily: 'Inter' };
+            const newTheme = { ...currentTheme, [key]: value };
+            
+            // Auto-enable if changing properties
+            if (key !== 'enabled' && !newTheme.enabled) {
+                newTheme.enabled = true;
+            }
+
+            return {
+                ...prev,
+                workspacePrefs: {
+                    ...(prev?.workspacePrefs || {}),
+                    theme: newTheme
+                }
+            };
+        });
     };
 
     const handleToggleAutoInspire = () => {
@@ -219,7 +240,7 @@ export function WorkspaceToolsModal({ open, onClose, clientId, appData, setAppDa
                 <div className="flex justify-between items-center p-6 border-b border-white/10 bg-[#0A0A0A]">
                     <div>
                         <h3 className="text-lg font-bold text-white tracking-tight flex items-center gap-2">
-                            <Settings size={20} className="text-blue-400" />
+                            <Settings size={20} className="text-purple-400" />
                             Workspace Tools
                         </h3>
                         <p className="text-xs text-gray-500 mt-1">Cliente: <span className="text-white font-mono">{clientId || 'N/A'}</span></p>
@@ -231,26 +252,136 @@ export function WorkspaceToolsModal({ open, onClose, clientId, appData, setAppDa
 
                 <div className="flex border-b border-white/5 bg-[#050505]">
                     <button
+                        onClick={() => setTab('brand')}
+                        data-testid="workspace-tab-brand"
+                        className={`flex-1 py-3 text-xs font-bold uppercase tracking-wider transition-colors ${tab === 'brand' ? 'bg-[#111] text-white border-b-2 border-purple-500' : 'text-gray-500 hover:text-gray-300'}`}
+                    >
+                        Marca
+                    </button>
+                    <button
                         onClick={() => setTab('tools')}
-                        className={`flex-1 py-3 text-xs font-bold uppercase tracking-wider transition-colors ${tab === 'tools' ? 'bg-[#111] text-white border-b-2 border-blue-500' : 'text-gray-500 hover:text-gray-300'}`}
+                        data-testid="workspace-tab-tools"
+                        className={`flex-1 py-3 text-xs font-bold uppercase tracking-wider transition-colors ${tab === 'tools' ? 'bg-[#111] text-white border-b-2 border-purple-500' : 'text-gray-500 hover:text-gray-300'}`}
                     >
                         Preferências
                     </button>
                     <button
                         onClick={() => setTab('backup')}
-                        className={`flex-1 py-3 text-xs font-bold uppercase tracking-wider transition-colors ${tab === 'backup' ? 'bg-[#111] text-white border-b-2 border-blue-500' : 'text-gray-500 hover:text-gray-300'}`}
+                        data-testid="workspace-tab-backup"
+                        className={`flex-1 py-3 text-xs font-bold uppercase tracking-wider transition-colors ${tab === 'backup' ? 'bg-[#111] text-white border-b-2 border-purple-500' : 'text-gray-500 hover:text-gray-300'}`}
                     >
                         Backup
                     </button>
                     <button
                         onClick={() => setTab('audit')}
-                        className={`flex-1 py-3 text-xs font-bold uppercase tracking-wider transition-colors ${tab === 'audit' ? 'bg-[#111] text-white border-b-2 border-blue-500' : 'text-gray-500 hover:text-gray-300'}`}
+                        data-testid="workspace-tab-audit"
+                        className={`flex-1 py-3 text-xs font-bold uppercase tracking-wider transition-colors ${tab === 'audit' ? 'bg-[#111] text-white border-b-2 border-purple-500' : 'text-gray-500 hover:text-gray-300'}`}
                     >
                         Auditoria
                     </button>
                 </div>
 
                 <div className="flex-1 overflow-y-auto p-6 bg-[#0A0A0A]">
+                    {tab === 'brand' && (
+                        <div className="space-y-6">
+                            <div className="bg-[#111] p-4 rounded-lg border border-white/10">
+                                <div className="flex items-center justify-between gap-4 mb-4">
+                                    <div>
+                                        <div className="text-sm font-bold text-white flex items-center gap-2">
+                                            <Palette size={16} className="text-purple-400" />
+                                            Personalização da Marca
+                                        </div>
+                                        <div className="text-xs text-gray-500 mt-1">Defina as cores e tipografia do sistema para alinhar com sua identidade visual.</div>
+                                    </div>
+                                    <label className="flex items-center gap-2 select-none">
+                                        <input
+                                            type="checkbox"
+                                            checked={themePrefs.enabled}
+                                            onChange={(e) => handleThemeChange('enabled', e.target.checked)}
+                                            className="h-4 w-4"
+                                        />
+                                        <span className="text-xs font-bold uppercase tracking-wider text-gray-300">{themePrefs.enabled ? 'Ativo' : 'Inativo'}</span>
+                                    </label>
+                                </div>
+
+                                <div className={`space-y-4 transition-opacity ${themePrefs.enabled ? 'opacity-100' : 'opacity-50 pointer-events-none'}`}>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="block text-xs font-bold text-gray-400 uppercase mb-2">Cor Primária (Textos/Métricas)</label>
+                                            <div className="flex items-center gap-3">
+                                                <input
+                                                    type="color"
+                                                    value={themePrefs.primaryColor}
+                                                    onChange={(e) => handleThemeChange('primaryColor', e.target.value)}
+                                                    className="w-10 h-10 rounded border border-white/10 bg-black cursor-pointer"
+                                                />
+                                                <input
+                                                    type="text"
+                                                    value={themePrefs.primaryColor}
+                                                    onChange={(e) => handleThemeChange('primaryColor', e.target.value)}
+                                                    className="bg-black border border-white/10 rounded px-3 py-2 text-xs text-white font-mono w-24 focus:border-purple-500 focus:outline-none"
+                                                />
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <label className="block text-xs font-bold text-gray-400 uppercase mb-2">Cor de Destaque (Botões/Links)</label>
+                                            <div className="flex items-center gap-3">
+                                                <input
+                                                    type="color"
+                                                    value={themePrefs.accentColor}
+                                                    onChange={(e) => handleThemeChange('accentColor', e.target.value)}
+                                                    className="w-10 h-10 rounded border border-white/10 bg-black cursor-pointer"
+                                                />
+                                                <input
+                                                    type="text"
+                                                    value={themePrefs.accentColor}
+                                                    onChange={(e) => handleThemeChange('accentColor', e.target.value)}
+                                                    className="bg-black border border-white/10 rounded px-3 py-2 text-xs text-white font-mono w-24 focus:border-purple-500 focus:outline-none"
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-xs font-bold text-gray-400 uppercase mb-2">Tipografia Principal</label>
+                                        <select
+                                            value={themePrefs.fontFamily}
+                                            onChange={(e) => handleThemeChange('fontFamily', e.target.value)}
+                                            className="w-full bg-black border border-white/10 rounded px-3 py-2 text-xs text-white focus:border-purple-500 focus:outline-none"
+                                        >
+                                            <option value="Inter">Inter (Padrão - Moderno)</option>
+                                            <option value="Roboto">Roboto (Google - Neutro)</option>
+                                            <option value="Open Sans">Open Sans (Legível)</option>
+                                            <option value="Lato">Lato (Elegante)</option>
+                                            <option value="Montserrat">Montserrat (Geométrico)</option>
+                                            <option value="Playfair Display">Playfair Display (Serif - Clássico)</option>
+                                            <option value="Courier Prime">Courier Prime (Monospace - Técnico)</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div className="pt-2 border-t border-white/5">
+                                        <div className="flex items-center justify-between text-xs text-gray-500">
+                                            <span>Visualização em tempo real</span>
+                                            <button 
+                                                onClick={() => setAppData(prev => ({
+                                                    ...prev,
+                                                    workspacePrefs: {
+                                                        ...(prev?.workspacePrefs || {}),
+                                                        theme: { enabled: false, primaryColor: '#FF5733', accentColor: '#FF5733', fontFamily: 'Inter' }
+                                                    }
+                                                }))}
+                                                className="text-red-400 hover:text-red-300 transition-colors"
+                                            >
+                                                Resetar Padrões
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
                     {tab === 'tools' && (
                         <div className="space-y-6">
                             <div className="bg-[#111] p-4 rounded-lg border border-white/10">
@@ -312,7 +443,7 @@ export function WorkspaceToolsModal({ open, onClose, clientId, appData, setAppDa
                                     </div>
                                     <div>
                                         <textarea
-                                            className="w-full bg-black border border-white/10 rounded px-3 py-2 text-white font-mono text-[11px] focus:border-blue-500 focus:outline-none transition-colors min-h-[140px]"
+                                            className="w-full bg-black border border-white/10 rounded px-3 py-2 text-white font-mono text-[11px] focus:border-purple-500 focus:outline-none transition-colors min-h-[140px]"
                                             placeholder="Preview do arquivo..."
                                             value={importText}
                                             readOnly

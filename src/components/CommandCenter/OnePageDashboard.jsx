@@ -31,6 +31,7 @@ import { KPIGrid } from './KPICard';
 import { PriorityActionsCard } from './PriorityActionsCard';
 import { VaultCards } from './VaultCards';
 import { WorkspaceToolsModal } from './WorkspaceToolsModal';
+import { ThemeManager } from '../ThemeManager';
 import { useToast } from '../../contexts/ToastContext';
 import { getFeatureFlag } from '../../utils/featureFlags';
 import { useUndo } from '../../hooks/useUndo';
@@ -745,6 +746,7 @@ export function OnePageDashboard({
     const [showHistory, setShowHistory] = useState(false);
     const [showImport, setShowImport] = useState(false);
     const [showWorkspaceTools, setShowWorkspaceTools] = useState(false);
+    const [workspaceToolsTab, setWorkspaceToolsTab] = useState('brand');
     const [showPlaybooks, setShowPlaybooks] = useState(false);
     const [showCreativeStudio, setShowCreativeStudio] = useState(false);
     const [creativeItem, setCreativeItem] = useState(null);
@@ -1586,7 +1588,10 @@ export function OnePageDashboard({
                         <Upload size={14} />
                     </button>
                     <button
-                        onClick={() => setShowWorkspaceTools(true)}
+                        onClick={() => {
+                            setWorkspaceToolsTab('tools');
+                            setShowWorkspaceTools(true);
+                        }}
                         className="btn-ghost !h-7 !px-2"
                         title="Workspace Tools"
                         data-testid="os-open-workspace-tools"
@@ -1603,7 +1608,8 @@ export function OnePageDashboard({
                     </button>
                     <button
                         onClick={() => {
-                            setAppData(prev => ({ ...prev, customThemeEnabled: !prev?.customThemeEnabled }));
+                            setWorkspaceToolsTab('brand');
+                            setShowWorkspaceTools(true);
                         }}
                         className="btn-ghost !h-7 !px-2"
                         title="Personalizar (usar paleta da marca)"
@@ -1615,7 +1621,7 @@ export function OnePageDashboard({
                         <button
                             onClick={() => setShowPlaybooks(true)}
                             data-testid="os-open-playbooks"
-                            className="btn-ghost !h-7 !px-3 !border-blue-500/30 text-blue-400 hover:text-blue-300"
+                            className="btn-ghost !h-7 !px-3 !border-purple-500/30 text-purple-400 hover:text-purple-300"
                             title="Gerar Plano (Playbooks)"
                         >
                             <Book size={12} className="md:mr-1" /> <span className="hidden md:inline">Gerar Plano</span>
@@ -1868,8 +1874,9 @@ export function OnePageDashboard({
                 )}
 
                 {/* 2. TACTICAL GRID (The "Linear" List) */}
-                <div className="bento-grid mb-6 overflow-hidden">
-                    <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--border-subtle)] bg-[var(--bg-surface)]">
+                <div className="flex-1 flex flex-col relative z-10 overflow-hidden">
+                <ThemeManager appData={appData} />
+                <header className="h-16 border-b border-white/5 bg-black/40 backdrop-blur-md flex items-center justify-between px-6 shrink-0 relative z-20">
                         <div className="flex items-center gap-2">
                             <CalendarIcon size={14} className="text-gray-500" />
                             <span className="text-[11px] font-bold text-gray-300 uppercase tracking-widest">{t('os.roadmap.title')}</span>
@@ -1882,7 +1889,7 @@ export function OnePageDashboard({
                                 <span className="text-xs">⌘</span>K
                             </kbd>
                         </div>
-                    </div>
+                    </header>
 
                     <div className="px-4 py-2 border-b border-[var(--border-subtle)] bg-[#080808]">
                         <div className="flex flex-wrap items-center gap-2">
@@ -1935,6 +1942,7 @@ export function OnePageDashboard({
                                     <div
                                         key={item.id}
                                         data-testid={`d2-row-${item.id}`}
+                                        data-highlighted={highlightedRowId === item.id ? "true" : "false"}
                                         className={`grid grid-cols-[100px_1fr_150px_120px_120px_120px] gap-4 px-4 py-3 border-b border-[var(--border-subtle)] hover:bg-[var(--bg-surface)] group transition-all duration-200 items-center hover:pl-5 ${highlightedRowId === item.id ? 'bg-purple-500/10 ring-1 ring-purple-500/30' : ''}`}
                                     >
                                         <div className="text-mono-data text-gray-400 group-hover:text-white transition-colors">
@@ -2216,6 +2224,7 @@ export function OnePageDashboard({
                     appData={appData}
                     setAppData={setAppData}
                     currentUser={currentUser}
+                    initialTab={workspaceToolsTab}
                 />
                 <PlaybookModal open={showPlaybooks} onClose={() => setShowPlaybooks(false)} onApply={handleApplyPlaybook} />
                 <CreativeStudioModal
