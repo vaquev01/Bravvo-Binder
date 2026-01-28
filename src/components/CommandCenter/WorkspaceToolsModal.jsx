@@ -39,6 +39,8 @@ export function WorkspaceToolsModal({ open, onClose, clientId, appData, setAppDa
         return () => window.clearTimeout(refreshId);
     }, [open, clientId, auditLog.length]);
 
+    // AUTO-SYNC REMOVED: User prefers manual control via button
+
     const actorLabel = useMemo(() => {
         return currentUser?.role ? `${currentUser.role} (${currentUser.client?.name || 'System'})` : 'System';
     }, [currentUser]);
@@ -304,48 +306,13 @@ export function WorkspaceToolsModal({ open, onClose, clientId, appData, setAppDa
                                     </label>
                                 </div>
 
-                                <div className="mb-4 p-3 bg-purple-500/10 border border-purple-500/20 rounded-lg flex items-center justify-between">
-                                    <div className="text-xs text-purple-200">
-                                        <strong>Modo Caraca Bar / Brand DNA:</strong><br />
-                                        Quer replicar a identidade definida no Vault 1?
+                                {/* Auto-Sync Status Indicator */}
+                                {themePrefs.enabled && (
+                                    <div className="mb-4 text-[10px] text-green-400 flex items-center gap-2 animate-fadeIn bg-green-500/10 px-3 py-2 rounded border border-green-500/20">
+                                        <div className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse"></div>
+                                        Sincronizado automaticamente com Vault 1 (Marca)
                                     </div>
-                                    <button
-                                        onClick={() => {
-                                            const s1 = appData?.vaults?.S1?.fields || {};
-                                            const s5 = appData?.vaults?.S5?.palette || {};
-
-                                            // Priority: S5 Palette (Inspire Me) > S1 Fields > Defaults
-                                            const primary = s5.primary || s1.primaryColor || '#FF5733';
-                                            const accent = s5.secondary || s1.secondaryColor || '#FF5733';
-
-                                            // Typography mapping
-                                            let font = 'Inter';
-                                            const brandFont = s1.typographyPrimary || '';
-                                            if (brandFont.includes('Serif')) font = 'Playfair Display';
-                                            if (brandFont.includes('Mono')) font = 'Courier Prime';
-                                            if (brandFont.includes('Sans')) font = 'Open Sans';
-                                            if (brandFont.includes('Modern')) font = 'Montserrat';
-
-                                            setAppData(prev => ({
-                                                ...prev,
-                                                workspacePrefs: {
-                                                    ...(prev?.workspacePrefs || {}),
-                                                    theme: {
-                                                        enabled: true,
-                                                        primaryColor: primary,
-                                                        accentColor: accent,
-                                                        fontFamily: font
-                                                    }
-                                                }
-                                            }));
-
-                                            addToast({ title: 'Identidade Aplicada', description: 'Cores e fontes replicadas do Vault de Marca.', type: 'success' });
-                                        }}
-                                        className="px-3 py-1.5 bg-purple-500 hover:bg-purple-600 text-white rounded text-[10px] font-bold uppercase tracking-wider transition-colors"
-                                    >
-                                        Puxar do Vault
-                                    </button>
-                                </div>
+                                )}
 
                                 <div className={`space-y-4 transition-opacity ${themePrefs.enabled ? 'opacity-100' : 'opacity-50 pointer-events-none'}`}>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
