@@ -19,7 +19,7 @@ async function openClientWorkspaceFromAgency(page, clientId = 'C1') {
     await expect(page.getByTestId('os-vault-card-V1')).toBeVisible();
 }
 
-test('flags: drawers + insights actions + undo', async ({ page }) => {
+test('flags: drawers + insights actions + undo', async ({ page, isMobile }) => {
     await page.addInitScript(() => {
         localStorage.clear();
         sessionStorage.clear();
@@ -53,7 +53,8 @@ test('flags: drawers + insights actions + undo', async ({ page }) => {
     const quickInitiative = `E2E Roadmap Flags ${Date.now()}`;
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
-    const yesterdayStr = yesterday.toISOString().split('T')[0];
+    // Use local date YYYY-MM-DD to match the input expectation and browser timezone
+    const yesterdayStr = yesterday.toLocaleDateString('en-CA');
 
     await page.getByTestId('os-quick-add').click();
     await expect(page.getByTestId('quickadd-drawer')).toBeVisible();
@@ -66,10 +67,19 @@ test('flags: drawers + insights actions + undo', async ({ page }) => {
     await expect(page.getByTestId('quickadd-drawer')).toHaveCount(0);
 
     // 4) Insight action triggers focus/scroll + row highlight
-    // (Flaky in E2E: manually ensure we are in Month view to see the item)
-    const monthButton = page.getByRole('button', { name: /mês|month/i });
-    await monthButton.click();
-    await expect(monthButton).toHaveClass(/bg-white/);
+    // This action (e.g., "Ver atrasados") usually switches the date filter to 'month', making yesterday's item visible.
+    const insightAction = page.getByRole('button', { name: /Ver atrasados|Ver produção|Gerar arte|Iniciar produção|Ver entregas/ }).first();
+    await insightAction.scrollIntoViewIfNeeded();
+    await expect(insightAction).toBeVisible();
+    await insightAction.click({ force: true });
+    await page.waitForTimeout(500); // Allow view transition
+
+    // On desktop, we can visually confirm the filter switched. On mobile, the buttons are hidden.
+    if (!isMobile) {
+        const monthButton = page.getByRole('button', { name: /mês|month/i });
+        // It might already be clicked by the insight action
+        await expect(monthButton).toHaveClass(/bg-white/);
+    }
 
     // Verify the item is now visible
     const createdRow = page.locator('[data-testid^="d2-row-"]', { hasText: quickInitiative }).first();
