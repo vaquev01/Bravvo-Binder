@@ -1,8 +1,9 @@
 import React from 'react';
+import { CARACA_BAR_DATA } from '../../services/demoData';
 import { ShoppingBag, ArrowRight, TrendingUp, Target, Zap, CheckCircle2 } from 'lucide-react';
 import { ProductList } from '../ui/ProductList';
 import { useVaultForm } from '../../hooks/useVaultForm';
-import { useVaults } from '../../contexts/VaultContext';
+// import { useVaults } from '../../contexts/VaultContext';
 import { useToast } from '../../contexts/ToastContext';
 
 const UPSELL_STRATEGIES = [
@@ -18,9 +19,9 @@ export function PageOffer({ formData: externalFormData, setFormData: externalSet
     // Use unified vault form hook
     const { formData: vaultFormData, updateField: vaultUpdateField, isSynced, saveAndAdvance } = useVaultForm('V2');
 
-    const { appData } = useVaults();
+    // const { appData } = useVaults();
     const { addToast } = useToast();
-    
+
     const formData = vaultFormData || externalFormData || {};
     const updateField = vaultUpdateField || ((field, value) => externalSetFormData?.({ ...formData, [field]: value }));
 
@@ -55,51 +56,21 @@ export function PageOffer({ formData: externalFormData, setFormData: externalSet
                     <button
                         type="button"
                         onClick={() => {
-                            const allowInspire = Boolean(appData?.workspacePrefs?.autoInspire);
-                            if (!allowInspire) {
-                                addToast({
-                                    title: 'Auto-Inspirar desativado',
-                                    description: 'Ative em Workspace Tools para usar templates automaticamente.',
-                                    type: 'info'
-                                });
-                                return;
+                            // Demo Caraca Bar
+                            const demo = CARACA_BAR_DATA.S2;
+
+                            if (updateField) {
+                                updateField('products', demo.products);
+                                updateField('targetTicket', demo.ticketAverage);
+                                updateField('currentTicket', 45.00); // Exemplo baseline
+                                updateField('currentRevenue', 65000); // Exemplo baseline
                             }
 
-                            // Smart Fill Logic for Products
-                            const niche = formData.niche ? formData.niche.toLowerCase() : 'geral';
-                            let suggestedProducts = [];
-
-                            if (niche.includes('gastronomia') || niche.includes('restaurante') || niche.includes('bar')) {
-                                suggestedProducts = [
-                                    { id: `P-${Date.now()}-1`, name: "Prato Principal da Casa", role: "Hero", margin: "Medium", price: 49.90 },
-                                    { id: `P-${Date.now()}-2`, name: "Drink Especial", role: "Upsell", margin: "High", price: 29.90 },
-                                    { id: `P-${Date.now()}-3`, name: "Sobremesa Assinatura", role: "Cross-sell", margin: "High", price: 18.90 }
-                                ];
-                            } else if (niche.includes('moda') || niche.includes('roupa')) {
-                                suggestedProducts = [
-                                    { id: `P-${Date.now()}-1`, name: "Peça da Coleção Nova", role: "Hero", margin: "Medium", price: 199.90 },
-                                    { id: `P-${Date.now()}-2`, name: "Acessório Complementar", role: "Upsell", margin: "High", price: 59.90 },
-                                    { id: `P-${Date.now()}-3`, name: "Kit Básico", role: "Cross-sell", margin: "Medium", price: 149.90 }
-                                ];
-                            } else if (niche.includes('serviço') || niche.includes('consultoria')) {
-                                suggestedProducts = [
-                                    { id: `P-${Date.now()}-1`, name: "Consultoria Premium", role: "Hero", margin: "High", price: 1500.00 },
-                                    { id: `P-${Date.now()}-2`, name: "Workshop Online", role: "Cross-sell", margin: "High", price: 297.00 },
-                                    { id: `P-${Date.now()}-3`, name: "E-book Exclusivo", role: "Upsell", margin: "High", price: 47.00 }
-                                ];
-                            } else {
-                                // Default Generic
-                                suggestedProducts = [
-                                    { id: `P-${Date.now()}-1`, name: "Produto Principal", role: "Hero", margin: "Medium", price: 100.00 },
-                                    { id: `P-${Date.now()}-2`, name: "Produto Complementar", role: "Upsell", margin: "High", price: 50.00 },
-                                    { id: `P-${Date.now()}-3`, name: "Serviço Adicional", role: "Cross-sell", margin: "High", price: 150.00 }
-                                ];
-                            }
-
-                            // Only add if list is empty or has only 1 empty item
-                            if (!formData.products || formData.products.length === 0 || (formData.products.length === 1 && !formData.products[0].name)) {
-                                updateField('products', suggestedProducts);
-                            }
+                            addToast({
+                                title: 'Modo Caraca Bar Ativado! 🍢',
+                                description: 'Produtos e preços de exemplo carregados.',
+                                type: 'success'
+                            });
                         }}
                         className="btn-ghost btn-sm ml-auto"
                     >
@@ -322,6 +293,6 @@ export function PageOffer({ formData: externalFormData, setFormData: externalSet
                     Salvar e Avançar para V3 <ArrowRight size={20} />
                 </button>
             </div>
-        </form>
+        </form >
     );
 }

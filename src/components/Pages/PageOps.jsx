@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
+import { CARACA_BAR_DATA } from '../../services/demoData';
 import { Users, Shield, Sparkles, Calendar, UserCheck, Zap, Target, CheckCircle2 } from 'lucide-react';
 import { StakeholderList } from '../ui/StakeholderList';
 import { CompetitorList } from '../ui/CompetitorList';
 import { useVaultForm } from '../../hooks/useVaultForm';
-import { useVaults } from '../../contexts/VaultContext';
+// import { useVaults } from '../../contexts/VaultContext';
 import { useToast } from '../../contexts/ToastContext';
 
 const POSTING_FREQUENCIES = [
@@ -35,41 +36,36 @@ export function PageOps({ formData: externalFormData, setFormData: externalSetFo
     // Use unified vault form hook
     const { formData: vaultFormData, updateField: vaultUpdateField, isSynced, saveAndAdvance } = useVaultForm('V4');
 
-    const { appData } = useVaults();
+    // const { appData } = useVaults();
     const { addToast } = useToast();
-    
+
     const formData = vaultFormData || externalFormData || {};
     const updateField = vaultUpdateField || ((field, value) => externalSetFormData?.({ ...formData, [field]: value }));
-    
+
     const [isProcessing, setIsProcessing] = useState(false);
 
     const handleInspire = () => {
-        const allowInspire = Boolean(appData?.workspacePrefs?.autoInspire);
-        if (!allowInspire) {
-            addToast({
-                title: 'Auto-Inspirar desativado',
-                description: 'Ative em Workspace Tools para usar templates automaticamente.',
-                type: 'info'
-            });
-            return;
+        // Caraca Bar Demo
+        const demo = CARACA_BAR_DATA.S4;
+
+        if (updateField) {
+            updateField('stakeholders', demo.stakeholders);
+            updateField('slaHours', demo.slas.production === '24h' ? 24 : 12);
+            // Fill other fields with defaults suitable for Caraca
+            updateField('teamStructure', 'Enxuta');
+            updateField('postingFrequency', '3x');
+            updateField('bestDays', ['qua', 'sex', 'dom']);
+            updateField('bestTimes', ['noite']);
+            updateField('cycleDuration', '30');
+            updateField('approverName', demo.stakeholders[0]?.name || 'Cliente');
+            updateField('contentOwner', 'Agência');
         }
 
-        const next = {};
-
-        if (!formData.teamStructure) next.teamStructure = 'Enxuta';
-        if (!formData.slaHours) next.slaHours = 24;
-        if (!formData.postingFrequency) next.postingFrequency = '3x';
-        if (!Array.isArray(formData.bestDays) || formData.bestDays.length === 0) next.bestDays = ['ter', 'qui'];
-        if (!Array.isArray(formData.bestTimes) || formData.bestTimes.length === 0) next.bestTimes = ['almoco', 'noite'];
-        if (!formData.cycleDuration) next.cycleDuration = '30';
-
-        Object.entries(next).forEach(([field, value]) => updateField(field, value));
-
-        if (Object.keys(next).length > 0) {
-            addToast({ title: 'Templates aplicados', description: 'Preenchi somente campos vazios.', type: 'success' });
-        } else {
-            addToast({ title: 'Nada a preencher', description: 'Configurações já estão preenchidas.', type: 'info' });
-        }
+        addToast({
+            title: 'Modo Caraca Bar Ativado! 🍢',
+            description: 'Estrutura operacional configurada.',
+            type: 'success'
+        });
     };
 
     const handleSubmit = (e) => {

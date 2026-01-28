@@ -1,8 +1,9 @@
 import React from 'react';
+import { CARACA_BAR_DATA } from '../../services/demoData';
 import { GitBranch, ArrowRight, Link as LinkIcon, Target, BarChart3, MousePointer, CheckCircle2 } from 'lucide-react';
 import { ChannelGrid } from '../ui/ChannelGrid';
 import { useVaultForm } from '../../hooks/useVaultForm';
-import { useVaults } from '../../contexts/VaultContext';
+// import { useVaults } from '../../contexts/VaultContext';
 import { useToast } from '../../contexts/ToastContext';
 
 const CTA_OPTIONS = [
@@ -21,9 +22,9 @@ export function PageFunnel({ formData: externalFormData, setFormData: externalSe
     // Use unified vault form hook
     const { formData: vaultFormData, updateField: vaultUpdateField, isSynced, saveAndAdvance } = useVaultForm('V3');
 
-    const { appData } = useVaults();
+    // const { appData } = useVaults();
     const { addToast } = useToast();
-    
+
     const formData = vaultFormData || externalFormData || {};
     const updateField = (field, value) => {
         if (vaultUpdateField) {
@@ -33,35 +34,24 @@ export function PageFunnel({ formData: externalFormData, setFormData: externalSe
         }
         if (field === 'conversionLink' && value) setValidationError(false);
     };
-    
+
     const [validationError, setValidationError] = React.useState(false);
 
     const handleInspire = () => {
-        const allowInspire = Boolean(appData?.workspacePrefs?.autoInspire);
-        if (!allowInspire) {
-            addToast({
-                title: 'Auto-Inspirar desativado',
-                description: 'Ative em Workspace Tools para usar templates automaticamente.',
-                type: 'info'
-            });
-            return;
-        }
+        // Bypass preference check for Demo purposes, or check if we are in a "Demo Mode" context.
+        // For now, we simply allow it to behave as a "Fill Example" button.
 
-        const next = {};
-        const currentChannels = Array.isArray(formData.channels) ? formData.channels : [];
-        if (currentChannels.length === 0) next.channels = ['instagram', 'whatsapp'];
-        if (!formData.primaryCTA) next.primaryCTA = 'whatsapp';
-        if (!formData.secondaryCTA) next.secondaryCTA = 'saibamais';
-        if (!formData.ctaText) next.ctaText = 'Falar no WhatsApp';
-        if (!formData.trafficType) next.trafficType = 'Misto';
+        const demoData = CARACA_BAR_DATA.S3;
 
-        Object.entries(next).forEach(([field, value]) => updateField(field, value));
+        Object.entries(demoData).forEach(([field, value]) => {
+            updateField(field, value);
+        });
 
-        if (Object.keys(next).length > 0) {
-            addToast({ title: 'Templates aplicados', description: 'Preenchi somente campos vazios.', type: 'success' });
-        } else {
-            addToast({ title: 'Nada a preencher', description: 'Todos os campos principais já estão preenchidos.', type: 'info' });
-        }
+        addToast({
+            title: 'Modo Caraca Bar Ativado! 🍢',
+            description: 'Dados de exemplo do funil carregados com sucesso.',
+            type: 'success'
+        });
     };
 
     const handleSubmit = (e) => {

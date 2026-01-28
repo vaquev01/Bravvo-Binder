@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
+import { CARACA_BAR_DATA } from '../../services/demoData';
 import { Lightbulb, Link2, FileText, Plus, Trash2, ExternalLink, Sparkles, CheckCircle2 } from 'lucide-react';
 import { useVaultForm } from '../../hooks/useVaultForm';
-import { useVaults } from '../../contexts/VaultContext';
+// import { useVaults } from '../../contexts/VaultContext';
 import { useToast } from '../../contexts/ToastContext';
 
 const IDEA_TAGS = [
@@ -21,37 +22,43 @@ export function PageIdeas({ formData: externalFormData, setFormData: externalSet
     // Use unified vault form hook
     const { formData: vaultFormData, updateField: vaultUpdateField, isSynced, saveAndAdvance } = useVaultForm('V5');
 
-    const { appData } = useVaults();
+    // const { appData } = useVaults();
     const { addToast } = useToast();
-    
+
     const formData = vaultFormData || externalFormData || {};
     const updateField = vaultUpdateField || ((field, value) => externalSetFormData?.({ ...formData, [field]: value }));
-    
+
     const [showIdeaForm, setShowIdeaForm] = useState(false);
     const [showRefForm, setShowRefForm] = useState(false);
     const [newIdea, setNewIdea] = useState({ title: '', description: '', url: '', tags: [] });
     const [newRef, setNewRef] = useState({ title: '', url: '', type: 'post', notes: '' });
 
     const handleInspire = () => {
-        const allowInspire = Boolean(appData?.workspacePrefs?.autoInspire);
-        if (!allowInspire) {
-            addToast({
-                title: 'Auto-Inspirar desativado',
-                description: 'Ative em Workspace Tools para usar templates automaticamente.',
-                type: 'info'
-            });
-            return;
+        // Caraca Bar Demo
+        const demo = CARACA_BAR_DATA.S5;
+
+        if (updateField) {
+            // We can pre-populate some ideas
+            const newIdeas = demo.ideas.map((ideaTitle, idx) => ({
+                id: `IDEA-DEMO-${idx}`,
+                title: ideaTitle,
+                description: 'Ideia gerada pelo assistente Caraca Bar',
+                tags: ['Sugestão'],
+                createdAt: new Date().toISOString()
+            }));
+
+            updateField('ideas', [...(formData.ideas || []), ...newIdeas]);
+
+            if (!formData.notepad) {
+                updateField('notepad', `OBJETIVO: ${demo.rules.mood}\n\nIDEIAS:\n${demo.ideas.map(i => '- ' + i).join('\n')}`);
+            }
         }
 
-        if (!formData.notepad) {
-            updateField('notepad',
-                'OBJETIVO DA SEMANA:\n- \n\nIDEIAS (rascunho):\n- \n\nREFERÊNCIAS / LINKS:\n- \n\nOBSERVAÇÕES:\n- '
-            );
-            addToast({ title: 'Template aplicado', description: 'Estrutura inserida no Notepad.', type: 'success' });
-            return;
-        }
-
-        addToast({ title: 'Nada a preencher', description: 'O Notepad já está preenchido.', type: 'info' });
+        addToast({
+            title: 'Modo Caraca Bar Ativado! 🍢',
+            description: 'Novas ideias foram adicionadas ao seu banco.',
+            type: 'success'
+        });
     };
 
     const handleSubmit = (e) => {

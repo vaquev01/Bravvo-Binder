@@ -172,7 +172,12 @@ export function CreativeStudioModal({ open, onClose, item, vaults, onSave, onGen
             <div className="bg-[#0A0A0A] border border-white/10 rounded-lg w-full max-w-5xl animate-fadeIn flex flex-col max-h-[92vh] shadow-2xl overflow-hidden">
                 <div className="flex justify-between items-center p-4 border-b border-white/10 bg-[#0A0A0A]">
                     <div>
-                        <h3 className="text-sm font-bold text-white uppercase tracking-widest">Creative Studio</h3>
+                        <h3 className="text-sm font-bold text-white uppercase tracking-widest flex items-center gap-2">
+                            Creative Studio
+                            <span className="text-[9px] bg-purple-500/20 text-purple-300 px-1.5 py-0.5 rounded border border-purple-500/30 normal-case tracking-normal font-mono">
+                                Beta
+                            </span>
+                        </h3>
                         <p className="text-[10px] text-gray-500 font-mono">Item: {item.initiative || item.id}</p>
                     </div>
                     <button onClick={onClose} className="text-gray-500 hover:text-white p-2" data-testid="creative-close">

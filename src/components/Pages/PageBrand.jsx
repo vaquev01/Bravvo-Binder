@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { CARACA_BAR_DATA } from '../../services/demoData';
 import {
     Target, ArrowRight, Palette, Users, Sparkles, Upload, Image,
     Music, Tag, X, Plus, CheckCircle2
@@ -7,7 +8,7 @@ import { TagInput } from '../ui/TagInput';
 import { RadioCards } from '../ui/RadioCards';
 import { AssetUploader } from '../ui/AssetUploader';
 import { useVaultForm } from '../../hooks/useVaultForm';
-import { useVaults } from '../../contexts/VaultContext';
+// import { useVaults } from '../../contexts/VaultContext';
 import { useToast } from '../../contexts/ToastContext';
 
 const ARCHETYPES = [
@@ -60,13 +61,13 @@ export function PageBrand({ formData: externalFormData, setFormData: externalSet
     // Use unified vault form hook - reads/writes directly to appData
     const { formData: vaultFormData, updateField: vaultUpdateField, updateFields, isSynced, saveAndAdvance } = useVaultForm('V1');
 
-    const { appData } = useVaults();
+    // const { appData } = useVaults();
     const { addToast } = useToast();
-    
+
     // Use vault data if available, fallback to external props for compatibility
     const formData = vaultFormData || externalFormData || {};
     const updateField = vaultUpdateField || ((field, value) => externalSetFormData?.({ ...formData, [field]: value }));
-    
+
     const [activeAssetTab, setActiveAssetTab] = useState('logos');
     const [newKeyElement, setNewKeyElement] = useState('');
 
@@ -114,52 +115,46 @@ export function PageBrand({ formData: externalFormData, setFormData: externalSet
     };
 
     const handleRandomMood = () => {
-        const allowInspire = Boolean(appData?.workspacePrefs?.autoInspire);
-        if (!allowInspire) {
-            addToast({
-                title: 'Auto-Inspirar desativado',
-                description: 'Ative em Workspace Tools para usar templates automaticamente.',
-                type: 'info'
-            });
-            return;
-        }
+        // V1 Inspire Me - Caraca Bar Demo
 
-        const moods = [
-            { tone: "divertido", mood: "colorido", archetype: "O Bobo da Corte", primary: "#FF0055", secondary: "#FFFF00", accent: "#00FFFF" },
-            { tone: "luxo", mood: "elegante", archetype: "O Governante", primary: "#D4AF37", secondary: "#1A1A1A", accent: "#FFFFFF" },
-            { tone: "tecnico", mood: "minimalista", archetype: "O Sábio", primary: "#2563EB", secondary: "#F8FAFC", accent: "#0F172A" },
-            { tone: "inspirador", mood: "organico", archetype: "O Inocente", primary: "#10B981", secondary: "#FEF3C7", accent: "#F59E0B" },
-            { tone: "casual", mood: "rustico", archetype: "O Cara Comum", primary: "#F97316", secondary: "#78350F", accent: "#FEF3C7" },
-            { tone: "futurista", mood: "moderno", archetype: "O Rebelde", primary: "#00FF41", secondary: "#0D0221", accent: "#FF00FF" } // Cyberpunk
-        ];
-        const random = moods[Math.floor(Math.random() * moods.length)];
+        const demo = CARACA_BAR_DATA.S1;
+        const color = CARACA_BAR_DATA.S5.palette; // S1 often shares palette data or we can pull from S5 if needed, but V1 has colors too in the demo logic usually.
+        // Wait, CARACA_BAR_DATA.S1 structure: { brandName, slogan, promise, authority, tone, values, brandPersona }
+        // The V1 form expects: clientName, niche, tagline, promise, enemy, brandValues, tone, mood, archetype, primaryColor...
 
-        // Smart Fill: Only update fields that are empty or have default values
-        const defaultTone = "casual";
-        const defaultMood = "moderno";
-        const defaultArchetype = "O Cara Comum";
-        const defaultPrimary = "#F97316";
-        const defaultSecondary = "#1E293B";
-        const defaultAccent = "#10B981";
-
-        // Use updateFields for batch update if available
+        // Let's map it:
         if (updateFields) {
             updateFields({
-                tone: (!formData.tone || formData.tone === defaultTone) ? random.tone : formData.tone,
-                mood: (!formData.mood || formData.mood === defaultMood) ? random.mood : formData.mood,
-                archetype: (!formData.archetype || formData.archetype === defaultArchetype) ? random.archetype : formData.archetype,
-                primaryColor: (!formData.primaryColor || formData.primaryColor === defaultPrimary) ? random.primary : formData.primaryColor,
-                secondaryColor: (!formData.secondaryColor || formData.secondaryColor === defaultSecondary) ? random.secondary : formData.secondaryColor,
-                accentColor: (!formData.accentColor || formData.accentColor === defaultAccent) ? random.accent : formData.accentColor
+                clientName: demo.brandName,
+                tagline: demo.slogan,
+                promise: demo.promise,
+                brandValues: demo.values,
+                tone: 'divertido', // Map from array if needed, or hardcode for demo
+                mood: 'rustico',
+                archetype: 'O Cara Comum',
+                primaryColor: color.primary,
+                secondaryColor: color.secondary,
+                accentColor: color.accent
             });
         } else {
-            updateField('tone', (!formData.tone || formData.tone === defaultTone) ? random.tone : formData.tone);
-            updateField('mood', (!formData.mood || formData.mood === defaultMood) ? random.mood : formData.mood);
-            updateField('archetype', (!formData.archetype || formData.archetype === defaultArchetype) ? random.archetype : formData.archetype);
-            updateField('primaryColor', (!formData.primaryColor || formData.primaryColor === defaultPrimary) ? random.primary : formData.primaryColor);
-            updateField('secondaryColor', (!formData.secondaryColor || formData.secondaryColor === defaultSecondary) ? random.secondary : formData.secondaryColor);
-            updateField('accentColor', (!formData.accentColor || formData.accentColor === defaultAccent) ? random.accent : formData.accentColor);
+            // Fallback
+            updateField('clientName', demo.brandName);
+            updateField('tagline', demo.slogan);
+            updateField('promise', demo.promise);
+            updateField('brandValues', demo.values);
+            updateField('tone', 'divertido');
+            updateField('mood', 'rustico');
+            updateField('archetype', 'O Cara Comum');
+            updateField('primaryColor', color.primary);
+            updateField('secondaryColor', color.secondary);
+            updateField('accentColor', color.accent);
         }
+
+        addToast({
+            title: 'Modo Caraca Bar Ativado! 🍢',
+            description: 'Identidade visual e verbal carregada.',
+            type: 'success'
+        });
     };
 
     const assetTabs = [
@@ -474,8 +469,8 @@ export function PageBrand({ formData: externalFormData, setFormData: externalSet
                                     type="button"
                                     onClick={() => setActiveAssetTab(tab.id)}
                                     className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${activeAssetTab === tab.id
-                                            ? 'bg-purple-500 text-white'
-                                            : 'bg-[var(--bg-panel)] text-[var(--text-secondary)] border border-[var(--border-subtle)] hover:border-[var(--border-active)] hover:bg-white/5'
+                                        ? 'bg-purple-500 text-white'
+                                        : 'bg-[var(--bg-panel)] text-[var(--text-secondary)] border border-[var(--border-subtle)] hover:border-[var(--border-active)] hover:bg-white/5'
                                         }`}
                                 >
                                     <tab.icon size={12} />
@@ -556,8 +551,8 @@ export function PageBrand({ formData: externalFormData, setFormData: externalSet
                                         type="button"
                                         onClick={() => toggleVibe(vibe)}
                                         className={`px-2 py-1 rounded text-[10px] font-medium border transition-all ${(formData.brandIdentity?.visualVibes || []).includes(vibe)
-                                                ? 'bg-purple-500 text-white border-purple-500'
-                                                : 'bg-[var(--bg-panel)] text-[var(--text-secondary)] border-[var(--border-subtle)] hover:border-purple-500/50'
+                                            ? 'bg-purple-500 text-white border-purple-500'
+                                            : 'bg-[var(--bg-panel)] text-[var(--text-secondary)] border-[var(--border-subtle)] hover:border-purple-500/50'
                                             }`}
                                     >
                                         {vibe}
@@ -620,15 +615,15 @@ export function PageBrand({ formData: externalFormData, setFormData: externalSet
                         <div className="h-1.5 flex-1 bg-[var(--bg-panel)] rounded-full overflow-hidden mr-4">
                             <div
                                 className={`h-full transition-all duration-300 ${(formData.bio || '').length < 100 ? 'bg-red-500' :
-                                        (formData.bio || '').length < 200 ? 'bg-yellow-500' :
-                                            (formData.bio || '').length < 400 ? 'bg-green-500' : 'bg-blue-500'
+                                    (formData.bio || '').length < 200 ? 'bg-yellow-500' :
+                                        (formData.bio || '').length < 400 ? 'bg-green-500' : 'bg-blue-500'
                                     }`}
                                 style={{ width: `${Math.min(100, ((formData.bio || '').length / 500) * 100)}%` }}
                             />
                         </div>
                         <p className={`text-xs font-mono ${(formData.bio || '').length < 100 ? 'text-red-400' :
-                                (formData.bio || '').length < 200 ? 'text-yellow-400' :
-                                    (formData.bio || '').length >= 450 ? 'text-orange-400' : 'text-gray-500'
+                            (formData.bio || '').length < 200 ? 'text-yellow-400' :
+                                (formData.bio || '').length >= 450 ? 'text-orange-400' : 'text-gray-500'
                             }`}>
                             {(formData.bio || '').length}/500
                         </p>

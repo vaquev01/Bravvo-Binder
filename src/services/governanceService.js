@@ -52,7 +52,7 @@ export function generateATA(governanceData) {
         id: `ATA-${Date.now()}`,
         version: 1,
         immutable: true,
-        
+
         // Assinatura Temporal
         signature: {
             period: period || `${new Date().toLocaleDateString('pt-BR')}`,
@@ -70,8 +70,8 @@ export function generateATA(governanceData) {
                 value: kpiSnapshot?.revenue?.value || 0,
                 goal: kpiSnapshot?.revenue?.goal || 0,
                 gap: (kpiSnapshot?.revenue?.goal || 0) - (kpiSnapshot?.revenue?.value || 0),
-                achievement: kpiSnapshot?.revenue?.goal > 0 
-                    ? ((kpiSnapshot?.revenue?.value / kpiSnapshot?.revenue?.goal) * 100).toFixed(1) 
+                achievement: kpiSnapshot?.revenue?.goal > 0
+                    ? ((kpiSnapshot?.revenue?.value / kpiSnapshot?.revenue?.goal) * 100).toFixed(1)
                     : 0,
             },
             traffic: {
@@ -96,8 +96,8 @@ export function generateATA(governanceData) {
             delayed: roadmapReview?.delayed || 0,
             cancelled: roadmapReview?.cancelled || 0,
             pending: roadmapReview?.pending || 0,
-            executionRate: roadmapReview?.total > 0 
-                ? ((roadmapReview?.done / roadmapReview?.total) * 100).toFixed(1) 
+            executionRate: roadmapReview?.total > 0
+                ? ((roadmapReview?.done / roadmapReview?.total) * 100).toFixed(1)
                 : 0,
         },
 
@@ -159,7 +159,7 @@ export function generateATA(governanceData) {
 export function recalibrateSystem(ata, vaults, currentRoadmap) {
     const recalibration = {
         timestamp: new Date().toISOString(),
-        
+
         // Novos KPIs sugeridos (baseados no gap)
         suggestedKpis: {
             revenue: {
@@ -175,7 +175,7 @@ export function recalibrateSystem(ata, vaults, currentRoadmap) {
         },
 
         // Novo foco de execução
-        executionFocus: determineExecutionFocus(ata),
+        executionFocus: determineExecutionFocus(ata, vaults),
 
         // Alertas gerados
         alerts: generateAlerts(ata),
@@ -264,7 +264,7 @@ export function generateNextGovernanceWindow(ata, frequency = 'weekly', calendar
         startDate: toDateStr(nextDate),
         endDate: toDateStr(windowEnd),
         scheduledGovernance: scheduledGovernanceDate.toISOString(),
-        
+
         // Metas do período (baseadas na recalibração)
         periodGoals: {
             focus: ata.nextPriorities?.[0] || 'Execução geral',
@@ -290,7 +290,7 @@ export function generateNextGovernanceWindow(ata, frequency = 'weekly', calendar
 function calculateNewGoal(kpiData) {
     if (!kpiData.goal) return 0;
     const achievement = kpiData.value / kpiData.goal;
-    
+
     if (achievement >= 1.2) {
         // Superou em 20%+, aumentar meta em 10%
         return Math.round(kpiData.goal * 1.1);
@@ -303,19 +303,36 @@ function calculateNewGoal(kpiData) {
     }
 }
 
-function determineExecutionFocus(ata) {
+function determineExecutionFocus(ata, vaults) {
     const focuses = [];
-    
+
+    // 1. Check Execution Rate
     if (ata.roadmapSummary.executionRate < 70) {
         focuses.push({ type: 'execution', priority: 'high', message: 'Taxa de execução baixa - priorizar entregas' });
     }
-    
+
+    // 2. Check Production
     if (ata.production.notExecuted > ata.production.published) {
         focuses.push({ type: 'production', priority: 'medium', message: 'Muitas artes não publicadas - revisar fluxo' });
     }
-    
+
+    // 3. Check Revenue
     if (parseFloat(ata.kpis.revenue.achievement) < 80) {
         focuses.push({ type: 'revenue', priority: 'high', message: 'Revenue abaixo da meta - intensificar vendas' });
+    }
+
+    // 4. Vault 3 (Funnel) Intelligence
+    if (vaults?.S3) {
+        const s3 = vaults.S3;
+        // If traffic type is Paid and Traffic KPI is low (assuming logic, here simplified)
+        if (s3.trafficType === 'Pago' && ata.kpis.traffic.value < ata.kpis.traffic.goal) {
+            focuses.push({ type: 'growth', priority: 'high', message: 'Tráfego Pago abaixo da meta - revisar campanhas' });
+        }
+
+        // Suggest optimization based on CTA
+        if (s3.primaryCTA) {
+            focuses.push({ type: 'conversion', priority: 'medium', message: `Otimizar conversão para ${s3.primaryCTA}` });
+        }
     }
 
     return focuses;
@@ -343,7 +360,7 @@ function generateAlerts(ata) {
     return alerts;
 }
 
-function generateDailyOrders(ata, _vaults) {
+function generateDailyOrders(ata, vaults) {
     const orders = [];
 
     // Baseado nas prioridades da governança
@@ -356,18 +373,44 @@ function generateDailyOrders(ata, _vaults) {
         });
     });
 
+    // Vault 3 Injection: If we have specific channels focused
+    if (vaults?.S3?.channels && vaults.S3.channels.length > 0) {
+        if (orders.length < 5) {
+            orders.push({
+                id: `ORDER-V3-${Date.now()}`,
+                priority: orders.length + 1,
+                title: `Verificar métricas de ${vaults.S3.channels[0]}`,
+                source: 'strategy'
+            });
+        }
+    }
+
     return orders;
 }
 
-function calculateVaultWeights(ata, _vaults) {
-    // Peso baseado no gap de execução
-    return {
-        V1: 1.0, // Brand sempre base
-        V2: ata.kpis.revenue.gap > 0 ? 1.5 : 1.0, // Commerce mais peso se revenue baixo
-        V3: ata.production.notExecuted > 0 ? 1.3 : 1.0, // Funnel mais peso se produção travada
-        V4: ata.roadmapSummary.delayed > 0 ? 1.4 : 1.0, // Ops mais peso se atrasos
-        V5: 0.8, // Ideas peso menor (auxiliar)
+function calculateVaultWeights(ata, vaults) {
+    // Start with base weights
+    const weights = {
+        V1: 1.0,
+        V2: 1.0,
+        V3: 1.0,
+        V4: 1.0,
+        V5: 0.8
     };
+
+    // V2 (Commerce) gets higher weight if Revenue is suffering
+    if (ata.kpis.revenue.gap > 0) weights.V2 += 0.5;
+
+    // V3 (Funnel) gets higher weight if Traffic is low OR if it matches Vault 3 config
+    if (vaults?.S3?.trafficType === 'Orgânico' && ata.production.published < 3) {
+        // If Organic and low production, we need more content/funnel focus
+        weights.V3 += 0.3;
+    }
+
+    // V4 (Ops) gets higher weight if there are delays
+    if (ata.roadmapSummary.delayed > 0) weights.V4 += 0.4;
+
+    return weights;
 }
 
 function reprioritizeRoadmap(ata, currentRoadmap) {
