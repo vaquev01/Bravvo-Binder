@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { CARACA_BAR_DATA } from '../../services/demoData';
-import { GitBranch, ArrowRight, Link as LinkIcon, Target, BarChart3, MousePointer, CheckCircle2, Loader2, Wand2, Sparkles } from 'lucide-react';
+import { GitBranch, ArrowRight, Link as LinkIcon, Target, BarChart3, MousePointer, CheckCircle2, Loader2, Wand2, Sparkles, Store, Plus, Trash2 } from 'lucide-react';
 import { ChannelGrid } from '../ui/ChannelGrid';
 import { useVaultForm } from '../../hooks/useVaultForm';
 // import { useVaults } from '../../contexts/VaultContext';
@@ -113,6 +113,29 @@ export function PageFunnel({ formData: externalFormData, setFormData: externalSe
                 <p className="text-body max-w-xl">
                     Onde você está presente e como converte. Dados para o <strong>S3 (Funnel Vault)</strong>.
                 </p>
+            </div>
+
+            {/* Section 0: Business Type & Context */}
+            <div className="bg-white/5 border border-white/10 rounded-xl p-4 mb-8">
+                <label className="input-label mb-2 flex items-center gap-2">
+                    <Store size={14} className="text-purple-400" />
+                    Modelo de Negócio
+                </label>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    {['Digital (SaaS/Info)', 'E-commerce', 'Serviço / Agência', 'Negócio Físico'].map(type => (
+                        <button
+                            key={type}
+                            type="button"
+                            onClick={() => updateField('businessType', type)}
+                            className={`px-3 py-2 rounded-lg border text-xs font-medium transition-all ${formData.businessType === type
+                                    ? 'bg-purple-500 text-white border-purple-400'
+                                    : 'bg-black/20 text-gray-400 border-white/10 hover:border-white/20'
+                                }`}
+                        >
+                            {type}
+                        </button>
+                    ))}
+                </div>
             </div>
 
             {/* Section 1: Canais de Marketing */}
@@ -406,6 +429,66 @@ export function PageFunnel({ formData: externalFormData, setFormData: externalSe
                                 onChange={e => updateField('cpl', e.target.value)}
                             />
                         </div>
+                    </div>
+                </div>
+            </section>
+
+            {/* CUSTOM KPIS */}
+            <section className="space-y-6">
+                <div className="mt-2 pt-6 border-t border-white/10">
+                    <div className="flex items-center justify-between mb-4">
+                        <label className="input-label text-purple-300">KPIs Personalizados do Funil</label>
+                        <button
+                            type="button"
+                            onClick={() => {
+                                const current = formData.customMetrics || [];
+                                updateField('customMetrics', [...current, { id: Date.now(), label: '', value: '' }]);
+                            }}
+                            className="text-xs text-purple-400 hover:text-white flex items-center gap-1"
+                        >
+                            <Plus size={12} /> Adicionar Métrica
+                        </button>
+                    </div>
+
+                    <div className="space-y-3">
+                        {(formData.customMetrics || []).map((metric, idx) => (
+                            <div key={idx} className="flex gap-3 items-center">
+                                <input
+                                    className="input-field flex-1"
+                                    placeholder="Ex: Reservas, Ligações, Walk-ins"
+                                    value={metric.label}
+                                    onChange={e => {
+                                        const next = [...(formData.customMetrics || [])];
+                                        next[idx].label = e.target.value;
+                                        updateField('customMetrics', next);
+                                    }}
+                                />
+                                <input
+                                    className="input-field w-32 font-mono"
+                                    placeholder="Valor"
+                                    value={metric.value}
+                                    onChange={e => {
+                                        const next = [...(formData.customMetrics || [])];
+                                        next[idx].value = e.target.value;
+                                        updateField('customMetrics', next);
+                                    }}
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        const next = [...(formData.customMetrics || [])];
+                                        next.splice(idx, 1);
+                                        updateField('customMetrics', next);
+                                    }}
+                                    className="text-gray-600 hover:text-red-400 p-2"
+                                >
+                                    <Trash2 size={14} />
+                                </button>
+                            </div>
+                        ))}
+                        {(!formData.customMetrics || formData.customMetrics.length === 0) && (
+                            <div className="text-xs text-gray-600 italic">Nenhuma métrica personalizada. Adicione métricas específicas do seu nicho (ex: Número de Mesas, Taxa de No-Show).</div>
+                        )}
                     </div>
                 </div>
             </section>

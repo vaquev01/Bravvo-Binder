@@ -9,11 +9,11 @@
        ═══════════════════════════════════════════════════════════════════════ */
 
     /* SURFACES */
-    --bg-deep: #0B0E14;
-    --bg-deep-nav: rgba(11, 14, 20, 0.85);
-    --bg-deep-alpha: rgba(11, 14, 20, 0.72);
-    --bg-surface: #11161F;
-    --bg-panel: #151B26;
+    --bg-deep: #1A1A1B;
+    --bg-deep-nav: rgba(26, 26, 27, 0.85);
+    --bg-deep-alpha: rgba(26, 26, 27, 0.72);
+    --bg-surface: #1F1F1F;
+    --bg-panel: #262626;
 
     /* BORDERS — 1px, 8-12% opacity equivalent */
     --border-subtle: #1F2633;
@@ -26,9 +26,9 @@
     --text-muted: #4B5563;        /* 35% - hints, captions */
 
     /* BRAND */
-    --brand-primary: #FF5733;
-    --brand-secondary: #1E293B;
-    --brand-accent: #FF5733;
+    --brand-primary: #FF6600;
+    --brand-secondary: #1A1A1B;
+    --brand-accent: #FF6600;
     --accent-purple: var(--brand-accent);
     --brand-font: Inter;
 

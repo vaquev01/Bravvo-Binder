@@ -332,8 +332,9 @@ Responda APENAS com um JSON contendo os campos solicitados:
     /**
      * Extrai dados relevantes dos Vaults para enviar à IA
      */
-    extractVaultsData(vaults, lastGovernance = null, governanceHistory = []) {
+    extractVaultsData(vaults, activeKpis = [], lastGovernance = null, governanceHistory = []) {
         return {
+            currentKpis: activeKpis, // [ {id, label, value}, ... ]
             brand: {
                 name: vaults?.s1?.brandName || vaults?.s1?.name || vaults?.S1?.fields?.brandName,
                 voiceTone: vaults?.s1?.voiceTone || vaults?.S1?.fields?.tone?.join(', '),
@@ -355,7 +356,9 @@ Responda APENAS com um JSON contendo os campos solicitados:
                 trafficSource: vaults?.s3?.trafficSource || vaults?.S3?.fields?.trafficSource,
                 trafficVolume: vaults?.s3?.trafficVolume || vaults?.S3?.fields?.monthlyTraffic,
                 ctas: vaults?.s3?.ctas || vaults?.S3?.fields?.ctas || [],
-                conversionRate: vaults?.s3?.conversionRate || vaults?.S3?.fields?.conversionRate
+                conversionRate: vaults?.s3?.conversionRate || vaults?.S3?.fields?.conversionRate,
+                businessType: vaults?.s3?.businessType || vaults?.S3?.fields?.businessType || 'Digital',
+                customMetrics: vaults?.s3?.customMetrics || vaults?.S3?.fields?.customMetrics || []
             },
             ops: {
                 postingFrequency: vaults?.s4?.postingFrequency || vaults?.S4?.fields?.postingFrequency,
@@ -370,7 +373,8 @@ Responda APENAS com um JSON contendo os campos solicitados:
             },
             governance: lastGovernance ? {
                 date: lastGovernance.date || lastGovernance.ts,
-                kpis: lastGovernance.kpis || {},
+                kpis: lastGovernance.kpis || {}, // Legacy KPIs support
+                currentKpis: activeKpis, // New 4-KPIs Array
                 decisions: lastGovernance.decisions || [],
                 score: lastGovernance.score
             } : null,
@@ -437,6 +441,9 @@ Analise os dados abaixo e gere:
 2. Os 3-5 KPIs mais importantes para esse negócio monitorar.
 3. Uma recomendação estratégica geral baseada na ponderação acima.
 
+## 0. PLACAR ATUAL (Relevância Crítica - Situação Real)
+${(vaultsData.currentKpis || []).map(k => `- ${k.label}: ${k.value}`).join('\n')}
+
 ## 1. ESTRATÉGIA ATUAL (Vaults - Peso ${weights.strategy}%)
 
 ### S1 - Marca:
@@ -459,6 +466,8 @@ ${locationContext}
 - Volume Estimado de Visitas: ${funnel?.trafficVolume || 'Não informado'}
 - CTAs Principais: ${Array.isArray(funnel?.ctas) ? funnel.ctas.join(', ') : (funnel?.ctas || 'Não informado')}
 - Taxa de Conversão: ${funnel?.conversionRate || 'Não informado'}%
+- Modelo de Negócio: ${funnel?.businessType || 'Digital'}
+- KPIs do Funil: ${JSON.stringify(funnel?.customMetrics || [])}
 
 ### S4 - Operação:
 - Frequência de Postagem: ${ops?.postingFrequency || 'Não informado'}
@@ -539,20 +548,21 @@ IMPORTANTE: Responda APENAS com um JSON válido, sem markdown, sem explicações
     /**
      * Gera plano de ação e KPIs usando IA
      * @param {Object} vaults - Dados dos Vaults (s1, s2, s3, s4, s5 ou S1, S2, etc)
+     // @param {Array} kpis - Array of current KPI objects {id, label, value}
      * @returns {Promise<{tasks: Array, kpis: Array, recommendation: string}>}
      */
-    async generatePlanWithAI(vaults, lastGovernance = null, governanceHistory = [], weights = null) {
-        const config = this.getAIConfig();
-
-        if (!config || !config.apiKey) {
-            throw new Error('API Key de IA não configurada. Vá em Configurações → IA para configurar.');
+    async generatePlanWithAI(vaults, kpis = [], lastGovernance = null, governanceHistory = [], weights = null) {
+        if (!this.isAIConfigured()) {
+            throw new Error("AI not configured");
         }
 
         // Extrai dados relevantes dos vaults
-        const vaultsData = this.extractVaultsData(vaults, lastGovernance, governanceHistory);
+        const vaultsData = this.extractVaultsData(vaults, kpis, lastGovernance, governanceHistory);
 
         // Monta o prompt
-        const prompt = this.buildPlanPrompt(vaultsData, weights || config.weights); // Use passados ou do config
+        const prompt = this.buildPlanPrompt(vaultsData, weights || this.getWeights());
+
+        console.log("Generating plan with AI...", this.provider);
 
         // Faz a chamada para a API
         let responseText;

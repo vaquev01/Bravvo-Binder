@@ -8,13 +8,13 @@ export default {
         extend: {
             colors: {
                 bravvo: {
-                    bg: "#050505", // Deepest Black
-                    card: "#0F0F0F",
-                    border: "#1F1F1F",
-                    primary: "#FF5733",
-                    accent: "#00FF88",
+                    bg: "#1A1A1B", // Deep Charcoal
+                    card: "#1F1F1F",
+                    border: "#2A2A2A",
+                    primary: "#FF6600",
+                    accent: "#FF6600",
                     text: "#EDEDED",
-                    muted: "#737373"
+                    muted: "#8E8E93"
                 }
             },
             fontFamily: {

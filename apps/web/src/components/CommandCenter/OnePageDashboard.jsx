@@ -3,6 +3,7 @@ import { useLanguage } from '../../contexts/LanguageContext';
 import {
     Calendar as CalendarIcon,
     Edit3,
+    Edit2,
     X,
     Plus,
     Wand2,
@@ -770,11 +771,28 @@ export function OnePageDashboard({
     const { executeWithUndo } = useUndo();
 
     // Editable KPI State - Linked to Global Data
-    const [kpis, setKpis] = useState(appData.kpis || {
-        revenue: { value: 0, goal: 0 },
-        traffic: { value: 0, goal: 0 },
-        sales: { value: 0, goal: 0 },
-    });
+    // 4 Main KPIs (Editable)
+    const [kpis, setKpis] = useState(appData.dashboard?.kpis || [
+        { id: '1', label: 'Receita Total', value: 'R$ 0,00' },
+        { id: '2', label: 'Lucro Líquido', value: 'R$ 0,00' },
+        { id: '3', label: 'CAC', value: 'R$ 0,00' },
+        { id: '4', label: 'LTV', value: 'R$ 0,00' }
+    ]);
+
+    // Persist KPIs when changed
+    useEffect(() => {
+        setAppData(prev => ({
+            ...prev,
+            dashboard: {
+                ...prev.dashboard,
+                kpis: kpis
+            }
+        }));
+    }, [kpis]);
+
+    const handleKpiChange = (id, field, newValue) => {
+        setKpis(prev => prev.map(k => k.id === id ? { ...k, [field]: newValue } : k));
+    };
 
     const extraKpiCatalog = useMemo(() => ([
         { id: 'cpm', label: 'CPM', prefix: 'R$ ', suffix: '' },
@@ -784,11 +802,7 @@ export function OnePageDashboard({
     ]), []);
 
     // Update local state when appData changes (e.g. client switch)
-    useEffect(() => {
-        if (appData.kpis) {
-            setKpis(appData.kpis);
-        }
-    }, [appData.kpis]);
+    // Legacy KPI sync removed. New implementation uses dashboard.kpis array.
 
     useEffect(() => {
         return () => {
@@ -1111,10 +1125,21 @@ export function OnePageDashboard({
 
         addToast({
             title: 'Governança Concluída',
-            description: 'ATA gerada e sistema recalibrado.',
+            description: 'ATA gerada e sistema recalibrado. Atualizando estratégia...',
             type: 'success'
         });
+
+        // Auto-Generate Strategy with fresh data
+        handleGenerateStrategy(null, nextKpis, ata, updatedHistoryForForm)
+            .catch(e => console.error("Auto-gen error:", e));
     };
+
+    // Listen for Sidebar Trigger
+    useEffect(() => {
+        const onTrigger = () => handleGenerateStrategy();
+        window.addEventListener('BRAVVO_GENERATE_STRATEGY', onTrigger);
+        return () => window.removeEventListener('BRAVVO_GENERATE_STRATEGY', onTrigger);
+    }, [appData, kpis]); // Re-bind if data changes so logic is fresh
 
     const handleGovernanceSave = (governanceData) => {
         // Update KPI goals if adjusted
@@ -1657,16 +1682,17 @@ export function OnePageDashboard({
     // AI Strategy Weights Display
     const aiStrategyWeights = aiService.getAIConfig()?.weights || { strategy: 50, lastGov: 30, history: 20 };
 
-    const handleGenerateStrategy = async () => {
+    const handleGenerateStrategy = async (overrideVaults = null, overrideKpis = null, overrideAta = null, overrideHistory = null) => {
         setIsGeneratingPlan(true);
         try {
             const config = aiService.getAIConfig();
 
             // 1. Generate Plan with Weights
             const result = await aiService.generatePlanWithAI(
-                appData.vaults,
-                latestAta,
-                appData.measurementContract?.auditLog || [],
+                overrideVaults || appData.vaults,
+                overrideKpis || kpis,
+                overrideAta || latestAta,
+                overrideHistory || appData.measurementContract?.auditLog || [],
                 config?.weights
             );
 
@@ -1884,11 +1910,27 @@ export function OnePageDashboard({
                             );
                         })()}
 
-                        <KPIGrid
-                            kpis={kpis}
-                            onKpiUpdate={handleKpiUpdate}
-                            disabled={!meetingState.active}
-                        />
+                        {/* --- 4 MAIN EDITABLE KPIs (THE BIG NUMBERS) --- */}
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                            {Array.isArray(kpis) && kpis.map((kpi) => (
+                                <div key={kpi.id} className="group relative bg-[#111] border border-white/5 rounded-xl p-4 hover:border-purple-500/30 transition-all">
+                                    <div className="text-[10px] uppercase tracking-wider text-gray-500 mb-1 flex justify-between">
+                                        <input
+                                            className="bg-transparent border-none p-0 text-gray-500 w-full focus:ring-0 focus:text-purple-400 transition-colors"
+                                            value={kpi.label}
+                                            onChange={(e) => handleKpiChange(kpi.id, 'label', e.target.value)}
+                                        />
+                                        <Edit2 size={10} className="opacity-0 group-hover:opacity-50" />
+                                    </div>
+                                    <input
+                                        className="bg-transparent border-none p-0 text-xl font-bold text-white w-full focus:ring-0 focus:text-purple-300 transition-colors placeholder-gray-700"
+                                        value={kpi.value}
+                                        onChange={(e) => handleKpiChange(kpi.id, 'value', e.target.value)}
+                                        placeholder="-"
+                                    />
+                                </div>
+                            ))}
+                        </div>
 
                         <div className="mb-6 bento-grid p-4">
                             <div className="flex items-center justify-between gap-3 mb-3">
@@ -1973,11 +2015,7 @@ export function OnePageDashboard({
                                         <div className="mt-2 text-[11px] text-gray-500">
                                             Foco: <span className="text-gray-300">{appData.nextGovernanceWindow.periodGoals?.focus || '—'}</span>
                                         </div>
-                                        <div className="mt-3 space-y-1 text-[11px] text-gray-400">
-                                            <div>Receita: <span className="text-gray-200">R$ {(appData.nextGovernanceWindow.periodGoals?.kpiTargets?.revenue || 0).toLocaleString('pt-BR')}</span></div>
-                                            <div>Tráfego: <span className="text-gray-200">R$ {(appData.nextGovernanceWindow.periodGoals?.kpiTargets?.traffic || 0).toLocaleString('pt-BR')}</span></div>
-                                            <div>Vendas: <span className="text-gray-200">{(appData.nextGovernanceWindow.periodGoals?.kpiTargets?.sales || 0).toLocaleString('pt-BR')}</span></div>
-                                        </div>
+
                                     </div>
                                 )}
 
@@ -2056,6 +2094,8 @@ export function OnePageDashboard({
                         />
                     </div>
                 )}
+
+
 
                 {/* 2. TACTICAL GRID (The "Linear" List) */}
                 <div className="flex-1 flex flex-col relative z-10 overflow-hidden">
@@ -2359,7 +2399,8 @@ export function OnePageDashboard({
                     </div>
                 </div>
 
-                {/* 5. VAULTS - PRD 3.6 (Rework Visual) */}
+
+                {/* 5. VAULTS - Restored to Footer */}
                 <VaultCards
                     vaults={appData?.vaults}
                     labels={{
@@ -2371,26 +2412,6 @@ export function OnePageDashboard({
                     }}
                     onVaultClick={(vaultId) => setActiveTab(vaultId)}
                 />
-
-                {/* STRATEGY GENERATION BUTTON (Between V5 and Modals) */}
-                <div className="mb-8">
-                    <button
-                        onClick={handleGenerateStrategy}
-                        disabled={isGeneratingPlan}
-                        className="w-full py-6 rounded-xl border border-purple-500/30 bg-gradient-to-r from-purple-500/10 to-blue-500/10 hover:from-purple-500/20 hover:to-blue-500/20 text-purple-300 transition-all flex flex-col items-center justify-center gap-2 group relative overflow-hidden"
-                    >
-                        <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity" />
-                        <div className="flex items-center gap-3 relative z-10">
-                            {isGeneratingPlan ? <Loader2 className="animate-spin" size={24} /> : <Bot size={24} />}
-                            <span className="text-xl font-bold tracking-widest uppercase">Gerar Estratégia Integrada</span>
-                        </div>
-                        <div className="flex items-center gap-4 text-xs opacity-70 group-hover:opacity-100 relative z-10 font-mono">
-                            <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-blue-400"></span> {aiStrategyWeights.strategy}% Vaults</span>
-                            <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-green-400"></span> {aiStrategyWeights.lastGov}% Correção</span>
-                            <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-orange-400"></span> {aiStrategyWeights.history}% Histórico</span>
-                        </div>
-                    </button>
-                </div>
 
                 {/* Modal Mounts */}
                 {FLAG_DASH_QUICKADD_DRAWER ? (

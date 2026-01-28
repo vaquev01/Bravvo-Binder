@@ -16,6 +16,7 @@ import {
     Briefcase,
     ChevronDown
 } from 'lucide-react';
+import { BravvoLogo } from '../../components/Branding/BravvoLogo';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { LanguageSwitcher } from '../../components/ui/LanguageSwitcher';
 
@@ -31,12 +32,7 @@ export function LandingPage({ onLogin }) {
             {/* Nav */}
             <nav className="fixed top-0 w-full z-50 bg-[var(--bg-deep-nav)] backdrop-blur-xl border-b border-[var(--border-subtle)]">
                 <div className="max-w-[1400px] mx-auto px-6 h-16 flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                        <div className="w-5 h-5 bg-white rounded-sm flex items-center justify-center">
-                            <div className="w-2.5 h-2.5 bg-black rounded-[1px]" />
-                        </div>
-                        <span className="text-sm font-bold tracking-tight text-white">BRAVVO<span className="text-gray-600">BINDER</span></span>
-                    </div>
+                    <BravvoLogo className="scale-90 origin-left" />
 
                     <div className="hidden md:flex items-center gap-6 text-[13px] font-medium text-gray-400">
                         <button onClick={() => scrollToSection('how-it-works')} className="hover:text-white transition-colors">{t('landing.how_it_works.title')}</button>
@@ -344,10 +340,7 @@ export function LandingPage({ onLogin }) {
             <footer className="py-20 bg-[var(--bg-deep)] border-t border-[var(--border-subtle)] text-sm">
                 <div className="max-w-[1400px] mx-auto px-6 grid grid-cols-2 md:grid-cols-6 gap-10">
                     <div className="col-span-2">
-                        <div className="flex items-center gap-2 mb-6">
-                            <div className="w-4 h-4 bg-white rounded-sm" />
-                            <span className="font-bold text-white">BRAVVO</span>
-                        </div>
+                        <BravvoLogo className="scale-75 origin-left mb-6" />
                         <p className="text-gray-500 max-w-xs">
                             {t('landing.hero.subtitle').split('.')[0]}.
                         </p>

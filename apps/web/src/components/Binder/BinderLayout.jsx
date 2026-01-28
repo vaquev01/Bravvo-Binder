@@ -1,11 +1,11 @@
 import React from 'react';
-import { Target, ShoppingBag, GitBranch, Users, LayoutDashboard, CheckCircle2, Lightbulb, ArrowLeft } from 'lucide-react';
+import { Target, ShoppingBag, GitBranch, Users, LayoutDashboard, CheckCircle2, Lightbulb, ArrowLeft, Bot, Sparkles } from 'lucide-react';
 import { useLanguage } from '../../contexts/LanguageContext';
 
 export function BinderLayout({ activeTab, setActiveTab, completedTabs, children, onBack }) {
     const { t } = useLanguage();
     const tabs = [
-        { id: 'OS', label: 'BRAVVO BINDER', icon: LayoutDashboard, color: 'text-purple-400', border: 'border-purple-500/50', bg: 'bg-purple-500/10', special: true },
+        { id: 'OS', label: 'BRAVVO BINDER', icon: LayoutDashboard, color: 'text-[#FF6600]', border: 'border-[#FF6600]/50', bg: 'bg-[#FF6600]/10', special: true },
         { id: 'V1', label: 'VAULT 1', icon: Target, color: 'text-red-400', border: 'border-red-500/50', bg: 'bg-red-500/10' },
         { id: 'V2', label: 'VAULT 2', icon: ShoppingBag, color: 'text-orange-400', border: 'border-orange-500/50', bg: 'bg-orange-500/10' },
         { id: 'V3', label: 'VAULT 3', icon: GitBranch, color: 'text-blue-400', border: 'border-blue-500/50', bg: 'bg-blue-500/10' },
@@ -60,6 +60,19 @@ export function BinderLayout({ activeTab, setActiveTab, completedTabs, children,
                         </button>
                     );
                 })}
+
+                {/* STRATEGY GENERATION BUTTON (Sidebar Bottom) */}
+                <div className="mt-auto pb-4">
+                    <button
+                        onClick={() => window.dispatchEvent(new Event('BRAVVO_GENERATE_STRATEGY'))}
+                        className="w-12 h-12 rounded-full bg-gradient-to-br from-[#FF6600] to-[#FF8833] shadow-[0_0_20px_rgba(255,102,0,0.4)] flex items-center justify-center hover:scale-110 transition-transform group relative"
+                        title="Gerar Estratégia Manualmente"
+                    >
+                        <Bot size={24} className="text-white relative z-10" />
+                        <Sparkles size={14} className="text-white absolute top-2 right-2 opacity-50 animate-pulse" />
+                        <div className="absolute inset-0 rounded-full bg-white/20 animate-pulse duration-1000"></div>
+                    </button>
+                </div>
             </div>
 
             {/* Main Content Area (The "Paper") */}
