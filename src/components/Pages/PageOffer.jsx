@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { CARACA_BAR_DATA } from '../../services/demoData';
-import { ShoppingBag, ArrowRight, TrendingUp, Target, Zap, CheckCircle2 } from 'lucide-react';
+import { ShoppingBag, ArrowRight, TrendingUp, Target, Zap, CheckCircle2, Loader2, Wand2, Sparkles } from 'lucide-react';
 import { ProductList } from '../ui/ProductList';
 import { useVaultForm } from '../../hooks/useVaultForm';
 // import { useVaults } from '../../contexts/VaultContext';
 import { useToast } from '../../contexts/ToastContext';
+import { aiService } from '../../services/aiService';
 
 const UPSELL_STRATEGIES = [
     { value: 'none', label: 'Nenhuma estratégia definida' },
@@ -17,7 +18,7 @@ const UPSELL_STRATEGIES = [
 
 export function PageOffer({ formData: externalFormData, setFormData: externalSetFormData, onNext }) {
     // Use unified vault form hook
-    const { formData: vaultFormData, updateField: vaultUpdateField, isSynced, saveAndAdvance } = useVaultForm('V2');
+    const { formData: vaultFormData, updateField: vaultUpdateField, updateFields, isSynced, saveAndAdvance } = useVaultForm('V2');
 
     // const { appData } = useVaults();
     const { addToast } = useToast();
@@ -25,9 +26,34 @@ export function PageOffer({ formData: externalFormData, setFormData: externalSet
     const formData = vaultFormData || externalFormData || {};
     const updateField = vaultUpdateField || ((field, value) => externalSetFormData?.({ ...formData, [field]: value }));
 
+    const [inspiring, setInspiring] = useState(false);
+
     const handleSubmit = (e) => {
         e.preventDefault();
         saveAndAdvance(onNext, 'Vault 2 (Commerce)');
+    };
+
+    const handleInspire = async (mode) => {
+        setInspiring(true);
+        try {
+            const suggestions = await aiService.generateVaultContent('s2', formData, mode);
+
+            if (updateFields) {
+                updateFields(suggestions);
+            } else {
+                Object.entries(suggestions).forEach(([k, v]) => updateField(k, v));
+            }
+
+            addToast({
+                title: 'Inspiração Aplicada! ✨',
+                description: mode === 'all' ? 'Conceito completo gerado.' : 'Campos vazios preenchidos.',
+                type: 'success'
+            });
+        } catch (e) {
+            addToast({ title: 'Erro na IA', description: e.message, type: 'error' });
+        } finally {
+            setInspiring(false);
+        }
     };
 
     // Initialize products if empty
@@ -37,11 +63,38 @@ export function PageOffer({ formData: externalFormData, setFormData: externalSet
         <form onSubmit={handleSubmit} className="space-y-10">
             {/* Header */}
             <div className="space-y-2">
-                <div className="flex items-center gap-2 text-warning mb-2">
-                    <ShoppingBag size={24} />
-                    <span className="text-mono-data uppercase">VAULT 2 • COMMERCE</span>
+                <div className="flex justify-between items-start">
+                    <div>
+                        <div className="flex items-center gap-2 text-warning mb-2">
+                            <ShoppingBag size={24} />
+                            <span className="text-mono-data uppercase">VAULT 2 • COMMERCE</span>
+                        </div>
+                        <h2 className="text-title text-2xl">Economia & Oferta</h2>
+                    </div>
+                    {/* AI Buttons */}
+                    <div className="flex gap-2">
+                        <button
+                            type="button"
+                            onClick={() => handleInspire('empty')}
+                            disabled={inspiring}
+                            className="btn-ghost !px-3 !py-2 !h-auto flex items-center gap-2 text-xs"
+                            title="Preencher apenas campos vazios"
+                        >
+                            {inspiring ? <Loader2 size={14} className="animate-spin" /> : <Wand2 size={14} />}
+                            Completar Vazios
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => handleInspire('all')}
+                            disabled={inspiring}
+                            className="btn-primary !px-3 !py-2 !h-auto flex items-center gap-2 text-xs bg-orange-500 hover:bg-orange-600 border-orange-400"
+                            title="Gerar conceito completo (sobrescreve)"
+                        >
+                            {inspiring ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />}
+                            Inspirar Tudo
+                        </button>
+                    </div>
                 </div>
-                <h2 className="text-title text-2xl">Economia & Oferta</h2>
                 <p className="text-body max-w-xl">
                     O que vamos vender e como? Estruture seu catálogo para o <strong>S2 (Commerce Vault)</strong>.
                 </p>
@@ -53,29 +106,6 @@ export function PageOffer({ formData: externalFormData, setFormData: externalSet
                     <span className="w-6 h-6 bg-warning/20 text-warning rounded flex items-center justify-center text-xs">1</span>
                     <ShoppingBag size={16} className="text-warning" />
                     Catálogo de Produtos
-                    <button
-                        type="button"
-                        onClick={() => {
-                            // Demo Caraca Bar
-                            const demo = CARACA_BAR_DATA.S2;
-
-                            if (updateField) {
-                                updateField('products', demo.products);
-                                updateField('targetTicket', demo.ticketAverage);
-                                updateField('currentTicket', 45.00); // Exemplo baseline
-                                updateField('currentRevenue', 65000); // Exemplo baseline
-                            }
-
-                            addToast({
-                                title: 'Modo Caraca Bar Ativado! 🍢',
-                                description: 'Produtos e preços de exemplo carregados.',
-                                type: 'success'
-                            });
-                        }}
-                        className="btn-ghost btn-sm ml-auto"
-                    >
-                        🎲 Inspirar-me
-                    </button>
                 </h3>
                 <p className="text-caption">
                     Adicione seus principais produtos. O primeiro é automaticamente marcado como "Carro-Chefe" (usado em campanhas).

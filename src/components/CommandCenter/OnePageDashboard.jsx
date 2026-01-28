@@ -12,8 +12,11 @@ import {
     Book,
     Palette,
     Trash2,
-    Settings
+    Settings,
+    Loader2,
+    Bot
 } from 'lucide-react';
+import { aiService } from '../../services/aiService';
 import { formatHumanDate } from './DaySummary';
 import { OnboardingChecklist } from '../ui/OnboardingChecklist';
 import { InsightCards } from '../ui/InsightCards';
@@ -32,6 +35,7 @@ import { PriorityActionsCard } from './PriorityActionsCard';
 import { VaultCards } from './VaultCards';
 import { WorkspaceToolsModal } from './WorkspaceToolsModal';
 import { ThemeManager } from '../ThemeManager';
+import { GlobalCalendarModal } from './GlobalCalendarModal';
 import { useToast } from '../../contexts/ToastContext';
 import { getFeatureFlag } from '../../utils/featureFlags';
 import { useUndo } from '../../hooks/useUndo';
@@ -403,139 +407,139 @@ function DetailEditForm({ item, onSave, onClose }) {
         <form onSubmit={handleSubmit} className="flex flex-col h-full">
             <div className="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-6">
                 <div className="space-y-4">
-                <div>
-                    <label className="text-label">{t('os.detail_edit.title_label')}</label>
-                    <input
-                        required
-                        className="premium-input bg-[#111]"
-                        value={form.initiative || ''}
-                        onChange={e => setForm({ ...form, initiative: e.target.value })}
-                        data-testid="detail-edit-initiative"
-                    />
-                </div>
-                <div>
-                    <label className="text-label">Micro descrição</label>
-                    <input
-                        className="premium-input bg-[#111]"
-                        value={form.microDescription || ''}
-                        onChange={e => setForm({ ...form, microDescription: e.target.value })}
-                        placeholder="1 linha: objetivo / CTA / detalhe"
-                    />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
                     <div>
-                        <label className="text-label">Objetivo</label>
+                        <label className="text-label">{t('os.detail_edit.title_label')}</label>
                         <input
+                            required
                             className="premium-input bg-[#111]"
-                            value={form.objective || ''}
-                            onChange={e => setForm({ ...form, objective: e.target.value })}
-                            placeholder="Qual é o objetivo desta atividade?"
+                            value={form.initiative || ''}
+                            onChange={e => setForm({ ...form, initiative: e.target.value })}
+                            data-testid="detail-edit-initiative"
                         />
                     </div>
                     <div>
-                        <label className="text-label">CTA</label>
+                        <label className="text-label">Micro descrição</label>
                         <input
                             className="premium-input bg-[#111]"
-                            value={form.ctaText || ''}
-                            onChange={e => setForm({ ...form, ctaText: e.target.value })}
-                            placeholder="Ex: Chamar no WhatsApp"
+                            value={form.microDescription || ''}
+                            onChange={e => setForm({ ...form, microDescription: e.target.value })}
+                            placeholder="1 linha: objetivo / CTA / detalhe"
                         />
                     </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                    <div>
-                        <label className="text-label">Dependências</label>
-                        <input
-                            className="premium-input bg-[#111]"
-                            value={form.dependencies || ''}
-                            onChange={e => setForm({ ...form, dependencies: e.target.value })}
-                            placeholder="Ex: aprovação do dono / fotos"
-                        />
-                    </div>
-                    <div>
-                        <label className="text-label">Critério de sucesso</label>
-                        <input
-                            className="premium-input bg-[#111]"
-                            value={form.successCriteria || ''}
-                            onChange={e => setForm({ ...form, successCriteria: e.target.value })}
-                            placeholder="Ex: 30 cliques / 5 reservas"
-                        />
-                    </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                    <div>
-                        <label className="text-label">{t('os.detail_edit.date_label')}</label>
-                        <input
-                            type="date"
-                            className="premium-input bg-[#111]"
-                            value={form.date || ''}
-                            onChange={e => setForm({ ...form, date: e.target.value })}
-                        />
-                    </div>
-                    <div>
-                        <label className="text-label">Responsável</label>
-                        <input
-                            className="premium-input bg-[#111]"
-                            value={form.responsible || ''}
-                            onChange={e => setForm({ ...form, responsible: e.target.value })}
-                            placeholder="Quem executa?"
-                        />
-                    </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                    <div>
-                        <label className="text-label">{t('os.detail_edit.channel_label')}</label>
-                        <div className="grid grid-cols-2 gap-2">
-                            <select
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <label className="text-label">Objetivo</label>
+                            <input
                                 className="premium-input bg-[#111]"
-                                value={form.channelId || 'instagram'}
-                                onChange={e => {
-                                    const nextChannelId = e.target.value;
-                                    const nextSubchannelId = getDefaultSubchannelId(nextChannelId);
-                                    setForm(prev => ({
-                                        ...prev,
-                                        channelId: nextChannelId,
-                                        subchannelId: nextSubchannelId,
-                                        channel: toLegacyChannelLabel(nextChannelId, nextSubchannelId),
-                                        format: getDefaultContentType(nextChannelId, nextSubchannelId)
-                                    }));
-                                }}
-                            >
-                                {listChannels().map(c => (
-                                    <option key={c.id} value={c.id}>{c.label}</option>
-                                ))}
-                            </select>
-                            <select
+                                value={form.objective || ''}
+                                onChange={e => setForm({ ...form, objective: e.target.value })}
+                                placeholder="Qual é o objetivo desta atividade?"
+                            />
+                        </div>
+                        <div>
+                            <label className="text-label">CTA</label>
+                            <input
                                 className="premium-input bg-[#111]"
-                                value={form.subchannelId || getDefaultSubchannelId(form.channelId || 'instagram') || ''}
-                                onChange={e => {
-                                    const nextSub = e.target.value;
-                                    const nextChannelId = form.channelId || 'instagram';
-                                    setForm(prev => ({
-                                        ...prev,
-                                        subchannelId: nextSub,
-                                        channel: toLegacyChannelLabel(nextChannelId, nextSub),
-                                        format: getDefaultContentType(nextChannelId, nextSub)
-                                    }));
-                                }}
-                            >
-                                {listSubchannels(form.channelId || 'instagram').map(sc => (
-                                    <option key={sc.id} value={sc.id}>{sc.label}</option>
-                                ))}
-                            </select>
+                                value={form.ctaText || ''}
+                                onChange={e => setForm({ ...form, ctaText: e.target.value })}
+                                placeholder="Ex: Chamar no WhatsApp"
+                            />
                         </div>
                     </div>
-                </div>
-                <div>
-                    <label className="text-label">{t('os.detail_edit.copy_label')}</label>
-                    <textarea
-                        className="premium-input bg-[#111] min-h-[100px]"
-                        placeholder={t('os.detail_edit.copy_placeholder')}
-                        value={form.caption || ''}
-                        onChange={e => setForm({ ...form, caption: e.target.value })}
-                        data-testid="detail-edit-caption"
-                    />
-                </div>
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <label className="text-label">Dependências</label>
+                            <input
+                                className="premium-input bg-[#111]"
+                                value={form.dependencies || ''}
+                                onChange={e => setForm({ ...form, dependencies: e.target.value })}
+                                placeholder="Ex: aprovação do dono / fotos"
+                            />
+                        </div>
+                        <div>
+                            <label className="text-label">Critério de sucesso</label>
+                            <input
+                                className="premium-input bg-[#111]"
+                                value={form.successCriteria || ''}
+                                onChange={e => setForm({ ...form, successCriteria: e.target.value })}
+                                placeholder="Ex: 30 cliques / 5 reservas"
+                            />
+                        </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <label className="text-label">{t('os.detail_edit.date_label')}</label>
+                            <input
+                                type="date"
+                                className="premium-input bg-[#111]"
+                                value={form.date || ''}
+                                onChange={e => setForm({ ...form, date: e.target.value })}
+                            />
+                        </div>
+                        <div>
+                            <label className="text-label">Responsável</label>
+                            <input
+                                className="premium-input bg-[#111]"
+                                value={form.responsible || ''}
+                                onChange={e => setForm({ ...form, responsible: e.target.value })}
+                                placeholder="Quem executa?"
+                            />
+                        </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <label className="text-label">{t('os.detail_edit.channel_label')}</label>
+                            <div className="grid grid-cols-2 gap-2">
+                                <select
+                                    className="premium-input bg-[#111]"
+                                    value={form.channelId || 'instagram'}
+                                    onChange={e => {
+                                        const nextChannelId = e.target.value;
+                                        const nextSubchannelId = getDefaultSubchannelId(nextChannelId);
+                                        setForm(prev => ({
+                                            ...prev,
+                                            channelId: nextChannelId,
+                                            subchannelId: nextSubchannelId,
+                                            channel: toLegacyChannelLabel(nextChannelId, nextSubchannelId),
+                                            format: getDefaultContentType(nextChannelId, nextSubchannelId)
+                                        }));
+                                    }}
+                                >
+                                    {listChannels().map(c => (
+                                        <option key={c.id} value={c.id}>{c.label}</option>
+                                    ))}
+                                </select>
+                                <select
+                                    className="premium-input bg-[#111]"
+                                    value={form.subchannelId || getDefaultSubchannelId(form.channelId || 'instagram') || ''}
+                                    onChange={e => {
+                                        const nextSub = e.target.value;
+                                        const nextChannelId = form.channelId || 'instagram';
+                                        setForm(prev => ({
+                                            ...prev,
+                                            subchannelId: nextSub,
+                                            channel: toLegacyChannelLabel(nextChannelId, nextSub),
+                                            format: getDefaultContentType(nextChannelId, nextSub)
+                                        }));
+                                    }}
+                                >
+                                    {listSubchannels(form.channelId || 'instagram').map(sc => (
+                                        <option key={sc.id} value={sc.id}>{sc.label}</option>
+                                    ))}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <label className="text-label">{t('os.detail_edit.copy_label')}</label>
+                        <textarea
+                            className="premium-input bg-[#111] min-h-[100px]"
+                            placeholder={t('os.detail_edit.copy_placeholder')}
+                            value={form.caption || ''}
+                            onChange={e => setForm({ ...form, caption: e.target.value })}
+                            data-testid="detail-edit-caption"
+                        />
+                    </div>
                 </div>
             </div>
 
@@ -605,6 +609,8 @@ export function OnePageDashboard({
 }) {
     const { t } = useLanguage();
     const { addToast } = useToast();
+
+
 
     const activeClientId = currentUser?.client?.id || appData?.id || null;
 
@@ -754,6 +760,7 @@ export function OnePageDashboard({
     const highlightTimeoutRef = useRef(null);
     const [roadmapNoteDrafts, setRoadmapNoteDrafts] = useState({});
     const [showGovernanceModal, setShowGovernanceModal] = useState(false);
+    const [showGlobalCalendar, setShowGlobalCalendar] = useState(false);
     const [showGovernanceModeModal, setShowGovernanceModeModal] = useState(false);
     const [historyFocusEntryId, setHistoryFocusEntryId] = useState(null);
     const [governanceFrequency, setGovernanceFrequency] = useState(appData.governanceFrequency || 'weekly');
@@ -859,7 +866,7 @@ export function OnePageDashboard({
             ...kpis,
             [key]: { ...kpis[key], value: newVal }
         };
-        
+
         setKpis(updatedKpis);
 
         // Audit Log Entry
@@ -1132,7 +1139,7 @@ export function OnePageDashboard({
         };
 
         const updatedHistory = [snapshot, ...(appData.governanceHistory || [])];
-        
+
         setAppData(prev => ({
             ...prev,
             governanceHistory: updatedHistory,
@@ -1409,13 +1416,13 @@ export function OnePageDashboard({
                 const numVal = parseFloat(val);
                 // Update local state if it matches our core keys
                 if (newKpis[id]) newKpis[id].value = numVal;
-                
+
                 // Update contract
                 const kpiIndex = newContractKpis.findIndex(k => k.id === id);
                 if (kpiIndex >= 0) {
                     const oldVal = newContractKpis[kpiIndex].value;
                     newContractKpis[kpiIndex] = { ...newContractKpis[kpiIndex], value: numVal };
-                    
+
                     logEntries.push({
                         id: Date.now() + Math.random(),
                         ts: new Date().toISOString(),
@@ -1454,7 +1461,7 @@ export function OnePageDashboard({
         const newTasks = playbook.tasks.map((task, idx) => {
             const date = new Date();
             date.setDate(date.getDate() + task.dayOffset + 1); // Start D+1
-            
+
             const legacyChannel = playbook.channels[idx % playbook.channels.length] || 'Instagram Feed';
             const parsed = parseLegacyChannelLabel(legacyChannel);
             const channelId = parsed.channelId || 'instagram';
@@ -1503,7 +1510,108 @@ export function OnePageDashboard({
         addToast({ title: 'Plano Gerado', description: `${newTasks.length} tarefas criadas a partir do playbook.`, type: 'success' });
     };
 
-    // Helper for Data Freshness
+    // AI Plan Generation Handler
+    const [isGeneratingPlan, setIsGeneratingPlan] = useState(false);
+
+    const handleGeneratePlan = async () => {
+        setIsGeneratingPlan(true);
+        try {
+            const vaults = appData.vaults;
+            const result = await aiService.generatePlanWithAI(vaults, latestAta);
+
+            // 1. Convert Tasks to Roadmap Items
+            const newTasks = (result.tasks || []).map((task, idx) => {
+                const date = new Date();
+                date.setDate(date.getDate() + (idx % 7) + 1); // Spread over next week
+
+                // Simple channel mapping
+                let channelId = 'instagram';
+                let subchannelId = 'feed';
+
+                if (task.channel) {
+                    const low = task.channel.toLowerCase();
+                    if (low.includes('story')) subchannelId = 'stories';
+                    else if (low.includes('reel')) subchannelId = 'reels';
+                    else if (low.includes('email')) channelId = 'email';
+                    else if (low.includes('blog')) channelId = 'blog';
+                    else if (low.includes('youtube')) channelId = 'youtube';
+                    else if (low.includes('whatsapp')) channelId = 'whatsapp';
+                }
+
+                return {
+                    id: `AI-${Date.now()}-${idx}`,
+                    date: date.toISOString().split('T')[0],
+                    initiative: task.title,
+                    channelId,
+                    subchannelId,
+                    channel: toLegacyChannelLabel(channelId, subchannelId),
+                    format: getDefaultContentType(channelId, subchannelId),
+                    offerId: 'hero',
+                    status: 'draft',
+                    responsible: task.responsible || 'Time',
+                    microDescription: task.description,
+                    origin: 'AI Plan'
+                };
+            });
+
+            // 2. Update Roadmap
+            setAppData(prev => ({
+                ...prev,
+                dashboard: {
+                    ...prev.dashboard,
+                    D2: [...(prev.dashboard.D2 || []), ...newTasks]
+                },
+                measurementContract: {
+                    ...(prev.measurementContract || {}),
+                    auditLog: [
+                        {
+                            id: Date.now(),
+                            ts: new Date().toISOString(),
+                            actor: currentUser?.role ? `${currentUser.role} (AI Trigger)` : 'System AI',
+                            action: 'AI_GENERATE_PLAN',
+                            target: 'Roadmap',
+                            details: `Generated ${newTasks.length} items`
+                        },
+                        ...(prev.measurementContract?.auditLog || [])
+                    ]
+                }
+            }));
+
+            // 3. Update KPI Goals (if present)
+            if (result.kpis && result.kpis.length > 0) {
+                const newKpis = { ...kpis };
+                result.kpis.forEach(k => {
+                    let id = null;
+                    const name = k.name.toLowerCase();
+                    if (name.includes('receita') || name.includes('faturamento')) id = 'revenue';
+                    else if (name.includes('tráfego') || name.includes('visitas')) id = 'traffic';
+                    else if (name.includes('vendas') || name.includes('conversão')) id = 'sales';
+
+                    if (id && newKpis[id]) {
+                        // Update Goal based on AI suggestion
+                        const numeric = typeof k.target === 'number' ? k.target : parseFloat(k.target.replace(/[^0-9.]/g, ''));
+                        if (!isNaN(numeric)) {
+                            newKpis[id].goal = numeric;
+                        }
+                    }
+                });
+                setKpis(newKpis);
+            }
+
+            addToast({
+                title: 'Plano Gerado com Sucesso',
+                description: `${newTasks.length} iniciativas criadas e KPIs atualizados com inteligência.`,
+                type: 'success',
+                duration: 5000
+            });
+
+        } catch (e) {
+            console.error(e);
+            addToast({ title: 'Erro na Geração', description: e.message, type: 'error' });
+        } finally {
+            setIsGeneratingPlan(false);
+        }
+    };
     const getLastUpdateLabel = () => {
         if (!appData.measurementContract?.lastUpdate) return 'Nunca atualizado';
         const date = new Date(appData.measurementContract.lastUpdate);
@@ -1524,7 +1632,7 @@ export function OnePageDashboard({
 
     const sendApprovalRequest = (item, e) => {
         e.stopPropagation(); // Prevent row click
-        
+
         const clientPhone = appData?.vaults?.S4?.contacts?.emergency || '';
         const phoneDigits = String(clientPhone).replace(/\D/g, '');
         const deepLink = buildRoadmapDeepLink(item.id);
@@ -1544,6 +1652,66 @@ export function OnePageDashboard({
         const url = `https://wa.me/${phoneDigits}?text=${encodeURIComponent(text)}`;
         window.open(url, '_blank');
         addToast({ title: 'WhatsApp Aberto', description: 'Mensagem de aprovação pré-preenchida.', type: 'success' });
+    };
+
+    // AI Strategy Weights Display
+    const aiStrategyWeights = aiService.getAIConfig()?.weights || { strategy: 50, lastGov: 30, history: 20 };
+
+    const handleGenerateStrategy = async () => {
+        setIsGeneratingPlan(true);
+        try {
+            const config = aiService.getAIConfig();
+
+            // 1. Generate Plan with Weights
+            const result = await aiService.generatePlanWithAI(
+                appData.vaults,
+                latestAta,
+                appData.measurementContract?.auditLog || [],
+                config?.weights
+            );
+
+            // 2. Process Results into D2 Items
+            if (result.tasks && Array.isArray(result.tasks)) {
+                const newItems = result.tasks.map((t, idx) => ({
+                    id: `AI-STRAT-${Date.now()}-${idx}`,
+                    date: new Date().toISOString().split('T')[0],
+                    initiative: t.title,
+                    channel: t.category || 'Geral', // Map category to channel
+                    status: 'scheduled',
+                    owner: 'Time',
+                    microDescription: t.description,
+                    priority: t.priority
+                }));
+
+                // 3. Update AppData
+                setAppData(prev => ({
+                    ...prev,
+                    dashboard: {
+                        ...prev.dashboard,
+                        D2: [...(prev.dashboard?.D2 || []), ...newItems]
+                    },
+                    // Update Recalibration Focus with the recommendation
+                    recalibration: {
+                        ...(prev.recalibration || {}),
+                        executionFocus: [
+                            { message: result.recommendation || 'Estratégia gerada via IA.' },
+                            ...(prev.recalibration?.executionFocus || [])
+                        ].slice(0, 3) // Keep top 3
+                    }
+                }));
+
+                addToast({
+                    title: 'Estratégia Gerada 🚀',
+                    description: `${newItems.length} ações criadas com ponderação: ${config?.weights?.strategy || 50}/${config?.weights?.lastGov || 30}/${config?.weights?.history || 20}`,
+                    type: 'success'
+                });
+            }
+        } catch (error) {
+            console.error(error);
+            addToast({ title: 'Erro na Estratégia', description: error.message, type: 'error' });
+        } finally {
+            setIsGeneratingPlan(false);
+        }
     };
 
     return (
@@ -1616,6 +1784,13 @@ export function OnePageDashboard({
                     >
                         <Palette size={14} />
                     </button>
+                    <button
+                        onClick={() => setShowGlobalCalendar(true)}
+                        className="btn-ghost !h-7 !px-2"
+                        title="Calendário Global & Setorial"
+                    >
+                        <CalendarIcon size={14} />
+                    </button>
                     <div className="w-px h-4 bg-white/10 mx-1"></div>
                     {meetingState.active && (
                         <button
@@ -1666,186 +1841,195 @@ export function OnePageDashboard({
                             currentUser={currentUser}
                             currentWindow={appData?.nextGovernanceWindow}
                             calendarRule={governanceCalendarRule}
+                            lastGovernance={latestAta}
                         />
                     </div>
                 ) : (
                     <>
-                {latestAta && (() => {
-                    const lastClosed = latestAta?.signature?.closedAt;
-                    const lastLabel = lastClosed ? new Date(lastClosed).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : latestAta?.id;
-                    const rev = parseFloat(latestAta?.kpis?.revenue?.achievement || 0);
-                    const prevRev = parseFloat(previousAta?.kpis?.revenue?.achievement || 0);
-                    const delta = previousAta ? (rev - prevRev) : 0;
-                    const trend = !previousAta ? '→' : delta > 2 ? '↑' : delta < -2 ? '↓' : '→';
+                        {/* GLOBAL CALENDAR MODAL */}
+                        <GlobalCalendarModal
+                            open={showGlobalCalendar}
+                            onClose={() => setShowGlobalCalendar(false)}
+                            appData={appData}
+                            roadmapItems={appData?.dashboard?.D2 || []}
+                        />
 
-                    return (
-                        <div className="mb-4 px-4 py-2 rounded-xl border border-white/10 bg-[#080808] flex flex-col md:flex-row md:items-center md:justify-between gap-2">
-                            <div className="flex items-center gap-3 min-w-0">
-                                <span className="text-[10px] font-mono text-gray-500 uppercase tracking-wider">Última governança</span>
-                                <span className="text-[11px] text-gray-300 font-medium truncate">{lastLabel}</span>
-                                <span className="text-[11px] text-gray-500 font-mono">{trend}{previousAta ? ` ${delta >= 0 ? '+' : ''}${delta.toFixed(1)}pp` : ''}</span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <button
-                                    onClick={() => {
-                                        setHistoryFocusEntryId(latestAta?.id);
-                                        setShowHistory(true);
-                                    }}
-                                    className="btn-ghost !h-7 !px-3 !border-purple-500/30 text-purple-300 hover:text-purple-200"
-                                >
-                                    Ver ATA
-                                </button>
-                            </div>
-                        </div>
-                    );
-                })()}
+                        {latestAta && (() => {
+                            const lastClosed = latestAta?.signature?.closedAt;
+                            const lastLabel = lastClosed ? new Date(lastClosed).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : latestAta?.id;
+                            const rev = parseFloat(latestAta?.kpis?.revenue?.achievement || 0);
+                            const prevRev = parseFloat(previousAta?.kpis?.revenue?.achievement || 0);
+                            const delta = previousAta ? (rev - prevRev) : 0;
+                            const trend = !previousAta ? '→' : delta > 2 ? '↑' : delta < -2 ? '↓' : '→';
 
-                <KPIGrid
-                    kpis={kpis}
-                    onKpiUpdate={handleKpiUpdate}
-                    disabled={!meetingState.active}
-                />
-
-                <div className="mb-6 bento-grid p-4">
-                    <div className="flex items-center justify-between gap-3 mb-3">
-                        <div className="text-label">KPIs adicionais (manual)</div>
-                        <div className="text-[10px] text-gray-600">Ative na lista e edite durante a Governança</div>
-                    </div>
-
-                    <div className="flex flex-wrap gap-2 mb-4">
-                        {extraKpiCatalog.map(k => {
-                            const checked = secondaryKpis.includes(k.id);
                             return (
-                                <button
-                                    key={k.id}
-                                    type="button"
-                                    onClick={() => toggleSecondaryKpi(k.id)}
-                                    className={`text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded border ${checked ? 'bg-purple-500/10 text-purple-300 border-purple-500/30' : 'bg-white/5 text-gray-400 border-white/10 hover:border-white/20'}`}
-                                >
-                                    {k.label}
-                                </button>
-                            );
-                        })}
-                    </div>
-
-                    {secondaryKpis.length > 0 ? (
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
-                            {secondaryKpis.map(id => {
-                                const cfg = extraKpiCatalog.find(k => k.id === id);
-                                if (!cfg) return null;
-                                const value = kpis?.[id]?.value ?? 0;
-                                const goal = kpis?.[id]?.goal ?? 0;
-                                return (
-                                    <div key={id} className="bg-white/5 border border-white/10 rounded-lg p-3">
-                                        <div className="text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-2">{cfg.label}</div>
-                                        <div className="text-[11px] text-gray-600">Realizado</div>
-                                        <div className="mt-1">
-                                            <_InlineEdit
-                                                value={value}
-                                                type="number"
-                                                prefix={cfg.prefix}
-                                                suffix={cfg.suffix}
-                                                onSave={(v) => handleKpiUpdate(id, v)}
-                                                disabled={!meetingState.active}
-                                                className="text-metric font-mono"
-                                            />
-                                        </div>
-                                        <div className="mt-2 text-[11px] text-gray-600">Meta</div>
-                                        <div className="mt-1">
-                                            <_InlineEdit
-                                                value={goal}
-                                                type="number"
-                                                prefix={cfg.prefix}
-                                                suffix={cfg.suffix}
-                                                onSave={(v) => handleKpiGoalUpdate(id, v)}
-                                                disabled={!meetingState.active}
-                                                className="text-[13px] font-mono text-gray-200"
-                                            />
-                                        </div>
+                                <div className="mb-4 px-4 py-2 rounded-xl border border-white/10 bg-[#080808] flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+                                    <div className="flex items-center gap-3 min-w-0">
+                                        <span className="text-[10px] font-mono text-gray-500 uppercase tracking-wider">Última governança</span>
+                                        <span className="text-[11px] text-gray-300 font-medium truncate">{lastLabel}</span>
+                                        <span className="text-[11px] text-gray-500 font-mono">{trend}{previousAta ? ` ${delta >= 0 ? '+' : ''}${delta.toFixed(1)}pp` : ''}</span>
                                     </div>
-                                );
-                            })}
-                        </div>
-                    ) : (
-                        <div className="text-[11px] text-gray-600">Nenhum KPI adicional ativo.</div>
-                    )}
-                </div>
+                                    <div className="flex items-center gap-2">
+                                        <button
+                                            onClick={() => {
+                                                setHistoryFocusEntryId(latestAta?.id);
+                                                setShowHistory(true);
+                                            }}
+                                            className="btn-ghost !h-7 !px-3 !border-purple-500/30 text-purple-300 hover:text-purple-200"
+                                        >
+                                            Ver ATA
+                                        </button>
+                                    </div>
+                                </div>
+                            );
+                        })()}
 
-                <PriorityActionsCard
-                    items={appData?.dashboard?.D2 || []}
-                    kpis={kpis}
-                    onActionClick={handlePriorityAction}
-                    variant="strip"
-                />
+                        <KPIGrid
+                            kpis={kpis}
+                            onKpiUpdate={handleKpiUpdate}
+                            disabled={!meetingState.active}
+                        />
 
-                {(appData?.recalibration || appData?.nextGovernanceWindow) && (
-                    <div className="mb-6 grid grid-cols-1 lg:grid-cols-3 gap-4">
-                        {appData?.nextGovernanceWindow && (
-                            <div className="bento-grid p-4">
-                                <div className="text-label mb-2">Próxima Janela</div>
-                                <div className="text-sm text-white font-bold">
-                                    {appData.nextGovernanceWindow.startDate} → {appData.nextGovernanceWindow.endDate}
-                                </div>
-                                <div className="mt-2 text-[11px] text-gray-500">
-                                    Foco: <span className="text-gray-300">{appData.nextGovernanceWindow.periodGoals?.focus || '—'}</span>
-                                </div>
-                                <div className="mt-3 space-y-1 text-[11px] text-gray-400">
-                                    <div>Receita: <span className="text-gray-200">R$ {(appData.nextGovernanceWindow.periodGoals?.kpiTargets?.revenue || 0).toLocaleString('pt-BR')}</span></div>
-                                    <div>Tráfego: <span className="text-gray-200">R$ {(appData.nextGovernanceWindow.periodGoals?.kpiTargets?.traffic || 0).toLocaleString('pt-BR')}</span></div>
-                                    <div>Vendas: <span className="text-gray-200">{(appData.nextGovernanceWindow.periodGoals?.kpiTargets?.sales || 0).toLocaleString('pt-BR')}</span></div>
-                                </div>
+                        <div className="mb-6 bento-grid p-4">
+                            <div className="flex items-center justify-between gap-3 mb-3">
+                                <div className="text-label">KPIs adicionais (manual)</div>
+                                <div className="text-[10px] text-gray-600">Ative na lista e edite durante a Governança</div>
                             </div>
-                        )}
 
-                        {appData?.recalibration && (
-                            <div className="bento-grid p-4">
-                                <div className="text-label mb-2">Ordens do Ciclo</div>
-                                {Array.isArray(appData.recalibration.dailyOrders) && appData.recalibration.dailyOrders.length > 0 ? (
-                                    <div className="space-y-2">
-                                        {appData.recalibration.dailyOrders.slice(0, 5).map(order => (
-                                            <div key={order.id} className="flex items-start justify-between gap-3 bg-white/5 border border-white/10 rounded-lg p-2">
-                                                <div className="min-w-0">
-                                                    <div className="text-[11px] text-white font-medium truncate">{order.priority}. {order.title}</div>
-                                                    <div className="text-[10px] text-gray-600 font-mono">{order.source}</div>
+                            <div className="flex flex-wrap gap-2 mb-4">
+                                {extraKpiCatalog.map(k => {
+                                    const checked = secondaryKpis.includes(k.id);
+                                    return (
+                                        <button
+                                            key={k.id}
+                                            type="button"
+                                            onClick={() => toggleSecondaryKpi(k.id)}
+                                            className={`text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded border ${checked ? 'bg-purple-500/10 text-purple-300 border-purple-500/30' : 'bg-white/5 text-gray-400 border-white/10 hover:border-white/20'}`}
+                                        >
+                                            {k.label}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+
+                            {secondaryKpis.length > 0 ? (
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+                                    {secondaryKpis.map(id => {
+                                        const cfg = extraKpiCatalog.find(k => k.id === id);
+                                        if (!cfg) return null;
+                                        const value = kpis?.[id]?.value ?? 0;
+                                        const goal = kpis?.[id]?.goal ?? 0;
+                                        return (
+                                            <div key={id} className="bg-white/5 border border-white/10 rounded-lg p-3">
+                                                <div className="text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-2">{cfg.label}</div>
+                                                <div className="text-[11px] text-gray-600">Realizado</div>
+                                                <div className="mt-1">
+                                                    <_InlineEdit
+                                                        value={value}
+                                                        type="number"
+                                                        prefix={cfg.prefix}
+                                                        suffix={cfg.suffix}
+                                                        onSave={(v) => handleKpiUpdate(id, v)}
+                                                        disabled={!meetingState.active}
+                                                        className="text-metric font-mono"
+                                                    />
+                                                </div>
+                                                <div className="mt-2 text-[11px] text-gray-600">Meta</div>
+                                                <div className="mt-1">
+                                                    <_InlineEdit
+                                                        value={goal}
+                                                        type="number"
+                                                        prefix={cfg.prefix}
+                                                        suffix={cfg.suffix}
+                                                        onSave={(v) => handleKpiGoalUpdate(id, v)}
+                                                        disabled={!meetingState.active}
+                                                        className="text-[13px] font-mono text-gray-200"
+                                                    />
                                                 </div>
                                             </div>
-                                        ))}
+                                        );
+                                    })}
+                                </div>
+                            ) : (
+                                <div className="text-[11px] text-gray-600">Nenhum KPI adicional ativo.</div>
+                            )}
+                        </div>
+
+                        <PriorityActionsCard
+                            items={appData?.dashboard?.D2 || []}
+                            kpis={kpis}
+                            onActionClick={handlePriorityAction}
+                            variant="strip"
+                        />
+
+                        {(appData?.recalibration || appData?.nextGovernanceWindow) && (
+                            <div className="mb-6 grid grid-cols-1 lg:grid-cols-3 gap-4">
+                                {appData?.nextGovernanceWindow && (
+                                    <div className="bento-grid p-4">
+                                        <div className="text-label mb-2">Próxima Janela</div>
+                                        <div className="text-sm text-white font-bold">
+                                            {appData.nextGovernanceWindow.startDate} → {appData.nextGovernanceWindow.endDate}
+                                        </div>
+                                        <div className="mt-2 text-[11px] text-gray-500">
+                                            Foco: <span className="text-gray-300">{appData.nextGovernanceWindow.periodGoals?.focus || '—'}</span>
+                                        </div>
+                                        <div className="mt-3 space-y-1 text-[11px] text-gray-400">
+                                            <div>Receita: <span className="text-gray-200">R$ {(appData.nextGovernanceWindow.periodGoals?.kpiTargets?.revenue || 0).toLocaleString('pt-BR')}</span></div>
+                                            <div>Tráfego: <span className="text-gray-200">R$ {(appData.nextGovernanceWindow.periodGoals?.kpiTargets?.traffic || 0).toLocaleString('pt-BR')}</span></div>
+                                            <div>Vendas: <span className="text-gray-200">{(appData.nextGovernanceWindow.periodGoals?.kpiTargets?.sales || 0).toLocaleString('pt-BR')}</span></div>
+                                        </div>
                                     </div>
-                                ) : (
-                                    <div className="text-[11px] text-gray-600">—</div>
+                                )}
+
+                                {appData?.recalibration && (
+                                    <div className="bento-grid p-4">
+                                        <div className="text-label mb-2">Ordens do Ciclo</div>
+                                        {Array.isArray(appData.recalibration.dailyOrders) && appData.recalibration.dailyOrders.length > 0 ? (
+                                            <div className="space-y-2">
+                                                {appData.recalibration.dailyOrders.slice(0, 5).map(order => (
+                                                    <div key={order.id} className="flex items-start justify-between gap-3 bg-white/5 border border-white/10 rounded-lg p-2">
+                                                        <div className="min-w-0">
+                                                            <div className="text-[11px] text-white font-medium truncate">{order.priority}. {order.title}</div>
+                                                            <div className="text-[10px] text-gray-600 font-mono">{order.source}</div>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        ) : (
+                                            <div className="text-[11px] text-gray-600">—</div>
+                                        )}
+                                    </div>
+                                )}
+
+                                {appData?.recalibration && (
+                                    <div className="bento-grid p-4">
+                                        <div className="text-label mb-2">Foco + Alertas</div>
+                                        {Array.isArray(appData.recalibration.executionFocus) && appData.recalibration.executionFocus.length > 0 ? (
+                                            <div className="space-y-2">
+                                                {appData.recalibration.executionFocus.slice(0, 3).map((f, idx) => (
+                                                    <div key={idx} className="text-[11px] text-gray-300 bg-white/5 border border-white/10 rounded-lg p-2">
+                                                        {f.message}
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        ) : (
+                                            <div className="text-[11px] text-gray-600">—</div>
+                                        )}
+
+                                        {Array.isArray(appData.recalibration.alerts) && appData.recalibration.alerts.length > 0 && (
+                                            <div className="mt-3 space-y-2">
+                                                {appData.recalibration.alerts.slice(0, 3).map((a, idx) => (
+                                                    <div key={idx} className="text-[11px] text-gray-400 bg-white/5 border border-white/10 rounded-lg p-2">
+                                                        <div className="text-gray-300">{a.title}</div>
+                                                        <div className="text-gray-600">{a.action}</div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
                                 )}
                             </div>
                         )}
-
-                        {appData?.recalibration && (
-                            <div className="bento-grid p-4">
-                                <div className="text-label mb-2">Foco + Alertas</div>
-                                {Array.isArray(appData.recalibration.executionFocus) && appData.recalibration.executionFocus.length > 0 ? (
-                                    <div className="space-y-2">
-                                        {appData.recalibration.executionFocus.slice(0, 3).map((f, idx) => (
-                                            <div key={idx} className="text-[11px] text-gray-300 bg-white/5 border border-white/10 rounded-lg p-2">
-                                                {f.message}
-                                            </div>
-                                        ))}
-                                    </div>
-                                ) : (
-                                    <div className="text-[11px] text-gray-600">—</div>
-                                )}
-
-                                {Array.isArray(appData.recalibration.alerts) && appData.recalibration.alerts.length > 0 && (
-                                    <div className="mt-3 space-y-2">
-                                        {appData.recalibration.alerts.slice(0, 3).map((a, idx) => (
-                                            <div key={idx} className="text-[11px] text-gray-400 bg-white/5 border border-white/10 rounded-lg p-2">
-                                                <div className="text-gray-300">{a.title}</div>
-                                                <div className="text-gray-600">{a.action}</div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
-                        )}
-                    </div>
-                )}
 
                     </>
                 )}
@@ -1875,8 +2059,8 @@ export function OnePageDashboard({
 
                 {/* 2. TACTICAL GRID (The "Linear" List) */}
                 <div className="flex-1 flex flex-col relative z-10 overflow-hidden">
-                <ThemeManager appData={appData} />
-                <header className="h-16 border-b border-white/5 bg-black/40 backdrop-blur-md flex items-center justify-between px-6 shrink-0 relative z-20">
+                    <ThemeManager appData={appData} />
+                    <header className="h-16 border-b border-white/5 bg-black/40 backdrop-blur-md flex items-center justify-between px-6 shrink-0 relative z-20">
                         <div className="flex items-center gap-2">
                             <CalendarIcon size={14} className="text-gray-500" />
                             <span className="text-[11px] font-bold text-gray-300 uppercase tracking-widest">{t('os.roadmap.title')}</span>
@@ -1884,6 +2068,15 @@ export function OnePageDashboard({
                         </div>
                         {/* Keyboard Hint */}
                         <div className="flex items-center gap-1.5 opacity-50">
+                            <button
+                                onClick={handleGeneratePlan}
+                                disabled={isGeneratingPlan}
+                                className="hidden sm:flex items-center gap-1 px-2 py-0.5 rounded border border-purple-500/30 bg-purple-500/10 text-[9px] text-purple-300 hover:bg-purple-500/20 transition-colors"
+                                title="Gerar novas ideias com IA"
+                            >
+                                {isGeneratingPlan ? <Loader2 size={10} className="animate-spin" /> : <Bot size={10} />}
+                                <span>IA</span>
+                            </button>
                             <span className="text-[9px] text-gray-600 font-medium hidden sm:inline">{t('os.roadmap.quick_actions')}</span>
                             <kbd className="hidden sm:inline-flex h-4 items-center gap-1 rounded border border-[var(--border-subtle)] bg-[var(--bg-deep)] px-1.5 font-mono text-[9px] font-medium text-[var(--text-secondary)]">
                                 <span className="text-xs">⌘</span>K
@@ -1939,200 +2132,200 @@ export function OnePageDashboard({
                                     const channelIsEditing = editingChannelItemId === item.id;
 
                                     return (
-                                    <div
-                                        key={item.id}
-                                        data-testid={`d2-row-${item.id}`}
-                                        data-highlighted={highlightedRowId === item.id ? "true" : "false"}
-                                        className={`grid grid-cols-[100px_1fr_150px_120px_120px_120px] gap-4 px-4 py-3 border-b border-[var(--border-subtle)] hover:bg-[var(--bg-surface)] group transition-all duration-200 items-center hover:pl-5 ${highlightedRowId === item.id ? 'bg-purple-500/10 ring-1 ring-purple-500/30' : ''}`}
-                                    >
-                                        <div className="text-mono-data text-gray-400 group-hover:text-white transition-colors">
-                                            <InlineDateEdit
-                                                value={item.date}
-                                                displayValue={formatHumanDate(item.date)}
-                                                onSave={(nextDate) => {
-                                                    if (!nextDate) return;
-                                                    handleSaveItem({ ...item, date: nextDate });
-                                                }}
-                                            />
-                                        </div>
                                         <div
-                                            className="min-w-0 pr-4"
-                                            data-testid={`d2-initiative-${item.id}`}
-                                            title={[
-                                                item.microDescription,
-                                                item.objective,
-                                                item.ctaText,
-                                                item.dependencies,
-                                                item.successCriteria
-                                            ].filter(Boolean).join(' | ')}
-                                            onClick={() => setEditingItem(item)}
+                                            key={item.id}
+                                            data-testid={`d2-row-${item.id}`}
+                                            data-highlighted={highlightedRowId === item.id ? "true" : "false"}
+                                            className={`grid grid-cols-[100px_1fr_150px_120px_120px_120px] gap-4 px-4 py-3 border-b border-[var(--border-subtle)] hover:bg-[var(--bg-surface)] group transition-all duration-200 items-center hover:pl-5 ${highlightedRowId === item.id ? 'bg-purple-500/10 ring-1 ring-purple-500/30' : ''}`}
                                         >
-                                            <_InlineEdit
-                                                value={item.initiative || ''}
-                                                onSave={(v) => {
-                                                    const next = String(v || '');
-                                                    if (!next.trim()) return;
-                                                    handleSaveItem({ ...item, initiative: next });
-                                                }}
-                                                className="text-sm font-medium text-white truncate group-hover:translate-x-1 transition-transform block"
-                                            />
-                                            {!!previewText && (
-                                                <div className="text-[11px] text-gray-500 truncate mt-0.5 group-hover:hidden">
-                                                    {previewText}
-                                                </div>
-                                            )}
+                                            <div className="text-mono-data text-gray-400 group-hover:text-white transition-colors">
+                                                <InlineDateEdit
+                                                    value={item.date}
+                                                    displayValue={formatHumanDate(item.date)}
+                                                    onSave={(nextDate) => {
+                                                        if (!nextDate) return;
+                                                        handleSaveItem({ ...item, date: nextDate });
+                                                    }}
+                                                />
+                                            </div>
+                                            <div
+                                                className="min-w-0 pr-4"
+                                                data-testid={`d2-initiative-${item.id}`}
+                                                title={[
+                                                    item.microDescription,
+                                                    item.objective,
+                                                    item.ctaText,
+                                                    item.dependencies,
+                                                    item.successCriteria
+                                                ].filter(Boolean).join(' | ')}
+                                                onClick={() => setEditingItem(item)}
+                                            >
+                                                <_InlineEdit
+                                                    value={item.initiative || ''}
+                                                    onSave={(v) => {
+                                                        const next = String(v || '');
+                                                        if (!next.trim()) return;
+                                                        handleSaveItem({ ...item, initiative: next });
+                                                    }}
+                                                    className="text-sm font-medium text-white truncate group-hover:translate-x-1 transition-transform block"
+                                                />
+                                                {!!previewText && (
+                                                    <div className="text-[11px] text-gray-500 truncate mt-0.5 group-hover:hidden">
+                                                        {previewText}
+                                                    </div>
+                                                )}
 
-                                            {meetingState.active && (
-                                                <div className="mt-1 hidden group-hover:block">
-                                                    <input
-                                                        value={noteValue}
-                                                        placeholder="Comentário rápido (somente na Governança)"
-                                                        className="bg-black/30 border border-white/10 rounded px-2 py-1 w-full text-[11px] text-gray-200 focus:outline-none focus:border-purple-500/50"
-                                                        onClick={(e) => e.stopPropagation()}
-                                                        onChange={(e) => {
-                                                            const v = e.target.value;
-                                                            setRoadmapNoteDrafts(prev => ({ ...prev, [item.id]: v }));
-                                                        }}
-                                                        onBlur={(e) => {
-                                                            const finalValue = String(e.target.value || '');
-                                                            setAppData(prev => {
-                                                                const prevD2 = Array.isArray(prev?.dashboard?.D2) ? prev.dashboard.D2 : [];
-                                                                const nextD2 = prevD2.map(it => (String(it.id) === String(item.id) ? { ...it, governanceNote: finalValue } : it));
-                                                                return { ...prev, dashboard: { ...(prev?.dashboard || {}), D2: nextD2 } };
-                                                            });
-                                                            setRoadmapNoteDrafts(prev => {
-                                                                const next = { ...(prev || {}) };
-                                                                delete next[item.id];
-                                                                return next;
-                                                            });
-                                                        }}
-                                                    />
-                                                </div>
-                                            )}
-                                        </div>
-                                        <div className="text-xs text-gray-500 group-hover:text-gray-400 transition-colors">
-                                            {channelIsEditing ? (
-                                                <div className="space-y-1" onClick={(e) => e.stopPropagation()}>
-                                                    <div className="grid grid-cols-2 gap-2">
-                                                        <select
-                                                            className="bg-black/30 border border-white/10 rounded px-2 py-1 text-[11px] text-gray-200 focus:outline-none focus:border-purple-500/50"
-                                                            value={channelDraft.channelId}
+                                                {meetingState.active && (
+                                                    <div className="mt-1 hidden group-hover:block">
+                                                        <input
+                                                            value={noteValue}
+                                                            placeholder="Comentário rápido (somente na Governança)"
+                                                            className="bg-black/30 border border-white/10 rounded px-2 py-1 w-full text-[11px] text-gray-200 focus:outline-none focus:border-purple-500/50"
+                                                            onClick={(e) => e.stopPropagation()}
                                                             onChange={(e) => {
-                                                                const nextChannelId = e.target.value;
-                                                                const nextSub = getDefaultSubchannelId(nextChannelId) || '';
-                                                                setChannelDraft({ channelId: nextChannelId, subchannelId: nextSub });
+                                                                const v = e.target.value;
+                                                                setRoadmapNoteDrafts(prev => ({ ...prev, [item.id]: v }));
                                                             }}
-                                                        >
-                                                            {listChannels().map(c => (
-                                                                <option key={c.id} value={c.id}>{c.label}</option>
-                                                            ))}
-                                                        </select>
-                                                        <select
-                                                            className="bg-black/30 border border-white/10 rounded px-2 py-1 text-[11px] text-gray-200 focus:outline-none focus:border-purple-500/50"
-                                                            value={channelDraft.subchannelId}
-                                                            onChange={(e) => setChannelDraft(prev => ({ ...prev, subchannelId: e.target.value }))}
-                                                        >
-                                                            {listSubchannels(channelDraft.channelId).map(sc => (
-                                                                <option key={sc.id} value={sc.id}>{sc.label}</option>
-                                                            ))}
-                                                        </select>
-                                                    </div>
-                                                    <div className="flex items-center gap-2">
-                                                        <button
-                                                            type="button"
-                                                            className="text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded border bg-white/5 text-gray-300 border-white/10 hover:border-white/20"
-                                                            onClick={() => setEditingChannelItemId(null)}
-                                                        >
-                                                            Cancelar
-                                                        </button>
-                                                        <button
-                                                            type="button"
-                                                            className="text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded border bg-purple-500/10 text-purple-300 border-purple-500/30 hover:border-purple-400/40"
-                                                            onClick={() => {
-                                                                const nextChannelId = channelDraft.channelId;
-                                                                const nextSub = channelDraft.subchannelId || getDefaultSubchannelId(nextChannelId) || '';
-                                                                const legacy = toLegacyChannelLabel(nextChannelId, nextSub);
-                                                                const format = getDefaultContentType(nextChannelId, nextSub);
-                                                                handleSaveItem({
-                                                                    ...item,
-                                                                    channelId: nextChannelId,
-                                                                    subchannelId: nextSub,
-                                                                    channel: legacy,
-                                                                    format
+                                                            onBlur={(e) => {
+                                                                const finalValue = String(e.target.value || '');
+                                                                setAppData(prev => {
+                                                                    const prevD2 = Array.isArray(prev?.dashboard?.D2) ? prev.dashboard.D2 : [];
+                                                                    const nextD2 = prevD2.map(it => (String(it.id) === String(item.id) ? { ...it, governanceNote: finalValue } : it));
+                                                                    return { ...prev, dashboard: { ...(prev?.dashboard || {}), D2: nextD2 } };
                                                                 });
-                                                                setEditingChannelItemId(null);
+                                                                setRoadmapNoteDrafts(prev => {
+                                                                    const next = { ...(prev || {}) };
+                                                                    delete next[item.id];
+                                                                    return next;
+                                                                });
                                                             }}
+                                                        />
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <div className="text-xs text-gray-500 group-hover:text-gray-400 transition-colors">
+                                                {channelIsEditing ? (
+                                                    <div className="space-y-1" onClick={(e) => e.stopPropagation()}>
+                                                        <div className="grid grid-cols-2 gap-2">
+                                                            <select
+                                                                className="bg-black/30 border border-white/10 rounded px-2 py-1 text-[11px] text-gray-200 focus:outline-none focus:border-purple-500/50"
+                                                                value={channelDraft.channelId}
+                                                                onChange={(e) => {
+                                                                    const nextChannelId = e.target.value;
+                                                                    const nextSub = getDefaultSubchannelId(nextChannelId) || '';
+                                                                    setChannelDraft({ channelId: nextChannelId, subchannelId: nextSub });
+                                                                }}
+                                                            >
+                                                                {listChannels().map(c => (
+                                                                    <option key={c.id} value={c.id}>{c.label}</option>
+                                                                ))}
+                                                            </select>
+                                                            <select
+                                                                className="bg-black/30 border border-white/10 rounded px-2 py-1 text-[11px] text-gray-200 focus:outline-none focus:border-purple-500/50"
+                                                                value={channelDraft.subchannelId}
+                                                                onChange={(e) => setChannelDraft(prev => ({ ...prev, subchannelId: e.target.value }))}
+                                                            >
+                                                                {listSubchannels(channelDraft.channelId).map(sc => (
+                                                                    <option key={sc.id} value={sc.id}>{sc.label}</option>
+                                                                ))}
+                                                            </select>
+                                                        </div>
+                                                        <div className="flex items-center gap-2">
+                                                            <button
+                                                                type="button"
+                                                                className="text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded border bg-white/5 text-gray-300 border-white/10 hover:border-white/20"
+                                                                onClick={() => setEditingChannelItemId(null)}
+                                                            >
+                                                                Cancelar
+                                                            </button>
+                                                            <button
+                                                                type="button"
+                                                                className="text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded border bg-purple-500/10 text-purple-300 border-purple-500/30 hover:border-purple-400/40"
+                                                                onClick={() => {
+                                                                    const nextChannelId = channelDraft.channelId;
+                                                                    const nextSub = channelDraft.subchannelId || getDefaultSubchannelId(nextChannelId) || '';
+                                                                    const legacy = toLegacyChannelLabel(nextChannelId, nextSub);
+                                                                    const format = getDefaultContentType(nextChannelId, nextSub);
+                                                                    handleSaveItem({
+                                                                        ...item,
+                                                                        channelId: nextChannelId,
+                                                                        subchannelId: nextSub,
+                                                                        channel: legacy,
+                                                                        format
+                                                                    });
+                                                                    setEditingChannelItemId(null);
+                                                                }}
+                                                            >
+                                                                Salvar
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                ) : (
+                                                    <div className="flex items-center gap-2">
+                                                        <span>{formatIcons[item.format]?.icon || '🧩'}</span>
+                                                        <button
+                                                            type="button"
+                                                            className="truncate text-left hover:text-white"
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                const parsed = parseLegacyChannelLabel(item.channel || 'Instagram Feed');
+                                                                const channelId = item.channelId || parsed.channelId;
+                                                                const subchannelId = item.subchannelId || parsed.subchannelId || getDefaultSubchannelId(channelId) || '';
+                                                                setChannelDraft({ channelId, subchannelId });
+                                                                setEditingChannelItemId(item.id);
+                                                            }}
+                                                            title="Editar canal"
                                                         >
-                                                            Salvar
+                                                            {item.channel}
                                                         </button>
                                                     </div>
-                                                </div>
-                                            ) : (
-                                                <div className="flex items-center gap-2">
-                                                    <span>{formatIcons[item.format]?.icon || '🧩'}</span>
-                                                    <button
-                                                        type="button"
-                                                        className="truncate text-left hover:text-white"
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            const parsed = parseLegacyChannelLabel(item.channel || 'Instagram Feed');
-                                                            const channelId = item.channelId || parsed.channelId;
-                                                            const subchannelId = item.subchannelId || parsed.subchannelId || getDefaultSubchannelId(channelId) || '';
-                                                            setChannelDraft({ channelId, subchannelId });
-                                                            setEditingChannelItemId(item.id);
-                                                        }}
-                                                        title="Editar canal"
-                                                    >
-                                                        {item.channel}
-                                                    </button>
-                                                </div>
-                                            )}
-                                        </div>
-                                        <div>
-                                            <StatusDropdown
-                                                value={item.status}
-                                                onChange={(newStatus) => handleStatusChange(item.id, newStatus)}
-                                                options={statusOptions}
-                                                testId={`d2-status-${item.id}`}
-                                            />
-                                        </div>
-                                        <div className="text-xs text-gray-600 truncate">
-                                            <_InlineEdit
-                                                value={item.responsible || ''}
-                                                onSave={(v) => handleSaveItem({ ...item, responsible: String(v || '') })}
-                                                className="text-xs text-gray-300"
-                                            />
-                                        </div>
-                                        <div className="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                            {/* WhatsApp Approval Button */}
-                                            <button 
-                                                onClick={(e) => sendApprovalRequest(item, e)} 
-                                                className="p-1.5 hover:bg-green-500/20 rounded text-gray-400 hover:text-green-400 transform hover:scale-110 transition-all"
-                                                title="Solicitar Aprovação (WhatsApp)"
-                                            >
-                                                <MessageCircle size={12} />
-                                            </button>
+                                                )}
+                                            </div>
+                                            <div>
+                                                <StatusDropdown
+                                                    value={item.status}
+                                                    onChange={(newStatus) => handleStatusChange(item.id, newStatus)}
+                                                    options={statusOptions}
+                                                    testId={`d2-status-${item.id}`}
+                                                />
+                                            </div>
+                                            <div className="text-xs text-gray-600 truncate">
+                                                <_InlineEdit
+                                                    value={item.responsible || ''}
+                                                    onSave={(v) => handleSaveItem({ ...item, responsible: String(v || '') })}
+                                                    className="text-xs text-gray-300"
+                                                />
+                                            </div>
+                                            <div className="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                {/* WhatsApp Approval Button */}
+                                                <button
+                                                    onClick={(e) => sendApprovalRequest(item, e)}
+                                                    className="p-1.5 hover:bg-green-500/20 rounded text-gray-400 hover:text-green-400 transform hover:scale-110 transition-all"
+                                                    title="Solicitar Aprovação (WhatsApp)"
+                                                >
+                                                    <MessageCircle size={12} />
+                                                </button>
 
-                                            <button
-                                                onClick={() => handleOpenCreativeStudio(item)}
-                                                className="p-1.5 hover:bg-purple-500/20 rounded text-gray-400 hover:text-purple-300 transform hover:scale-110 transition-all"
-                                                title="Gerar Arte"
-                                                data-testid={`d2-generate-art-${item.id}`}
-                                            >
-                                                <Wand2 size={12} />
-                                            </button>
-                                            
-                                            <button 
-                                                onClick={() => setEditingItem(item)} 
-                                                className="p-1.5 hover:bg-white/10 rounded text-gray-400 hover:text-white transform hover:scale-110 transition-all"
-                                                title="Editar"
-                                                data-testid={`d2-edit-${item.id}`}
-                                            >
-                                                <Edit3 size={12} />
-                                            </button>
+                                                <button
+                                                    onClick={() => handleOpenCreativeStudio(item)}
+                                                    className="p-1.5 hover:bg-purple-500/20 rounded text-gray-400 hover:text-purple-300 transform hover:scale-110 transition-all"
+                                                    title="Gerar Arte"
+                                                    data-testid={`d2-generate-art-${item.id}`}
+                                                >
+                                                    <Wand2 size={12} />
+                                                </button>
+
+                                                <button
+                                                    onClick={() => setEditingItem(item)}
+                                                    className="p-1.5 hover:bg-white/10 rounded text-gray-400 hover:text-white transform hover:scale-110 transition-all"
+                                                    title="Editar"
+                                                    data-testid={`d2-edit-${item.id}`}
+                                                >
+                                                    <Edit3 size={12} />
+                                                </button>
+                                            </div>
                                         </div>
-                                    </div>
-                                );
+                                    );
                                 })}
                                 {filteredCalendar.length === 0 && (
                                     FLAG_DASH_EMPTY_STATES ? (
@@ -2148,7 +2341,15 @@ export function OnePageDashboard({
                                             </div>
                                             <p className="text-xs">{t('os.roadmap.no_items')}</p>
                                             <button onClick={() => setShowQuickAdd(true)} className="mt-4 text-xs font-bold text-gray-400 hover:text-white transition-colors flex items-center gap-1">
-                                                <Plus size={10} /> {t('os.roadmap.add_item')}
+                                                <Plus size={14} /> {t('os.actions.new')}
+                                            </button>
+                                            <button
+                                                onClick={handleGeneratePlan}
+                                                disabled={isGeneratingPlan}
+                                                className="mt-3 text-xs font-bold text-purple-400 hover:text-purple-300 transition-colors flex items-center gap-1 border border-purple-500/30 bg-purple-500/10 px-3 py-1.5 rounded-full"
+                                            >
+                                                {isGeneratingPlan ? <Loader2 size={14} className="animate-spin" /> : <Bot size={14} />}
+                                                {isGeneratingPlan ? 'Gerando Plano...' : '✨ Gerar Roadmap com IA'}
                                             </button>
                                         </div>
                                     )
@@ -2170,6 +2371,26 @@ export function OnePageDashboard({
                     }}
                     onVaultClick={(vaultId) => setActiveTab(vaultId)}
                 />
+
+                {/* STRATEGY GENERATION BUTTON (Between V5 and Modals) */}
+                <div className="mb-8">
+                    <button
+                        onClick={handleGenerateStrategy}
+                        disabled={isGeneratingPlan}
+                        className="w-full py-6 rounded-xl border border-purple-500/30 bg-gradient-to-r from-purple-500/10 to-blue-500/10 hover:from-purple-500/20 hover:to-blue-500/20 text-purple-300 transition-all flex flex-col items-center justify-center gap-2 group relative overflow-hidden"
+                    >
+                        <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                        <div className="flex items-center gap-3 relative z-10">
+                            {isGeneratingPlan ? <Loader2 className="animate-spin" size={24} /> : <Bot size={24} />}
+                            <span className="text-xl font-bold tracking-widest uppercase">Gerar Estratégia Integrada</span>
+                        </div>
+                        <div className="flex items-center gap-4 text-xs opacity-70 group-hover:opacity-100 relative z-10 font-mono">
+                            <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-blue-400"></span> {aiStrategyWeights.strategy}% Vaults</span>
+                            <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-green-400"></span> {aiStrategyWeights.lastGov}% Correção</span>
+                            <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-orange-400"></span> {aiStrategyWeights.history}% Histórico</span>
+                        </div>
+                    </button>
+                </div>
 
                 {/* Modal Mounts */}
                 {FLAG_DASH_QUICKADD_DRAWER ? (
@@ -2227,6 +2448,11 @@ export function OnePageDashboard({
                     initialTab={workspaceToolsTab}
                 />
                 <PlaybookModal open={showPlaybooks} onClose={() => setShowPlaybooks(false)} onApply={handleApplyPlaybook} />
+                <GlobalCalendarModal
+                    open={showGlobalCalendar}
+                    onClose={() => setShowGlobalCalendar(false)}
+                    appData={appData}
+                />
                 <CreativeStudioModal
                     open={showCreativeStudio}
                     onClose={() => {
@@ -2249,6 +2475,6 @@ export function OnePageDashboard({
                 {/* GOVERNANCE MODE MODAL - Enhanced Ritual */}
                 {/* Rendered embedded inside scroll area when active */}
             </div>
-        </div>
+        </div >
     );
 }

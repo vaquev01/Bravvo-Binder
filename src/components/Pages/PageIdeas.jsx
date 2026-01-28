@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { CARACA_BAR_DATA } from '../../services/demoData';
-import { Lightbulb, Link2, FileText, Plus, Trash2, ExternalLink, Sparkles, CheckCircle2 } from 'lucide-react';
+import { Lightbulb, Link2, FileText, Plus, Trash2, ExternalLink, Sparkles, CheckCircle2, Loader2, Wand2 } from 'lucide-react';
 import { useVaultForm } from '../../hooks/useVaultForm';
 // import { useVaults } from '../../contexts/VaultContext';
 import { useToast } from '../../contexts/ToastContext';
+import { aiService } from '../../services/aiService';
 
 const IDEA_TAGS = [
     'Conteúdo', 'Promoção', 'Lançamento', 'Sazonal', 'Tendência', 'Reels', 'Stories', 'Carrossel', 'Collab'
@@ -20,7 +21,7 @@ const REFERENCE_TYPES = [
 
 export function PageIdeas({ formData: externalFormData, setFormData: externalSetFormData, onComplete }) {
     // Use unified vault form hook
-    const { formData: vaultFormData, updateField: vaultUpdateField, isSynced, saveAndAdvance } = useVaultForm('V5');
+    const { formData: vaultFormData, updateField: vaultUpdateField, updateFields, isSynced, saveAndAdvance } = useVaultForm('V5');
 
     // const { appData } = useVaults();
     const { addToast } = useToast();
@@ -32,33 +33,29 @@ export function PageIdeas({ formData: externalFormData, setFormData: externalSet
     const [showRefForm, setShowRefForm] = useState(false);
     const [newIdea, setNewIdea] = useState({ title: '', description: '', url: '', tags: [] });
     const [newRef, setNewRef] = useState({ title: '', url: '', type: 'post', notes: '' });
+    const [inspiring, setInspiring] = useState(false);
 
-    const handleInspire = () => {
-        // Caraca Bar Demo
-        const demo = CARACA_BAR_DATA.S5;
+    const handleInspire = async (mode) => {
+        setInspiring(true);
+        try {
+            const suggestions = await aiService.generateVaultContent('s5', formData, mode);
 
-        if (updateField) {
-            // We can pre-populate some ideas
-            const newIdeas = demo.ideas.map((ideaTitle, idx) => ({
-                id: `IDEA-DEMO-${idx}`,
-                title: ideaTitle,
-                description: 'Ideia gerada pelo assistente Caraca Bar',
-                tags: ['Sugestão'],
-                createdAt: new Date().toISOString()
-            }));
-
-            updateField('ideas', [...(formData.ideas || []), ...newIdeas]);
-
-            if (!formData.notepad) {
-                updateField('notepad', `OBJETIVO: ${demo.rules.mood}\n\nIDEIAS:\n${demo.ideas.map(i => '- ' + i).join('\n')}`);
+            if (updateFields) {
+                updateFields(suggestions);
+            } else {
+                Object.entries(suggestions).forEach(([k, v]) => updateField(k, v));
             }
-        }
 
-        addToast({
-            title: 'Modo Caraca Bar Ativado! 🍢',
-            description: 'Novas ideias foram adicionadas ao seu banco.',
-            type: 'success'
-        });
+            addToast({
+                title: 'Inspiração Aplicada! ✨',
+                description: mode === 'all' ? 'Conceito completo gerado.' : 'Campos vazios preenchidos.',
+                type: 'success'
+            });
+        } catch (e) {
+            addToast({ title: 'Erro na IA', description: e.message, type: 'error' });
+        } finally {
+            setInspiring(false);
+        }
     };
 
     const handleSubmit = (e) => {
@@ -119,9 +116,29 @@ export function PageIdeas({ formData: externalFormData, setFormData: externalSet
                     <div>
                         <div className="flex items-center justify-between gap-3">
                             <h2 className="text-title text-2xl">V5 • Ideas Vault</h2>
-                            <button type="button" onClick={handleInspire} className="btn-ghost !h-8 !px-3" title="Inspirar-me">
-                                🎲 Inspirar-me
-                            </button>
+                            {/* AI Buttons */}
+                            <div className="flex gap-2">
+                                <button
+                                    type="button"
+                                    onClick={() => handleInspire('empty')}
+                                    disabled={inspiring}
+                                    className="btn-ghost !px-3 !py-2 !h-auto flex items-center gap-2 text-xs"
+                                    title="Preencher apenas campos vazios"
+                                >
+                                    {inspiring ? <Loader2 size={14} className="animate-spin" /> : <Wand2 size={14} />}
+                                    Completar Vazios
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => handleInspire('all')}
+                                    disabled={inspiring}
+                                    className="btn-primary !px-3 !py-2 !h-auto flex items-center gap-2 text-xs bg-yellow-600 hover:bg-yellow-500 border-yellow-500"
+                                    title="Gerar conceito completo (sobrescreve)"
+                                >
+                                    {inspiring ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />}
+                                    Inspirar Tudo
+                                </button>
+                            </div>
                         </div>
                         <p className="text-body">Banco de ideias, referências e anotações rápidas</p>
                     </div>

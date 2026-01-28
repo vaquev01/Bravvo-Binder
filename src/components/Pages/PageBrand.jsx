@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { CARACA_BAR_DATA } from '../../services/demoData';
 import {
     Target, ArrowRight, Palette, Users, Sparkles, Upload, Image,
-    Music, Tag, X, Plus, CheckCircle2
+    Music, Tag, X, Plus, CheckCircle2, Loader2, Wand2
 } from 'lucide-react';
 import { TagInput } from '../ui/TagInput';
 import { RadioCards } from '../ui/RadioCards';
@@ -57,6 +57,16 @@ const MUSICAL_SUGGESTIONS = [
     'MPB', 'Indie', 'Hip-Hop', 'Bossa Nova', 'Reggae', 'House', 'Trap'
 ];
 
+const SCOPE_OPTIONS = [
+    { value: 'local', label: '📍 Local (Cidade/Bairro)' },
+    { value: 'estadual', label: '🗺️ Estadual' },
+    { value: 'regional', label: '🇧🇷 Regional (Vários Estados)' },
+    { value: 'nacional', label: '🇧🇷 Nacional' },
+    { value: 'global', label: '🌎 Global' },
+];
+
+import { aiService } from '../../services/aiService';
+
 export function PageBrand({ formData: externalFormData, setFormData: externalSetFormData, onNext }) {
     // Use unified vault form hook - reads/writes directly to appData
     const { formData: vaultFormData, updateField: vaultUpdateField, updateFields, isSynced, saveAndAdvance } = useVaultForm('V1');
@@ -70,6 +80,7 @@ export function PageBrand({ formData: externalFormData, setFormData: externalSet
 
     const [activeAssetTab, setActiveAssetTab] = useState('logos');
     const [newKeyElement, setNewKeyElement] = useState('');
+    const [inspiring, setInspiring] = useState(false);
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -114,47 +125,42 @@ export function PageBrand({ formData: externalFormData, setFormData: externalSet
         updateBrandIdentity('keyElements', current.filter(e => e !== element));
     };
 
-    const handleRandomMood = () => {
-        // V1 Inspire Me - Caraca Bar Demo
+    const handleInspire = async (mode) => {
+        setInspiring(true);
+        try {
+            const suggestions = await aiService.generateVaultContent('s1', formData, mode);
 
-        const demo = CARACA_BAR_DATA.S1;
-        const color = CARACA_BAR_DATA.S5.palette; // S1 often shares palette data or we can pull from S5 if needed, but V1 has colors too in the demo logic usually.
-        // Wait, CARACA_BAR_DATA.S1 structure: { brandName, slogan, promise, authority, tone, values, brandPersona }
-        // The V1 form expects: clientName, niche, tagline, promise, enemy, brandValues, tone, mood, archetype, primaryColor...
+            // Tratamento especial para arrays/objetos aninhados se necessário, 
+            // mas o updateFields deve lidar com merge shallow.
+            // Para s1, alguns campos estão dentro de brandIdentity. A IA retorna flat ou nested?
+            // O schema AI service espera nome do campo direto. Ex: 'tone'.
+            // Mas no form S1, 'tone' vive dentro de 'formData.tone' direto?
+            // Verificando PageBrand: `value={formData.tone}`. Sim, é direto.
+            // Mas brandIdentity.fontFamily, brandIdentity.keyElements.
 
-        // Let's map it:
-        if (updateFields) {
-            updateFields({
-                clientName: demo.brandName,
-                tagline: demo.slogan,
-                promise: demo.promise,
-                brandValues: demo.values,
-                tone: 'divertido', // Map from array if needed, or hardcode for demo
-                mood: 'rustico',
-                archetype: 'O Cara Comum',
-                primaryColor: color.primary,
-                secondaryColor: color.secondary,
-                accentColor: color.accent
+            // A IA service S1 schema pede 'tone', 'mood', etc.
+            // Se a IA retornar campos que são nested (ex: keyElements?), preciso mapear.
+            // O schema atual não pede keyElements explicitamente no topo, espera.
+            // Schema s1 fields: clientName, niche, tagline... tone, mood, bio.
+            // Não inclui keyElements. Ok.
+
+            if (updateFields) {
+                updateFields(suggestions);
+            } else {
+                // Fallback manual prop
+                Object.entries(suggestions).forEach(([k, v]) => updateField(k, v));
+            }
+
+            addToast({
+                title: 'Inspiração Aplicada! ✨',
+                description: mode === 'all' ? 'Conceito completo gerado.' : 'Campos vazios preenchidos.',
+                type: 'success'
             });
-        } else {
-            // Fallback
-            updateField('clientName', demo.brandName);
-            updateField('tagline', demo.slogan);
-            updateField('promise', demo.promise);
-            updateField('brandValues', demo.values);
-            updateField('tone', 'divertido');
-            updateField('mood', 'rustico');
-            updateField('archetype', 'O Cara Comum');
-            updateField('primaryColor', color.primary);
-            updateField('secondaryColor', color.secondary);
-            updateField('accentColor', color.accent);
+        } catch (e) {
+            addToast({ title: 'Erro na IA', description: e.message, type: 'error' });
+        } finally {
+            setInspiring(false);
         }
-
-        addToast({
-            title: 'Modo Caraca Bar Ativado! 🍢',
-            description: 'Identidade visual e verbal carregada.',
-            type: 'success'
-        });
     };
 
     const assetTabs = [
@@ -167,11 +173,39 @@ export function PageBrand({ formData: externalFormData, setFormData: externalSet
         <form onSubmit={handleSubmit} className="space-y-10">
             {/* Header */}
             <div className="space-y-2">
-                <div className="flex items-center gap-2 text-accent mb-2">
-                    <Target size={24} />
-                    <span className="text-mono-data uppercase">VAULT 1 • BRAND</span>
+                <div className="flex justify-between items-start">
+                    <div>
+                        <div className="flex items-center gap-2 text-accent mb-2">
+                            <Target size={24} />
+                            <span className="text-mono-data uppercase">VAULT 1 • BRAND</span>
+                        </div>
+                        <h2 className="text-title text-2xl">Identidade da Marca</h2>
+                    </div>
+
+                    {/* AI Buttons */}
+                    <div className="flex gap-2">
+                        <button
+                            type="button"
+                            onClick={() => handleInspire('empty')}
+                            disabled={inspiring}
+                            className="btn-ghost !px-3 !py-2 !h-auto flex items-center gap-2 text-xs"
+                            title="Preencher apenas campos vazios"
+                        >
+                            {inspiring ? <Loader2 size={14} className="animate-spin" /> : <Wand2 size={14} />}
+                            Completar Vazios
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => handleInspire('all')}
+                            disabled={inspiring}
+                            className="btn-primary !px-3 !py-2 !h-auto flex items-center gap-2 text-xs bg-purple-600 hover:bg-purple-500 border-purple-500"
+                            title="Gerar conceito completo (sobrescreve)"
+                        >
+                            {inspiring ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />}
+                            Inspirar Tudo
+                        </button>
+                    </div>
                 </div>
-                <h2 className="text-title text-2xl">Identidade da Marca</h2>
                 <p className="text-body max-w-xl">
                     Defina a alma do negócio. Esses dados alimentam o <strong>S1 (Brand Vault)</strong> e guiam toda a comunicação da IA.
                 </p>
@@ -218,6 +252,35 @@ export function PageBrand({ formData: externalFormData, setFormData: externalSet
                         value={formData.tagline || ''}
                         onChange={e => updateField('tagline', e.target.value)}
                     />
+                </div>
+            </section>
+
+            {/* Section 1.5: Abrangência */}
+            <section className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label className="input-label">Abrangência de Mercado</label>
+                        <p className="text-caption mb-2">Onde sua marca atua principalmente?</p>
+                        <select
+                            className="input-field"
+                            value={formData.scope || 'local'}
+                            onChange={e => updateField('scope', e.target.value)}
+                        >
+                            {SCOPE_OPTIONS.map(opt => (
+                                <option key={opt.value} value={opt.value}>{opt.label}</option>
+                            ))}
+                        </select>
+                    </div>
+                    <div>
+                        <label className="input-label">Localização Principal</label>
+                        <p className="text-caption mb-2">Cidade/Estado ou País foco (para feriados e eventos)</p>
+                        <input
+                            className="input-field"
+                            placeholder="Ex: São Paulo, SP"
+                            value={formData.location || ''}
+                            onChange={e => updateField('location', e.target.value)}
+                        />
+                    </div>
                 </div>
             </section>
 
@@ -355,13 +418,6 @@ export function PageBrand({ formData: externalFormData, setFormData: externalSet
                     <span className="w-6 h-6 bg-red-500/20 text-red-400 rounded flex items-center justify-center text-xs">5</span>
                     <Palette size={16} className="text-red-400" />
                     Design & Identidade Visual
-                    <button
-                        type="button"
-                        onClick={handleRandomMood}
-                        className="ml-auto text-xs bg-[var(--bg-panel)] border border-[var(--border-subtle)] hover:border-[var(--border-active)] hover:bg-white/5 px-3 py-1 rounded flex items-center gap-1 transition-colors"
-                    >
-                        🎲 Inspirar-me
-                    </button>
                 </h3>
 
                 <div className="vault-room vault-room-body">

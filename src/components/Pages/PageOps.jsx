@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { CARACA_BAR_DATA } from '../../services/demoData';
-import { Users, Shield, Sparkles, Calendar, UserCheck, Zap, Target, CheckCircle2 } from 'lucide-react';
+import { Users, Shield, Sparkles, Calendar, UserCheck, Zap, Target, CheckCircle2, Loader2, Wand2 } from 'lucide-react';
 import { StakeholderList } from '../ui/StakeholderList';
 import { CompetitorList } from '../ui/CompetitorList';
 import { useVaultForm } from '../../hooks/useVaultForm';
 // import { useVaults } from '../../contexts/VaultContext';
 import { useToast } from '../../contexts/ToastContext';
+import { aiService } from '../../services/aiService';
 
 const POSTING_FREQUENCIES = [
     { value: 'diario', label: '📆 Diário (1 post/dia)', posts: 30 },
@@ -34,7 +35,7 @@ const TIME_SLOTS = [
 
 export function PageOps({ formData: externalFormData, setFormData: externalSetFormData, onComplete }) {
     // Use unified vault form hook
-    const { formData: vaultFormData, updateField: vaultUpdateField, isSynced, saveAndAdvance } = useVaultForm('V4');
+    const { formData: vaultFormData, updateField: vaultUpdateField, updateFields, isSynced, saveAndAdvance } = useVaultForm('V4');
 
     // const { appData } = useVaults();
     const { addToast } = useToast();
@@ -43,29 +44,29 @@ export function PageOps({ formData: externalFormData, setFormData: externalSetFo
     const updateField = vaultUpdateField || ((field, value) => externalSetFormData?.({ ...formData, [field]: value }));
 
     const [isProcessing, setIsProcessing] = useState(false);
+    const [inspiring, setInspiring] = useState(false);
 
-    const handleInspire = () => {
-        // Caraca Bar Demo
-        const demo = CARACA_BAR_DATA.S4;
+    const handleInspire = async (mode) => {
+        setInspiring(true);
+        try {
+            const suggestions = await aiService.generateVaultContent('s4', formData, mode);
 
-        if (updateField) {
-            updateField('stakeholders', demo.stakeholders);
-            updateField('slaHours', demo.slas.production === '24h' ? 24 : 12);
-            // Fill other fields with defaults suitable for Caraca
-            updateField('teamStructure', 'Enxuta');
-            updateField('postingFrequency', '3x');
-            updateField('bestDays', ['qua', 'sex', 'dom']);
-            updateField('bestTimes', ['noite']);
-            updateField('cycleDuration', '30');
-            updateField('approverName', demo.stakeholders[0]?.name || 'Cliente');
-            updateField('contentOwner', 'Agência');
+            if (updateFields) {
+                updateFields(suggestions);
+            } else {
+                Object.entries(suggestions).forEach(([k, v]) => updateField(k, v));
+            }
+
+            addToast({
+                title: 'Inspiração Aplicada! ✨',
+                description: mode === 'all' ? 'Conceito completo gerado.' : 'Campos vazios preenchidos.',
+                type: 'success'
+            });
+        } catch (e) {
+            addToast({ title: 'Erro na IA', description: e.message, type: 'error' });
+        } finally {
+            setInspiring(false);
         }
-
-        addToast({
-            title: 'Modo Caraca Bar Ativado! 🍢',
-            description: 'Estrutura operacional configurada.',
-            type: 'success'
-        });
     };
 
     const handleSubmit = (e) => {
@@ -112,9 +113,29 @@ export function PageOps({ formData: externalFormData, setFormData: externalSetFo
                 </div>
                 <div className="flex items-center justify-between gap-3">
                     <h2 className="text-title text-2xl">Operação & Governança</h2>
-                    <button type="button" onClick={handleInspire} className="btn-ghost !h-8 !px-3" title="Inspirar-me">
-                        🎲 Inspirar-me
-                    </button>
+                    {/* AI Buttons */}
+                    <div className="flex gap-2">
+                        <button
+                            type="button"
+                            onClick={() => handleInspire('empty')}
+                            disabled={inspiring}
+                            className="btn-ghost !px-3 !py-2 !h-auto flex items-center gap-2 text-xs"
+                            title="Preencher apenas campos vazios"
+                        >
+                            {inspiring ? <Loader2 size={14} className="animate-spin" /> : <Wand2 size={14} />}
+                            Completar Vazios
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => handleInspire('all')}
+                            disabled={inspiring}
+                            className="btn-primary !px-3 !py-2 !h-auto flex items-center gap-2 text-xs bg-green-600 hover:bg-green-500 border-green-500"
+                            title="Gerar conceito completo (sobrescreve)"
+                        >
+                            {inspiring ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />}
+                            Inspirar Tudo
+                        </button>
+                    </div>
                 </div>
                 <p className="text-body max-w-xl">
                     Quem faz o quê e quando. Configure o <strong>S4 (Ops Vault)</strong> para organizar a execução.

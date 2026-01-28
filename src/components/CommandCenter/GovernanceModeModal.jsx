@@ -10,7 +10,8 @@ import {
     RotateCcw,
     Bot,
     Loader2,
-    Sparkles
+    Sparkles,
+    Brain
 } from 'lucide-react';
 import { useToast } from '../../contexts/ToastContext';
 import {
@@ -43,6 +44,7 @@ export function GovernanceModeModal({
     calendarRule,
     currentUser,
     variant = 'modal',
+    lastGovernance = null
 }) {
     const { addToast } = useToast();
     const [currentStep, setCurrentStep] = useState(0);
@@ -207,6 +209,10 @@ export function GovernanceModeModal({
     });
     const [priorities, setPriorities] = useState(['', '', '']);
 
+    // AI Conclusion State
+    const [aiConclusion, setAiConclusion] = useState(null);
+    const [isGeneratingConclusion, setIsGeneratingConclusion] = useState(false);
+
     // Calculate roadmap stats
     const roadmapStats = useMemo(() => {
         const stats = { total: roadmapReview.length, done: 0, delayed: 0, cancelled: 0, pending: 0, in_production: 0 };
@@ -328,7 +334,7 @@ export function GovernanceModeModal({
         setAiError(null);
 
         try {
-            const result = await aiService.generatePlanWithAI(vaults);
+            const result = await aiService.generatePlanWithAI(vaults, lastGovernance);
             setAiGeneratedPlan(result);
 
             // Auto-fill priorities from AI recommendation if list is empty
@@ -342,7 +348,39 @@ export function GovernanceModeModal({
         }
     };
 
+
     // Complete Governance
+    const aiConclusionPrompt = async () => {
+        const config = aiService.getAIConfig();
+        if (!config || !config.apiKey) {
+            addToast({ title: 'Configure a API Key primeiro', description: 'Vá em Ferramentas > IA', type: 'error' });
+            return;
+        }
+        setIsGeneratingConclusion(true);
+        try {
+            // Build ATA snapshot from current form state
+            const ataSnapshot = {
+                score: roadmapStats.done / roadmapStats.total * 100 || 0, // Simplified score calculation
+                kpis: {
+                    revenue: kpis?.revenue || {},
+                    traffic: kpis?.traffic || {},
+                    sales: kpis?.sales || {}
+                },
+                decisions: decisions.filter(d => d.trim().length > 0)
+            };
+            const result = await aiService.generateGovernanceConclusion(ataSnapshot);
+            if (result) {
+                setAiConclusion(result);
+                addToast({ title: 'Conclusão Gerada', type: 'success' });
+            }
+        } catch (error) {
+            console.error(error);
+            addToast({ title: 'Erro na IA', description: error.message, type: 'error' });
+        } finally {
+            setIsGeneratingConclusion(false);
+        }
+    };
+
     const handleComplete = () => {
         if (isProcessing) return;
         setIsProcessing(true);
@@ -1213,6 +1251,60 @@ export function GovernanceModeModal({
                                         </div>
                                     ))}
                                 </div>
+                            </div>
+
+                            {/* AI CONCLUSION SECTION */}
+                            <div className="card-elevated p-4 border-purple-500/30 bg-purple-500/5 mt-6">
+                                <h4 className="text-sm font-bold text-white mb-3 flex items-center gap-2">
+                                    <Brain size={16} className="text-purple-400" />
+                                    Conclusão Executiva (IA)
+                                </h4>
+
+                                {!aiConclusion ? (
+                                    <div className="text-center py-6">
+                                        <p className="text-sm text-gray-400 mb-4">
+                                            Use a IA para analisar todos os dados desta reunião e gerar um veredito final.
+                                        </p>
+                                        <button
+                                            onClick={aiConclusionPrompt}
+                                            disabled={isGeneratingConclusion}
+                                            className="btn-secondary mx-auto"
+                                        >
+                                            {isGeneratingConclusion ? (
+                                                <Loader2 size={16} className="animate-spin mr-2" />
+                                            ) : (
+                                                <Sparkles size={16} className="text-yellow-400 mr-2" />
+                                            )}
+                                            {isGeneratingConclusion ? 'Analisando...' : 'Gerar Conclusão com IA'}
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <div className="space-y-4 animate-fadeIn">
+                                        <div className="bg-black/30 p-3 rounded border border-white/5">
+                                            <p className="text-sm text-gray-300 italic">"{aiConclusion.conclusion_summary}"</p>
+                                        </div>
+                                        <div>
+                                            <label className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 block">
+                                                Próximos Passos Sugeridos
+                                            </label>
+                                            <ul className="space-y-1">
+                                                {aiConclusion.next_steps.map((step, idx) => (
+                                                    <li key={idx} className="text-sm text-gray-400 flex items-start gap-2">
+                                                        <span className="text-purple-500">•</span> {step}
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </div>
+                                        <div className="flex justify-end">
+                                            <button
+                                                onClick={() => setAiConclusion(null)}
+                                                className="text-xs text-red-400 hover:text-red-300"
+                                            >
+                                                Descartar e Tentar Novamente
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     )}

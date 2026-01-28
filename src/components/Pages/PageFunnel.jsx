@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { CARACA_BAR_DATA } from '../../services/demoData';
-import { GitBranch, ArrowRight, Link as LinkIcon, Target, BarChart3, MousePointer, CheckCircle2 } from 'lucide-react';
+import { GitBranch, ArrowRight, Link as LinkIcon, Target, BarChart3, MousePointer, CheckCircle2, Loader2, Wand2, Sparkles } from 'lucide-react';
 import { ChannelGrid } from '../ui/ChannelGrid';
 import { useVaultForm } from '../../hooks/useVaultForm';
 // import { useVaults } from '../../contexts/VaultContext';
 import { useToast } from '../../contexts/ToastContext';
+import { aiService } from '../../services/aiService';
 
 const CTA_OPTIONS = [
     { value: 'whatsapp', label: '💬 Falar no WhatsApp' },
@@ -20,7 +21,7 @@ const CTA_OPTIONS = [
 
 export function PageFunnel({ formData: externalFormData, setFormData: externalSetFormData, onNext }) {
     // Use unified vault form hook
-    const { formData: vaultFormData, updateField: vaultUpdateField, isSynced, saveAndAdvance } = useVaultForm('V3');
+    const { formData: vaultFormData, updateField: vaultUpdateField, updateFields, isSynced, saveAndAdvance } = useVaultForm('V3');
 
     // const { appData } = useVaults();
     const { addToast } = useToast();
@@ -36,22 +37,29 @@ export function PageFunnel({ formData: externalFormData, setFormData: externalSe
     };
 
     const [validationError, setValidationError] = React.useState(false);
+    const [inspiring, setInspiring] = useState(false);
 
-    const handleInspire = () => {
-        // Bypass preference check for Demo purposes, or check if we are in a "Demo Mode" context.
-        // For now, we simply allow it to behave as a "Fill Example" button.
+    const handleInspire = async (mode) => {
+        setInspiring(true);
+        try {
+            const suggestions = await aiService.generateVaultContent('s3', formData, mode);
 
-        const demoData = CARACA_BAR_DATA.S3;
+            if (updateFields) {
+                updateFields(suggestions);
+            } else {
+                Object.entries(suggestions).forEach(([k, v]) => updateField(k, v));
+            }
 
-        Object.entries(demoData).forEach(([field, value]) => {
-            updateField(field, value);
-        });
-
-        addToast({
-            title: 'Modo Caraca Bar Ativado! 🍢',
-            description: 'Dados de exemplo do funil carregados com sucesso.',
-            type: 'success'
-        });
+            addToast({
+                title: 'Inspiração Aplicada! ✨',
+                description: mode === 'all' ? 'Conceito completo gerado.' : 'Campos vazios preenchidos.',
+                type: 'success'
+            });
+        } catch (e) {
+            addToast({ title: 'Erro na IA', description: e.message, type: 'error' });
+        } finally {
+            setInspiring(false);
+        }
     };
 
     const handleSubmit = (e) => {
@@ -70,15 +78,37 @@ export function PageFunnel({ formData: externalFormData, setFormData: externalSe
         <form onSubmit={handleSubmit} className="space-y-10">
             {/* Header */}
             <div className="space-y-2">
-                <div className="flex items-center gap-2 text-info mb-2">
-                    <GitBranch size={24} />
-                    <span className="text-mono-data uppercase">VAULT 3 • FUNNEL</span>
-                </div>
-                <div className="flex items-center justify-between gap-3">
-                    <h2 className="text-title text-2xl">Funil & Conversão</h2>
-                    <button type="button" onClick={handleInspire} className="btn-ghost !h-8 !px-3" title="Inspirar-me">
-                        🎲 Inspirar-me
-                    </button>
+                <div className="flex justify-between items-start">
+                    <div>
+                        <div className="flex items-center gap-2 text-info mb-2">
+                            <GitBranch size={24} />
+                            <span className="text-mono-data uppercase">VAULT 3 • FUNNEL</span>
+                        </div>
+                        <h2 className="text-title text-2xl">Funil & Conversão</h2>
+                    </div>
+                    {/* AI Buttons */}
+                    <div className="flex gap-2">
+                        <button
+                            type="button"
+                            onClick={() => handleInspire('empty')}
+                            disabled={inspiring}
+                            className="btn-ghost !px-3 !py-2 !h-auto flex items-center gap-2 text-xs"
+                            title="Preencher apenas campos vazios"
+                        >
+                            {inspiring ? <Loader2 size={14} className="animate-spin" /> : <Wand2 size={14} />}
+                            Completar Vazios
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => handleInspire('all')}
+                            disabled={inspiring}
+                            className="btn-primary !px-3 !py-2 !h-auto flex items-center gap-2 text-xs bg-blue-600 hover:bg-blue-500 border-blue-500"
+                            title="Gerar conceito completo (sobrescreve)"
+                        >
+                            {inspiring ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />}
+                            Inspirar Tudo
+                        </button>
+                    </div>
                 </div>
                 <p className="text-body max-w-xl">
                     Onde você está presente e como converte. Dados para o <strong>S3 (Funnel Vault)</strong>.

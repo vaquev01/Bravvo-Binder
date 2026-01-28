@@ -17,6 +17,7 @@ export function WorkspaceToolsModal({ open, onClose, clientId, appData, setAppDa
     const [aiApiKey, setAiApiKey] = useState('');
     const [aiTestStatus, setAiTestStatus] = useState(null); // null | 'testing' | 'success' | 'error'
     const [aiTestMessage, setAiTestMessage] = useState('');
+    const [aiWeights, setAiWeights] = useState({ strategy: 50, lastGov: 30, history: 20 });
 
     useEffect(() => {
         if (!open) return;
@@ -30,6 +31,7 @@ export function WorkspaceToolsModal({ open, onClose, clientId, appData, setAppDa
         if (savedConfig) {
             setAiProvider(savedConfig.provider || 'openai');
             setAiApiKey(savedConfig.apiKey || '');
+            if (savedConfig.weights) setAiWeights(savedConfig.weights);
         }
     }, [open, initialTab]);
 
@@ -120,6 +122,53 @@ export function WorkspaceToolsModal({ open, onClose, clientId, appData, setAppDa
             description: autoInspire ? 'Auto-Inspirar desativado.' : 'Auto-Inspirar ativado (somente em campos vazios/padrão).',
             type: 'success'
         });
+    };
+
+    const [isGeneratingTheme, setIsGeneratingTheme] = useState(false);
+
+    const handleGenerateTheme = async () => {
+        setIsGeneratingTheme(true);
+        try {
+            const vaults = appData.vaults || {};
+            const theme = await aiService.generateBrandTheme(vaults);
+
+            // Apply theme
+            const newTheme = {
+                enabled: true,
+                primaryColor: theme.primaryColor,
+                accentColor: theme.accentColor,
+                fontFamily: theme.fontFamily
+            };
+
+            setAppData(prev => ({
+                ...prev,
+                workspacePrefs: {
+                    ...(prev?.workspacePrefs || {}),
+                    theme: newTheme
+                }
+            }));
+
+            addToast({
+                title: 'Tema Gerado com Sucesso',
+                description: `Identidade aplicada baseada em ${theme.reasoning}`,
+                type: 'success',
+                duration: 5000
+            });
+
+            appendAuditLog({
+                id: Date.now(),
+                ts: new Date().toISOString(),
+                actor: actorLabel,
+                action: 'AI_GENERATE_THEME',
+                target: 'theme',
+                details: theme.reasoning
+            });
+
+        } catch (e) {
+            addToast({ title: 'Erro na Geração', description: e.message, type: 'error' });
+        } finally {
+            setIsGeneratingTheme(false);
+        }
     };
 
     const handleExport = () => {
@@ -252,7 +301,8 @@ export function WorkspaceToolsModal({ open, onClose, clientId, appData, setAppDa
     const handleSaveAIConfig = () => {
         aiService.saveAIConfig({
             provider: aiProvider,
-            apiKey: aiApiKey
+            apiKey: aiApiKey,
+            weights: aiWeights
         });
         addToast({ title: 'Configuração salva', description: 'API de IA configurada com sucesso.', type: 'success' });
     };
@@ -350,6 +400,15 @@ export function WorkspaceToolsModal({ open, onClose, clientId, appData, setAppDa
                                             Personalização da Marca
                                         </div>
                                         <div className="text-xs text-gray-500 mt-1">Defina as cores e tipografia do sistema para alinhar com sua identidade visual.</div>
+
+                                        <button
+                                            onClick={handleGenerateTheme}
+                                            disabled={isGeneratingTheme}
+                                            className="mt-3 btn-primary text-xs flex items-center gap-2 !py-2 !h-auto w-full md:w-auto justify-center"
+                                        >
+                                            {isGeneratingTheme ? <Loader2 size={14} className="animate-spin" /> : <Bot size={14} />}
+                                            {isGeneratingTheme ? 'Analisando DNA da Marca...' : '✨ Gerar Identidade Visual com IA'}
+                                        </button>
                                     </div>
                                     <label className="flex items-center gap-2 select-none">
                                         <input
@@ -469,6 +528,7 @@ export function WorkspaceToolsModal({ open, onClose, clientId, appData, setAppDa
                                         >
                                             <option value="openai">OpenAI (GPT-4o)</option>
                                             <option value="anthropic">Anthropic (Claude 3.5 Sonnet)</option>
+                                            <option value="gemini">Google (Gemini Free Tier)</option>
                                         </select>
                                     </div>
 
@@ -478,10 +538,64 @@ export function WorkspaceToolsModal({ open, onClose, clientId, appData, setAppDa
                                             type="password"
                                             value={aiApiKey}
                                             onChange={(e) => setAiApiKey(e.target.value)}
-                                            placeholder={aiProvider === 'openai' ? 'sk-...' : 'sk-ant-...'}
+                                            placeholder={aiProvider === 'openai' ? 'sk-...' : aiProvider === 'anthropic' ? 'sk-ant-...' : 'AIzaSy...'}
                                             className="w-full bg-black border border-white/10 rounded px-3 py-2 text-xs text-white font-mono focus:border-purple-500 focus:outline-none"
                                         />
-                                        <p className="text-[10px] text-gray-500 mt-1">A chave é armazenada apenas no seu navegador (localStorage).</p>
+                                        <div className="flex justify-between items-start mt-1">
+                                            <p className="text-[10px] text-gray-500">A chave é armazenada apenas no seu navegador (localStorage).</p>
+                                            {aiProvider === 'gemini' && (
+                                                <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="text-[10px] text-purple-400 hover:text-purple-300 underline">
+                                                    Obter chave grátis (Google AI Studio)
+                                                </a>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    {/* AI STRATEGY WEIGHTS */}
+                                    <div className="pt-4 border-t border-white/5">
+                                        <div className="text-xs font-bold text-gray-400 uppercase mb-3 flex justify-between">
+                                            <span>Ponderação Estratégica</span>
+                                            <span className="text-purple-400">{aiWeights.strategy + aiWeights.lastGov + aiWeights.history}% Total</span>
+                                        </div>
+
+                                        <div className="space-y-4">
+                                            <div>
+                                                <div className="flex justify-between text-xs mb-1">
+                                                    <span className="text-gray-300">Estratégia (Vaults)</span>
+                                                    <span className="font-mono text-purple-400">{aiWeights.strategy}%</span>
+                                                </div>
+                                                <input
+                                                    type="range" min="0" max="100" step="5"
+                                                    value={aiWeights.strategy}
+                                                    onChange={(e) => setAiWeights(prev => ({ ...prev, strategy: Number(e.target.value) }))}
+                                                    className="w-full h-1 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-purple-500"
+                                                />
+                                            </div>
+                                            <div>
+                                                <div className="flex justify-between text-xs mb-1">
+                                                    <span className="text-gray-300">Última Governança (Correção)</span>
+                                                    <span className="font-mono text-purple-400">{aiWeights.lastGov}%</span>
+                                                </div>
+                                                <input
+                                                    type="range" min="0" max="100" step="5"
+                                                    value={aiWeights.lastGov}
+                                                    onChange={(e) => setAiWeights(prev => ({ ...prev, lastGov: Number(e.target.value) }))}
+                                                    className="w-full h-1 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-purple-500"
+                                                />
+                                            </div>
+                                            <div>
+                                                <div className="flex justify-between text-xs mb-1">
+                                                    <span className="text-gray-300">Histórico (Padrões)</span>
+                                                    <span className="font-mono text-purple-400">{aiWeights.history}%</span>
+                                                </div>
+                                                <input
+                                                    type="range" min="0" max="100" step="5"
+                                                    value={aiWeights.history}
+                                                    onChange={(e) => setAiWeights(prev => ({ ...prev, history: Number(e.target.value) }))}
+                                                    className="w-full h-1 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-purple-500"
+                                                />
+                                            </div>
+                                        </div>
                                     </div>
 
                                     <div className="flex items-center gap-3">
