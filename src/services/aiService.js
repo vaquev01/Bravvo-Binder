@@ -15,7 +15,7 @@ const DEFAULT_CONFIG = {
     model: {
         openai: 'gpt-4o',
         anthropic: 'claude-3-5-sonnet-20241022',
-        gemini: 'gemini-1.5-flash' // Modelo rápido e eficiente
+        gemini: 'gemini-2.0-flash' // Modelo rápido e eficiente
     },
     maxTokens: 2000,
     temperature: 0.7
@@ -29,7 +29,7 @@ const DEMO_KEY = '';
 const API_ENDPOINTS = {
     openai: 'https://api.openai.com/v1/chat/completions',
     anthropic: 'https://api.anthropic.com/v1/messages',
-    gemini: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent'
+    gemini: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent'
 };
 
 class AIService {
