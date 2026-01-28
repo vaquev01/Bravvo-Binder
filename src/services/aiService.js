@@ -40,13 +40,36 @@ class AIService {
     // ========== CONFIGURAÇÃO DE IA ==========
 
     /**
+     * Detects provider from API key prefix
+     */
+    detectProviderFromKey(key) {
+        if (!key) return null;
+        if (key.startsWith('AIzaSy')) return 'gemini';
+        if (key.startsWith('sk-ant-')) return 'anthropic';
+        if (key.startsWith('sk-')) return 'openai';
+        return null;
+    }
+
+    /**
      * Obtém a configuração de IA do localStorage ou usa padrão
+     * Includes auto-detection of provider from API key prefix as fallback
      */
     getAIConfig() {
         const stored = localStorage.getItem('bravvo_ai_config');
         if (stored) {
             try {
-                return JSON.parse(stored);
+                const config = JSON.parse(stored);
+
+                // Auto-correct provider if key prefix doesn't match stored provider
+                const detectedProvider = this.detectProviderFromKey(config.apiKey);
+                if (detectedProvider && detectedProvider !== config.provider) {
+                    console.warn(`Provider mismatch: stored=${config.provider}, detected=${detectedProvider}. Using detected.`);
+                    config.provider = detectedProvider;
+                    // Auto-fix in localStorage for future calls
+                    this.saveAIConfig(config);
+                }
+
+                return config;
             } catch {
                 console.warn('Configuração de IA inválida, usando padrão.');
             }
@@ -54,9 +77,9 @@ class AIService {
 
         // Fallback para garantir funcionamento imediato
         return {
-            provider: 'openai',
+            provider: 'gemini', // Changed default to Gemini (free tier focus)
             apiKey: DEMO_KEY,
-            model: DEFAULT_CONFIG.model.openai
+            model: DEFAULT_CONFIG.model.gemini
         };
     }
 

@@ -298,9 +298,32 @@ export function WorkspaceToolsModal({ open, onClose, clientId, appData, setAppDa
     };
 
     // AI Configuration Handlers
+    const detectProviderFromKey = (key) => {
+        if (!key) return null;
+        if (key.startsWith('AIzaSy')) return 'gemini';
+        if (key.startsWith('sk-ant-')) return 'anthropic';
+        if (key.startsWith('sk-')) return 'openai';
+        return null;
+    };
+
     const handleSaveAIConfig = () => {
+        // Auto-detect provider if key prefix doesn't match current selection
+        const detectedProvider = detectProviderFromKey(aiApiKey);
+        let finalProvider = aiProvider;
+
+        if (detectedProvider && detectedProvider !== aiProvider) {
+            // Key prefix suggests a different provider - use the detected one
+            finalProvider = detectedProvider;
+            setAiProvider(detectedProvider);
+            addToast({
+                title: 'Provider Detectado',
+                description: `Usando ${detectedProvider.toUpperCase()} baseado no formato da chave.`,
+                type: 'info'
+            });
+        }
+
         aiService.saveAIConfig({
-            provider: aiProvider,
+            provider: finalProvider,
             apiKey: aiApiKey,
             weights: aiWeights
         });
