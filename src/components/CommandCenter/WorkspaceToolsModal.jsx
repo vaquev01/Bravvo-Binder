@@ -1,7 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Download, Settings, X, Palette } from 'lucide-react';
+import { Download, Settings, X, Palette, Bot, Loader2 } from 'lucide-react';
 import { useToast } from '../../contexts/ToastContext';
 import { storageService } from '../../services/storageService';
+import { aiService } from '../../services/aiService';
 
 export function WorkspaceToolsModal({ open, onClose, clientId, appData, setAppData, currentUser, initialTab = 'brand' }) {
     const { addToast } = useToast();
@@ -11,12 +12,25 @@ export function WorkspaceToolsModal({ open, onClose, clientId, appData, setAppDa
     const [importError, setImportError] = useState('');
     const [snapshots, setSnapshots] = useState([]);
 
+    // AI Configuration State
+    const [aiProvider, setAiProvider] = useState('openai');
+    const [aiApiKey, setAiApiKey] = useState('');
+    const [aiTestStatus, setAiTestStatus] = useState(null); // null | 'testing' | 'success' | 'error'
+    const [aiTestMessage, setAiTestMessage] = useState('');
+
     useEffect(() => {
         if (!open) return;
         setTab(initialTab);
         setImportFile(null);
         setImportText('');
         setImportError('');
+
+        // Load AI config on open
+        const savedConfig = aiService.getAIConfig();
+        if (savedConfig) {
+            setAiProvider(savedConfig.provider || 'openai');
+            setAiApiKey(savedConfig.apiKey || '');
+        }
     }, [open, initialTab]);
 
     const autoInspire = Boolean(appData?.workspacePrefs?.autoInspire);
@@ -234,6 +248,41 @@ export function WorkspaceToolsModal({ open, onClose, clientId, appData, setAppDa
         URL.revokeObjectURL(url);
     };
 
+    // AI Configuration Handlers
+    const handleSaveAIConfig = () => {
+        aiService.saveAIConfig({
+            provider: aiProvider,
+            apiKey: aiApiKey
+        });
+        addToast({ title: 'Configuração salva', description: 'API de IA configurada com sucesso.', type: 'success' });
+    };
+
+    const handleTestAIConnection = async () => {
+        if (!aiApiKey || aiApiKey.length < 10) {
+            setAiTestStatus('error');
+            setAiTestMessage('Insira uma API Key válida.');
+            return;
+        }
+
+        setAiTestStatus('testing');
+        setAiTestMessage('Testando conexão...');
+
+        try {
+            const result = await aiService.testAIConnection(aiProvider, aiApiKey);
+            if (result.success) {
+                setAiTestStatus('success');
+                setAiTestMessage(result.message);
+                handleSaveAIConfig(); // Auto-save on successful test
+            } else {
+                setAiTestStatus('error');
+                setAiTestMessage(result.message);
+            }
+        } catch (err) {
+            setAiTestStatus('error');
+            setAiTestMessage(err.message || 'Erro ao testar conexão.');
+        }
+    };
+
     if (!open) return null;
 
     return (
@@ -259,6 +308,13 @@ export function WorkspaceToolsModal({ open, onClose, clientId, appData, setAppDa
                         className={`flex-1 py-3 text-xs font-bold uppercase tracking-wider transition-colors ${tab === 'brand' ? 'bg-[#111] text-white border-b-2 border-purple-500' : 'text-gray-500 hover:text-gray-300'}`}
                     >
                         Marca
+                    </button>
+                    <button
+                        onClick={() => setTab('ia')}
+                        data-testid="workspace-tab-ia"
+                        className={`flex-1 py-3 text-xs font-bold uppercase tracking-wider transition-colors ${tab === 'ia' ? 'bg-[#111] text-white border-b-2 border-purple-500' : 'text-gray-500 hover:text-gray-300'}`}
+                    >
+                        <span className="flex items-center justify-center gap-1"><Bot size={12} /> IA</span>
                     </button>
                     <button
                         onClick={() => setTab('tools')}
@@ -388,6 +444,82 @@ export function WorkspaceToolsModal({ open, onClose, clientId, appData, setAppDa
                                         </div>
                                     </div>
                                 </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {tab === 'ia' && (
+                        <div className="space-y-6">
+                            <div className="bg-[#111] p-4 rounded-lg border border-white/10">
+                                <div className="flex items-center gap-2 mb-4">
+                                    <Bot size={20} className="text-purple-400" />
+                                    <div>
+                                        <div className="text-sm font-bold text-white">Integração com IA</div>
+                                        <div className="text-xs text-gray-500">Configure sua API para geração automática de planos e KPIs.</div>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-4">
+                                    <div>
+                                        <label className="block text-xs font-bold text-gray-400 uppercase mb-2">Provedor</label>
+                                        <select
+                                            value={aiProvider}
+                                            onChange={(e) => setAiProvider(e.target.value)}
+                                            className="w-full bg-black border border-white/10 rounded px-3 py-2 text-xs text-white focus:border-purple-500 focus:outline-none"
+                                        >
+                                            <option value="openai">OpenAI (GPT-4o)</option>
+                                            <option value="anthropic">Anthropic (Claude 3.5 Sonnet)</option>
+                                        </select>
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-xs font-bold text-gray-400 uppercase mb-2">API Key</label>
+                                        <input
+                                            type="password"
+                                            value={aiApiKey}
+                                            onChange={(e) => setAiApiKey(e.target.value)}
+                                            placeholder={aiProvider === 'openai' ? 'sk-...' : 'sk-ant-...'}
+                                            className="w-full bg-black border border-white/10 rounded px-3 py-2 text-xs text-white font-mono focus:border-purple-500 focus:outline-none"
+                                        />
+                                        <p className="text-[10px] text-gray-500 mt-1">A chave é armazenada apenas no seu navegador (localStorage).</p>
+                                    </div>
+
+                                    <div className="flex items-center gap-3">
+                                        <button
+                                            onClick={handleTestAIConnection}
+                                            disabled={aiTestStatus === 'testing'}
+                                            className="btn-primary !h-9 !px-4 flex items-center gap-2"
+                                        >
+                                            {aiTestStatus === 'testing' ? (
+                                                <><Loader2 size={14} className="animate-spin" /> Testando...</>
+                                            ) : (
+                                                <>Testar Conexão</>
+                                            )}
+                                        </button>
+                                        <button
+                                            onClick={handleSaveAIConfig}
+                                            className="btn-ghost !h-9 !px-4"
+                                        >
+                                            Salvar
+                                        </button>
+                                    </div>
+
+                                    {aiTestStatus && aiTestStatus !== 'testing' && (
+                                        <div className={`text-xs px-3 py-2 rounded border ${aiTestStatus === 'success' ? 'bg-green-500/10 border-green-500/20 text-green-400' : 'bg-red-500/10 border-red-500/20 text-red-400'}`}>
+                                            {aiTestMessage}
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+
+                            <div className="bg-[#111] p-4 rounded-lg border border-white/10">
+                                <div className="text-sm font-bold text-white mb-2">Como usar</div>
+                                <ol className="text-xs text-gray-400 space-y-2 list-decimal list-inside">
+                                    <li>Configure sua API Key acima.</li>
+                                    <li>Preencha os Vaults (S1-S5) com os dados do cliente.</li>
+                                    <li>Na Governança, clique em <strong className="text-white">"🤖 Gerar com IA"</strong>.</li>
+                                    <li>O sistema enviará os dados para a IA e receberá um plano tático com KPIs personalizados.</li>
+                                </ol>
                             </div>
                         </div>
                     )}

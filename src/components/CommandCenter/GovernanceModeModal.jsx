@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { 
+import {
     X, CheckCircle2, AlertTriangle, Target,
     ArrowUpRight, BarChart3, Calendar, FileText, Zap,
     TrendingUp, TrendingDown, ChevronRight,
@@ -7,16 +7,21 @@ import {
     Timer,
     Pause,
     Play,
-    RotateCcw
+    RotateCcw,
+    Bot,
+    Loader2,
+    Sparkles
 } from 'lucide-react';
-import { 
-    generateATA, 
-    recalibrateSystem, 
+import { useToast } from '../../contexts/ToastContext';
+import {
+    generateATA,
+    recalibrateSystem,
     generateNextGovernanceWindow,
     OBSERVATION_CATEGORIES,
     ROADMAP_STATUS,
-    formatATAForDisplay 
+    formatATAForDisplay
 } from '../../services/governanceService';
+import { aiService } from '../../services/aiService';
 
 const GOVERNANCE_STEPS = [
     { id: 'period_summary', label: 'Resumo do Período', icon: BarChart3 },
@@ -26,9 +31,9 @@ const GOVERNANCE_STEPS = [
     { id: 'observations', label: 'Observações', icon: FileText },
 ];
 
-export function GovernanceModeModal({ 
-    open, 
-    onClose, 
+export function GovernanceModeModal({
+    open,
+    onClose,
     onComplete,
     kpis,
     roadmapItems = [],
@@ -39,9 +44,15 @@ export function GovernanceModeModal({
     currentUser,
     variant = 'modal',
 }) {
+    const { addToast } = useToast();
     const [currentStep, setCurrentStep] = useState(0);
     const [isProcessing, setIsProcessing] = useState(false);
     const [generatedATA, setGeneratedATA] = useState(null);
+
+    // AI Generation State
+    const [isAIGenerating, setIsAIGenerating] = useState(false);
+    const [aiGeneratedPlan, setAiGeneratedPlan] = useState(null);
+    const [aiError, setAiError] = useState(null);
 
     const [meetingStartedAt, setMeetingStartedAt] = useState(null);
     const [meetingElapsedSeconds, setMeetingElapsedSeconds] = useState(0);
@@ -219,24 +230,24 @@ export function GovernanceModeModal({
 
     // Add observation
     const addObservation = (categoryId) => {
-        setObservations(prev => prev.map(cat => 
-            cat.categoryId === categoryId 
+        setObservations(prev => prev.map(cat =>
+            cat.categoryId === categoryId
                 ? { ...cat, items: [...cat.items, { id: Date.now(), text: '' }] }
                 : cat
         ));
     };
 
     const updateObservation = (categoryId, itemId, text) => {
-        setObservations(prev => prev.map(cat => 
-            cat.categoryId === categoryId 
+        setObservations(prev => prev.map(cat =>
+            cat.categoryId === categoryId
                 ? { ...cat, items: cat.items.map(item => item.id === itemId ? { ...item, text } : item) }
                 : cat
         ));
     };
 
     const removeObservation = (categoryId, itemId) => {
-        setObservations(prev => prev.map(cat => 
-            cat.categoryId === categoryId 
+        setObservations(prev => prev.map(cat =>
+            cat.categoryId === categoryId
                 ? { ...cat, items: cat.items.filter(item => item.id !== itemId) }
                 : cat
         ));
@@ -274,16 +285,73 @@ export function GovernanceModeModal({
         }));
     };
 
+    // AI Application Helpers
+    const applyAiTaskToPriority = (taskTitle) => {
+        setPriorities(prev => {
+            const emptyIdx = prev.findIndex(p => !p.trim());
+            if (emptyIdx !== -1) {
+                const newP = [...prev];
+                newP[emptyIdx] = taskTitle;
+                return newP;
+            }
+            return [...prev, taskTitle];
+        });
+        addToast({ title: 'Adicionado à Prioridade', description: 'Item incluído na lista de prioridades.', type: 'success', duration: 2000 });
+    };
+
+    const applyAiGoal = (type, value) => {
+        // Simple heuristic to clean string values "R$ 10.000" -> 10000
+        const numericValue = typeof value === 'number' ? value : parseFloat(String(value).replace(/[^0-9.]/g, ''));
+
+        if (!isNaN(numericValue)) {
+            setGoalDraft(prev => ({ ...prev, [type]: numericValue }));
+            setGoalChangedAt(prev => ({ ...prev, [type]: new Date().toISOString() }));
+
+            const label = type === 'revenue' ? 'Receita' : type === 'traffic' ? 'Tráfego' : 'Vendas';
+            addToast({ title: 'Meta Atualizada', description: `Nova meta de ${label} aplicada.`, type: 'success', duration: 2000 });
+        }
+    };
+
+    const applyAiRecToDecisions = (text) => {
+        updateArrayField(setDecisions, decisions.length, text);
+        addToast({ title: 'Decisão Adicionada', description: 'Recomendação incluída nas decisões.', type: 'success', duration: 2000 });
+    };
+
+    // Handle AI Plan Generation
+    const handleGenerateWithAI = async () => {
+        if (!aiService.isAIConfigured()) {
+            setAiError('API de IA não configurada. Vá em Configurações → IA para configurar sua API Key.');
+            return;
+        }
+
+        setIsAIGenerating(true);
+        setAiError(null);
+
+        try {
+            const result = await aiService.generatePlanWithAI(vaults);
+            setAiGeneratedPlan(result);
+
+            // Auto-fill priorities from AI recommendation if list is empty
+            //Removed generic auto-fill to prioritize manual selection via applyAiTaskToPriority
+            // but we can offer a "Apply All" if needed. For now, selective is better.
+        } catch (err) {
+            console.error('AI Generation Error:', err);
+            setAiError(err.message || 'Erro ao gerar plano com IA.');
+        } finally {
+            setIsAIGenerating(false);
+        }
+    };
+
     // Complete Governance
     const handleComplete = () => {
+        if (isProcessing) return;
         setIsProcessing(true);
 
-        // Collect all observations as flat array
-        const allObservations = observations.flatMap(cat => 
+        // Collect observations from all categories
+        const allObservations = observations.flatMap(cat =>
             cat.items.filter(item => item.text.trim()).map(item => ({
                 category: cat.categoryId,
-                categoryLabel: cat.categoryLabel,
-                text: item.text,
+                text: item.text
             }))
         );
 
@@ -350,10 +418,10 @@ export function GovernanceModeModal({
 
         // Generate ATA
         const ata = generateATA(governanceData);
-        
+
         // Recalibrate system
         const recalibration = recalibrateSystem(ata, vaults, roadmapItems);
-        
+
         // Generate next governance window
         const nextWindow = generateNextGovernanceWindow(ata, governanceFrequency, calendarRule);
 
@@ -459,13 +527,12 @@ export function GovernanceModeModal({
                             <button
                                 key={step.id}
                                 onClick={() => goToStep(idx)}
-                                className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                                    currentStep === idx 
-                                        ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30' 
-                                        : currentStep > idx 
-                                            ? 'text-green-400 hover:bg-white/5'
-                                            : 'text-gray-500 hover:bg-white/5'
-                                }`}
+                                className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${currentStep === idx
+                                    ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30'
+                                    : currentStep > idx
+                                        ? 'text-green-400 hover:bg-white/5'
+                                        : 'text-gray-500 hover:bg-white/5'
+                                    }`}
                             >
                                 {currentStep > idx ? (
                                     <CheckCircle2 size={14} />
@@ -514,7 +581,7 @@ export function GovernanceModeModal({
             {/* Content */}
             <div className={isEmbedded ? "flex-1 overflow-y-auto p-6 max-h-[70vh]" : "flex-1 overflow-y-auto p-6"}>
                 <div className={isEmbedded ? "w-full" : "max-w-4xl mx-auto"}>
-                    
+
                     {/* Step 1: Period Summary */}
                     {currentStep === 0 && (
                         <div className="space-y-6 animate-fadeIn">
@@ -671,6 +738,112 @@ export function GovernanceModeModal({
                             </div>
 
                             <p className="text-body mb-4">Revise cada atividade e atualize o status final.</p>
+
+                            {/* AI Generation Button */}
+                            <div className="bg-gradient-to-r from-purple-500/10 to-blue-500/10 border border-purple-500/30 rounded-lg p-4 mb-4">
+                                <div className="flex items-center justify-between gap-4">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-10 h-10 bg-purple-500/20 rounded-lg flex items-center justify-center">
+                                            <Bot size={20} className="text-purple-400" />
+                                        </div>
+                                        <div>
+                                            <h4 className="text-sm font-bold text-white">Geração Inteligente</h4>
+                                            <p className="text-[10px] text-gray-400">Gere um plano tático e KPIs com IA baseado nos seus Vaults</p>
+                                        </div>
+                                    </div>
+                                    <button
+                                        onClick={handleGenerateWithAI}
+                                        disabled={isAIGenerating}
+                                        className="btn-primary !bg-gradient-to-r !from-purple-600 !to-blue-600 hover:!from-purple-500 hover:!to-blue-500 flex items-center gap-2"
+                                    >
+                                        {isAIGenerating ? (
+                                            <><Loader2 size={14} className="animate-spin" /> Gerando...</>
+                                        ) : (
+                                            <><Sparkles size={14} /> Gerar com IA</>
+                                        )}
+                                    </button>
+                                </div>
+
+                                {aiError && (
+                                    <div className="mt-3 text-xs text-red-400 bg-red-500/10 border border-red-500/20 rounded px-3 py-2">
+                                        {aiError}
+                                    </div>
+                                )}
+
+                                {aiGeneratedPlan && (
+                                    <div className="mt-4 space-y-3">
+                                        <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-3">
+                                            <div className="flex items-center gap-2 text-green-400 text-xs font-bold mb-2">
+                                                <CheckCircle2 size={14} /> Plano Gerado com Sucesso
+                                            </div>
+                                            <p className="text-[11px] text-gray-300">{aiGeneratedPlan.recommendation}</p>
+                                        </div>
+
+                                        <div className="grid grid-cols-2 gap-3">
+                                            <div className="bg-white/5 border border-white/10 rounded-lg p-3">
+                                                <h5 className="text-[10px] font-bold text-gray-400 uppercase mb-2">Tarefas Sugeridas ({aiGeneratedPlan.tasks?.length || 0})</h5>
+                                                <ul className="space-y-2">
+                                                    {aiGeneratedPlan.tasks?.slice(0, 5).map((task, i) => (
+                                                        <li key={i} className="flex items-start justify-between gap-2 group/item">
+                                                            <div className="text-[11px] text-gray-300 flex items-start gap-1">
+                                                                <span className="text-purple-400 mt-0.5">•</span>
+                                                                <span>{task.title}</span>
+                                                            </div>
+                                                            <button
+                                                                onClick={() => applyAiTaskToPriority(task.title)}
+                                                                className="opacity-0 group-hover/item:opacity-100 transition-opacity p-1 hover:bg-white/10 rounded text-purple-400"
+                                                                title="Adicionar às Prioridades"
+                                                            >
+                                                                <Plus size={12} />
+                                                            </button>
+                                                        </li>
+                                                    ))}
+                                                </ul>
+                                            </div>
+                                            <div className="bg-white/5 border border-white/10 rounded-lg p-3">
+                                                <h5 className="text-[10px] font-bold text-gray-400 uppercase mb-2">KPIs Recomendados ({aiGeneratedPlan.kpis?.length || 0})</h5>
+                                                <ul className="space-y-2">
+                                                    {aiGeneratedPlan.kpis?.map((kpi, i) => {
+                                                        // Heuristic mapping
+                                                        let type = null;
+                                                        const name = kpi.name.toLowerCase();
+                                                        if (name.includes('receita') || name.includes('faturamento')) type = 'revenue';
+                                                        else if (name.includes('tráfego') || name.includes('visita')) type = 'traffic';
+                                                        else if (name.includes('vendas') || name.includes('conversão')) type = 'sales';
+
+                                                        return (
+                                                            <li key={i} className="flex items-start justify-between gap-2 group/item">
+                                                                <div className="text-[11px] text-gray-300 flex items-start gap-1">
+                                                                    <span className="text-blue-400 mt-0.5">•</span>
+                                                                    <span>{kpi.name}: {kpi.target}</span>
+                                                                </div>
+                                                                {type && (
+                                                                    <button
+                                                                        onClick={() => applyAiGoal(type, kpi.target)}
+                                                                        className="opacity-0 group-hover/item:opacity-100 transition-opacity p-1 hover:bg-white/10 rounded text-blue-400"
+                                                                        title={`Aplicar meta de ${type === 'revenue' ? 'Receita' : type === 'traffic' ? 'Tráfego' : 'Vendas'}`}
+                                                                    >
+                                                                        <Target size={12} />
+                                                                    </button>
+                                                                )}
+                                                            </li>
+                                                        );
+                                                    })}
+                                                </ul>
+                                            </div>
+                                        </div>
+
+                                        <div className="flex justify-end pt-2">
+                                            <button
+                                                onClick={() => applyAiRecToDecisions(aiGeneratedPlan.recommendation)}
+                                                className="text-[10px] text-gray-500 hover:text-white flex items-center gap-1 transition-colors"
+                                            >
+                                                <Plus size={10} /> Adicionar recomendação às decisões
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
 
                             <div>
                                 <label className="text-label">Comentários do bloco</label>
@@ -1062,8 +1235,8 @@ export function GovernanceModeModal({
                             Próximo <ChevronRight size={14} className="ml-1" />
                         </button>
                     ) : (
-                        <button 
-                            onClick={handleComplete} 
+                        <button
+                            onClick={handleComplete}
                             disabled={isProcessing}
                             data-testid="governance-complete"
                             className="btn-primary !bg-green-600 hover:!bg-green-500"
