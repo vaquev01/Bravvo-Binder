@@ -1,60 +1,40 @@
-// Ultra-simple server with aggressive error handling
-console.log('=== SERVER STARTING ===');
-console.log('Node version:', process.version);
-console.log('CWD:', process.cwd());
-console.log('PORT env:', process.env.PORT);
+// Simple Express server for Railway (ES Modules)
+import express from 'express';
+import path from 'path';
+import fs from 'fs';
+import { fileURLToPath } from 'url';
 
-try {
-    const express = require('express');
-    console.log('Express loaded OK');
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-    const path = require('path');
-    console.log('Path loaded OK');
+console.log('=== BRAVVO SERVER STARTING ===');
 
-    const app = express();
-    const PORT = process.env.PORT || 8080;
+const app = express();
+const PORT = process.env.PORT || 3000;
 
-    console.log('Using PORT:', PORT);
+// Health check - FIRST
+app.get('/health', (req, res) => {
+    res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
 
-    // Health check - FIRST route
-    app.get('/health', (req, res) => {
-        console.log('Health check hit!');
-        res.json({ status: 'ok', timestamp: new Date().toISOString() });
-    });
+// Serve static files from dist
+const distPath = path.join(__dirname, 'dist');
+console.log('Serving from:', distPath);
 
-    // Check if dist exists
-    const distPath = path.join(__dirname, 'dist');
-    const fs = require('fs');
-    if (fs.existsSync(distPath)) {
-        console.log('dist folder exists');
-        console.log('dist contents:', fs.readdirSync(distPath));
-    } else {
-        console.log('WARNING: dist folder does NOT exist!');
-    }
-
-    // Serve static files
+if (fs.existsSync(distPath)) {
     app.use(express.static(distPath));
 
     // SPA fallback
     app.get('*', (req, res) => {
-        const indexPath = path.join(distPath, 'index.html');
-        if (fs.existsSync(indexPath)) {
-            res.sendFile(indexPath);
-        } else {
-            res.status(404).send('index.html not found');
-        }
+        res.sendFile(path.join(distPath, 'index.html'));
     });
-
-    // Start server
-    app.listen(parseInt(PORT), '0.0.0.0', () => {
-        console.log(`✅ Server running on http://0.0.0.0:${PORT}`);
-        console.log(`✅ Health: http://0.0.0.0:${PORT}/health`);
-    }).on('error', (err) => {
-        console.error('Server listen error:', err);
-        process.exit(1);
+} else {
+    console.log('WARNING: dist folder not found!');
+    app.get('*', (req, res) => {
+        res.status(500).send('Build folder not found');
     });
-
-} catch (err) {
-    console.error('FATAL ERROR:', err);
-    process.exit(1);
 }
+
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`✅ Server running on port ${PORT}`);
+});
