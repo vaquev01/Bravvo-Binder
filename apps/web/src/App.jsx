@@ -30,6 +30,7 @@ const OnePageDashboard = lazy(() => import('./components/CommandCenter/OnePageDa
 
 const LandingPage = lazy(() => import('./components/Marketing/LandingPage').then(m => ({ default: m.LandingPage })));
 const LoginScreen = lazy(() => import('./components/Auth/LoginScreen').then(m => ({ default: m.LoginScreen })));
+const RegisterScreen = lazy(() => import('./components/Auth/RegisterScreen').then(m => ({ default: m.RegisterScreen })));
 const AgencyDashboard = lazy(() => import('./components/Agency/AgencyDashboard').then(m => ({ default: m.AgencyDashboard })));
 const MasterDashboard = lazy(() => import('./components/Master/MasterDashboard').then(m => ({ default: m.MasterDashboard })));
 
@@ -921,13 +922,24 @@ function AppContent() {
             setCurrentUser({ role: 'master', client: null });
             navigate('/master');
         } else {
-            // Client login - for demo, we pick C1
-            const data = storageService.loadClientData('C1');
+            // Client login - check if it's a registered client with clientId
+            const clientId = credentials?.clientId || 'C1';
+            const clientName = credentials?.clientName || 'Direct Client';
+            const data = storageService.loadClientData(clientId);
             setIsClientLoading(true);
             setClientData(data);
-            setCurrentUser({ role: 'client', client: { id: 'C1', name: 'Direct Client' } });
+            setCurrentUser({ role: 'client', client: { id: clientId, name: clientName } });
             navigate('/app/dashboard');
         }
+    };
+
+    const handleRegisterSuccess = (clientId, clientInfo) => {
+        handleLogin('client', { 
+            username: clientInfo.username, 
+            clientId, 
+            clientName: clientInfo.clientName,
+            remember: true 
+        });
     };
 
     const handleSelectClient = (client) => {
@@ -966,7 +978,8 @@ function AppContent() {
     return (
         <Routes>
             <Route path="/" element={<LandingPage onLogin={() => navigate('/login')} />} />
-            <Route path="/login" element={<LoginScreen onLogin={handleLogin} />} />
+            <Route path="/login" element={<LoginScreen onLogin={handleLogin} onRegister={() => navigate('/register')} />} />
+            <Route path="/register" element={<RegisterScreen onRegisterSuccess={handleRegisterSuccess} onBackToLogin={() => navigate('/login')} />} />
             <Route 
                 path="/agency" 
                 element={

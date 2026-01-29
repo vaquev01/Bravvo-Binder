@@ -127,7 +127,7 @@ function PricingModal({ open, onClose }) {
     );
 }
 
-export function LoginScreen({ onLogin }) {
+export function LoginScreen({ onLogin, onRegister }) {
     const { t } = useLanguage();
     const [showPricing, setShowPricing] = useState(false);
     const [, setShowAdmin] = useState(false);
@@ -211,13 +211,31 @@ export function LoginScreen({ onLogin }) {
                             const pass = e.target.password.value;
                             const remember = e.target.remember.checked;
 
+                            // Credenciais de agência
                             if (user === 'bravvo' && pass === '1@Wardogs') {
                                 handleLogin('agency', { username: user, remember });
-                            } else if (user === 'client' && pass === 'client') {
-                                handleLogin('client', { username: user, remember });
-                            } else {
-                                alert('Credenciais inválidas. Tente novamente.');
+                                return;
                             }
+
+                            // Verificar clientes registrados
+                            const clientCredentials = JSON.parse(localStorage.getItem('bravvo_client_credentials') || '{}');
+                            if (clientCredentials[user] && clientCredentials[user].password === pass) {
+                                handleLogin('client', { 
+                                    username: user, 
+                                    remember,
+                                    clientId: clientCredentials[user].clientId,
+                                    clientName: clientCredentials[user].clientName
+                                });
+                                return;
+                            }
+
+                            // Demo client fallback
+                            if (user === 'client' && pass === 'client') {
+                                handleLogin('client', { username: user, remember });
+                                return;
+                            }
+
+                            alert('Credenciais inválidas. Tente novamente.');
                         }} className="space-y-4 relative z-10">
 
                             <div className="space-y-1">
@@ -268,6 +286,17 @@ export function LoginScreen({ onLogin }) {
                                 <Zap size={16} className="text-white" />
                                 {t('auth.login.submit')}
                             </button>
+
+                            <div className="text-center mt-4 pt-4 border-t border-[var(--border-subtle)]">
+                                <span className="text-xs text-gray-500">Ainda não tem conta?</span>
+                                <button
+                                    type="button"
+                                    onClick={onRegister}
+                                    className="ml-2 text-xs text-[var(--brand-accent)] hover:text-white transition-colors font-semibold"
+                                >
+                                    Criar Conta
+                                </button>
+                            </div>
                         </form>
                     </div>
 
