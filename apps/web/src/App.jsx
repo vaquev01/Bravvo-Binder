@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useEffect, Suspense, lazy } from 'react';
+import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation, useParams } from 'react-router-dom';
 import { aiService } from './services/aiService';
 
 // IMPORTS FOR IMPROVEMENTS
@@ -35,7 +36,7 @@ const MasterDashboard = lazy(() => import('./components/Master/MasterDashboard')
 // ============================================================================
 // CLIENT WORKSPACE (THE ORIGINAL APP "OS")
 // ============================================================================
-function ClientWorkspace({ onBackToAgency, isAgencyView, initialData, onSave, currentUser, isWorkspaceLoading }) {
+function ClientWorkspace({ onBackToAgency, isAgencyView, initialData, onSave, currentUser, isWorkspaceLoading, initialTab, onTabChange }) {
     const clientId = initialData?.id || currentUser?.client?.id || null;
     // We wrap the internal content with VaultProvider so it can accept initialData
     return (
@@ -46,12 +47,14 @@ function ClientWorkspace({ onBackToAgency, isAgencyView, initialData, onSave, cu
                 currentUser={currentUser}
                 clientId={clientId}
                 isWorkspaceLoading={isWorkspaceLoading}
+                initialTab={initialTab}
+                onTabChange={onTabChange}
             />
         </VaultProvider>
     );
 }
 
-function ClientWorkspaceContent({ onBackToAgency, isAgencyView: _isAgencyView, currentUser, clientId, isWorkspaceLoading }) {
+function ClientWorkspaceContent({ onBackToAgency, isAgencyView: _isAgencyView, currentUser, clientId, isWorkspaceLoading, initialTab, onTabChange }) {
     const { addToast } = useToast();
 
     // State
@@ -77,9 +80,24 @@ function ClientWorkspaceContent({ onBackToAgency, isAgencyView: _isAgencyView, c
     });
 
     // --- BINDER STATE ---
-    // Start at OS (One Page Dashboard) as requested by user ("painel de gestao quero que seja inicial")
-    const [binderTab, setBinderTab] = useState('OS'); // V1, V2, V3, V4, OS
+    // Use initialTab from URL if provided, otherwise default to OS
+    const [binderTab, setBinderTabInternal] = useState(initialTab || 'OS'); // V1, V2, V3, V4, V5, OS
     const [completedTabs, setCompletedTabs] = useState(['V1', 'V2', 'V3', 'V4', 'V5']); // Assume config is ready or optional for now
+
+    // Sync binderTab with URL changes
+    useEffect(() => {
+        if (initialTab && initialTab !== binderTab) {
+            setBinderTabInternal(initialTab);
+        }
+    }, [initialTab]);
+
+    // Wrapper to sync tab changes with URL
+    const setBinderTab = useCallback((tab) => {
+        setBinderTabInternal(tab);
+        if (onTabChange) {
+            onTabChange(tab);
+        }
+    }, [onTabChange]);
 
     // Shared Form State (Lifted from Wizard)
     // NOTE: In a real implementation, formData would also come from VaultContext (S1..S5 fields)
@@ -835,11 +853,13 @@ function ClientWorkspaceContent({ onBackToAgency, isAgencyView: _isAgencyView, c
 // WRAPPER
 function App() {
     return (
-        <ToastProvider>
-            <Suspense fallback={<div className="min-h-screen bg-[#050505]" />}>
-                <AppContent />
-            </Suspense>
-        </ToastProvider>
+        <BrowserRouter>
+            <ToastProvider>
+                <Suspense fallback={<div className="min-h-screen bg-[#050505]" />}>
+                    <AppContent />
+                </Suspense>
+            </ToastProvider>
+        </BrowserRouter>
     );
 }
 
@@ -847,13 +867,14 @@ function App() {
 // MAIN APP ROUTER
 // ============================================================================
 function AppContent() {
-    const [viewMode, setViewMode] = useState('landing'); // 'landing' | 'login' | 'agency' | 'master' | 'client_workspace'
+    const navigate = useNavigate();
+    const location = useLocation();
     const [currentUser, setCurrentUser] = useState(null); // { role: 'agency' | 'master', client: null }
     const [clientData, setClientData] = useState(null); // The actual data for the workspace
     const [isClientLoading, setIsClientLoading] = useState(false);
     const { addToast } = useToast();
 
-    // AUTO-LOGIN CHECK
+    // AUTO-LOGIN CHECK - redirect to agency if logged in
     useEffect(() => {
         const savedSession = sessionStorage.getItem('bravvo_session') || localStorage.getItem('bravvo_session');
         if (savedSession) {
@@ -862,8 +883,11 @@ function AppContent() {
                 // Simple validation - in real app, better token check
                 if (session.user === 'bravvo') {
                     setCurrentUser({ role: 'agency', client: null }); // Map Bravvo Admin to Agency Dashboard for now (Command Center)
-                    setViewMode('agency');
-                    addToast({ title: 'Bem-vindo de volta, Commander', type: 'success' });
+                    // Only redirect if on landing or login
+                    if (location.pathname === '/' || location.pathname === '/login') {
+                        navigate('/agency');
+                        addToast({ title: 'Bem-vindo de volta, Commander', type: 'success' });
+                    }
                 }
             } catch (e) {
                 console.error("Session parse error", e);
@@ -871,7 +895,7 @@ function AppContent() {
                 sessionStorage.removeItem('bravvo_session');
             }
         }
-    }, [addToast]);
+    }, [addToast, navigate, location.pathname]);
 
     const handleLogin = (role, credentials) => {
         // SAVING SESSION
@@ -891,18 +915,18 @@ function AppContent() {
         }
 
         if (role === 'agency') {
-            setViewMode('agency');
             setCurrentUser({ role: 'agency', client: null });
+            navigate('/agency');
         } else if (role === 'master') {
-            setViewMode('master');
             setCurrentUser({ role: 'master', client: null });
+            navigate('/master');
         } else {
             // Client login - for demo, we pick C1
             const data = storageService.loadClientData('C1');
             setIsClientLoading(true);
             setClientData(data);
-            setViewMode('client_workspace');
             setCurrentUser({ role: 'client', client: { id: 'C1', name: 'Direct Client' } });
+            navigate('/app/dashboard');
         }
     };
 
@@ -911,72 +935,113 @@ function AppContent() {
         setIsClientLoading(true);
         setClientData(data);
         setCurrentUser(prev => ({ ...(prev || {}), client: client }));
-        setViewMode('client_workspace');
+        navigate('/app/dashboard');
     };
 
     useEffect(() => {
-        if (viewMode !== 'client_workspace') return;
+        if (!location.pathname.startsWith('/app')) return;
         if (!isClientLoading) return;
         setIsClientLoading(false);
-    }, [viewMode, isClientLoading]);
+    }, [location.pathname, isClientLoading]);
 
     const handleSaveClientData = () => {};
 
     const handleLogout = () => {
         localStorage.removeItem('bravvo_session');
         sessionStorage.removeItem('bravvo_session');
-        setViewMode('login');
         setCurrentUser(null);
         setClientData(null);
+        navigate('/login');
     };
 
     const handleBackToAgency = () => {
         if (currentUser?.role === 'master') {
-            setViewMode('master');
+            navigate('/master');
         } else {
-            setViewMode('agency');
+            navigate('/agency');
         }
         setClientData(null);
     };
 
-    switch (viewMode) {
-        case 'landing':
-            return <LandingPage onLogin={() => setViewMode('login')} />;
+    return (
+        <Routes>
+            <Route path="/" element={<LandingPage onLogin={() => navigate('/login')} />} />
+            <Route path="/login" element={<LoginScreen onLogin={handleLogin} />} />
+            <Route 
+                path="/agency" 
+                element={
+                    <AgencyDashboard
+                        onSelectClient={handleSelectClient}
+                        onLogout={handleLogout}
+                    />
+                } 
+            />
+            <Route 
+                path="/master" 
+                element={
+                    <MasterDashboard
+                        onSelectClient={handleSelectClient}
+                        onLogout={handleLogout}
+                    />
+                } 
+            />
+            <Route 
+                path="/app/*" 
+                element={
+                    <ClientWorkspaceRouter
+                        onBackToAgency={currentUser?.role !== 'client' ? handleBackToAgency : undefined}
+                        isAgencyView={currentUser?.role !== 'client'}
+                        initialData={clientData}
+                        onSave={handleSaveClientData}
+                        currentUser={currentUser}
+                        isWorkspaceLoading={isClientLoading}
+                    />
+                } 
+            />
+            <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+    );
+}
 
-        case 'login':
-            return <LoginScreen onLogin={handleLogin} />;
+// ============================================================================
+// CLIENT WORKSPACE ROUTER - Handles /app/* routes
+// ============================================================================
+function ClientWorkspaceRouter(props) {
+    const navigate = useNavigate();
+    const location = useLocation();
+    
+    // Map URL path to binderTab
+    const getTabFromPath = () => {
+        const path = location.pathname;
+        if (path.includes('/app/brand')) return 'V1';
+        if (path.includes('/app/offer')) return 'V2';
+        if (path.includes('/app/funnel')) return 'V3';
+        if (path.includes('/app/ops')) return 'V4';
+        if (path.includes('/app/ideas')) return 'V5';
+        if (path.includes('/app/dashboard')) return 'OS';
+        return 'OS'; // Default to dashboard
+    };
 
-        case 'agency':
-            return (
-                <AgencyDashboard
-                    onSelectClient={handleSelectClient}
-                    onLogout={handleLogout}
-                />
-            );
+    // Sync URL on tab change
+    const handleSetActiveTab = (tab) => {
+        const tabToPath = {
+            'V1': '/app/brand',
+            'V2': '/app/offer',
+            'V3': '/app/funnel',
+            'V4': '/app/ops',
+            'V5': '/app/ideas',
+            'OS': '/app/dashboard'
+        };
+        navigate(tabToPath[tab] || '/app/dashboard');
+    };
 
-        case 'master':
-            return (
-                <MasterDashboard
-                    onSelectClient={handleSelectClient}
-                    onLogout={handleLogout}
-                />
-            );
-
-        case 'client_workspace':
-            return (
-                <ClientWorkspace
-                    onBackToAgency={currentUser?.role !== 'client' ? handleBackToAgency : undefined}
-                    isAgencyView={currentUser?.role !== 'client'}
-                    initialData={clientData}
-                    onSave={handleSaveClientData}
-                    currentUser={currentUser}
-                    isWorkspaceLoading={isClientLoading}
-                />
-            );
-
-        default:
-            return <LandingPage onLogin={() => setViewMode('login')} />;
-    }
+    return (
+        <ClientWorkspace 
+            {...props} 
+            initialTab={getTabFromPath()}
+            onTabChange={handleSetActiveTab}
+        />
+    );
 }
 
 export default App;
