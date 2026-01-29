@@ -28,14 +28,15 @@ WORKDIR /app
 # Copy built assets and server
 COPY --from=builder /app/apps/web/dist ./dist
 COPY --from=builder /app/apps/web/server.js ./server.js
-COPY --from=builder /app/apps/web/package.json ./package.json
+
+# Create a minimal package.json with ES module support
+RUN echo '{"type":"module","dependencies":{}}' > package.json
 
 # Install only production dependencies for serving
-RUN npm install --omit=dev express serve
+RUN npm install express@4
 
-# Expose port
+# Expose port (Railway will override with its own PORT)
 EXPOSE 8080
-ENV PORT=8080
 
 # Start server
 CMD ["node", "server.js"]
