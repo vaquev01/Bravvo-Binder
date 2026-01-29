@@ -1,7 +1,6 @@
 {
     "name": "bravvo-os-monorepo",
     "private": true,
-    "type": "module",
     "workspaces": [
         "apps/*",
         "packages/*"
@@ -13,9 +12,6 @@
         "test": "npm run test --workspaces --if-present",
         "docker:build": "docker-compose build",
         "docker:up": "docker-compose up"
-    },
-    "dependencies": {
-        "express": "^4.18.2"
     },
     "devDependencies": {
         "concurrently": "^8.2.2"

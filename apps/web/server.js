@@ -28,13 +28,14 @@ console.log('Serving from:', distPath);
 if (fs.existsSync(distPath)) {
     app.use(express.static(distPath));
 
-    // SPA fallback
-    app.get('*', (req, res) => {
+    // SPA fallback (avoid app.get('*') issues on Express 5)
+    app.use((req, res, next) => {
+        if (req.method !== 'GET') return next();
         res.sendFile(path.join(distPath, 'index.html'));
     });
 } else {
     console.log('WARNING: dist folder not found!');
-    app.get('*', (req, res) => {
+    app.use((req, res) => {
         res.status(500).send('Build folder not found');
     });
 }
