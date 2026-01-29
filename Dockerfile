@@ -29,11 +29,22 @@ WORKDIR /app
 COPY --from=builder /app/apps/web/dist ./dist
 COPY --from=builder /app/apps/web/server.js ./server.js
 
-# Install express (CommonJS - no module type needed)
+# Install express
 RUN npm init -y && npm install express@4
 
-# Expose port (Railway will override with its own PORT)
+# Create startup script for debugging
+RUN echo '#!/bin/sh' > /app/start.sh && \
+    echo 'echo "=== CONTAINER STARTING ===" ' >> /app/start.sh && \
+    echo 'echo "PWD: $(pwd)"' >> /app/start.sh && \
+    echo 'echo "PORT: $PORT"' >> /app/start.sh && \
+    echo 'echo "Files in /app:"' >> /app/start.sh && \
+    echo 'ls -la /app' >> /app/start.sh && \
+    echo 'echo "=== Starting Node ===" ' >> /app/start.sh && \
+    echo 'exec node server.js' >> /app/start.sh && \
+    chmod +x /app/start.sh
+
+# Expose port
 EXPOSE 8080
 
-# Start server
-CMD ["node", "server.js"]
+# Use shell script as entrypoint
+CMD ["/bin/sh", "/app/start.sh"]
