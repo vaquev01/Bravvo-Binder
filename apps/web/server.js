@@ -1,23 +1,17 @@
-import express from 'express';
-import path from 'path';
-import { fileURLToPath } from 'url';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const express = require('express');
+const path = require('path');
 
 const app = express();
 
 // Railway injects PORT dynamically - we MUST use it
-const PORT = process.env.PORT;
-if (!PORT) {
-    console.error('❌ ERROR: PORT environment variable is not set.');
-    console.error('   This application requires the PORT env var to be set by Railway.');
-    console.error('   For local testing, run: PORT=3000 node server.js');
-    process.exit(1);
-}
+const PORT = process.env.PORT || 8080;
 
-// Health check endpoint for Railway
+console.log('🚀 Starting server...');
+console.log(`📍 PORT: ${PORT}`);
+
+// Health check endpoint for Railway - MUST be first!
 app.get('/health', (req, res) => {
+    console.log('✅ Healthcheck hit');
     res.status(200).json({ status: 'ok', port: PORT, timestamp: new Date().toISOString() });
 });
 
@@ -25,7 +19,7 @@ app.get('/health', (req, res) => {
 app.use(express.static(path.join(__dirname, 'dist')));
 
 // Handle SPA routing: return index.html for any unknown route
-app.use((req, res) => {
+app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, 'dist', 'index.html'));
 });
 
