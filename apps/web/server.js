@@ -1,35 +1,60 @@
-const express = require('express');
-const path = require('path');
+// Ultra-simple server with aggressive error handling
+console.log('=== SERVER STARTING ===');
+console.log('Node version:', process.version);
+console.log('CWD:', process.cwd());
+console.log('PORT env:', process.env.PORT);
 
-const app = express();
+try {
+    const express = require('express');
+    console.log('Express loaded OK');
 
-// Railway injects PORT dynamically - we MUST use it
-const PORT = process.env.PORT || 8080;
+    const path = require('path');
+    console.log('Path loaded OK');
 
-console.log('🚀 Starting server...');
-console.log(`📍 PORT: ${PORT}`);
+    const app = express();
+    const PORT = process.env.PORT || 8080;
 
-// Health check endpoint for Railway - MUST be first!
-app.get('/health', (req, res) => {
-    console.log('✅ Healthcheck hit');
-    res.status(200).json({ status: 'ok', port: PORT, timestamp: new Date().toISOString() });
-});
+    console.log('Using PORT:', PORT);
 
-// Serve static files from the dist directory
-app.use(express.static(path.join(__dirname, 'dist')));
+    // Health check - FIRST route
+    app.get('/health', (req, res) => {
+        console.log('Health check hit!');
+        res.json({ status: 'ok', timestamp: new Date().toISOString() });
+    });
 
-// Handle SPA routing: return index.html for any unknown route
-app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, 'dist', 'index.html'));
-});
+    // Check if dist exists
+    const distPath = path.join(__dirname, 'dist');
+    const fs = require('fs');
+    if (fs.existsSync(distPath)) {
+        console.log('dist folder exists');
+        console.log('dist contents:', fs.readdirSync(distPath));
+    } else {
+        console.log('WARNING: dist folder does NOT exist!');
+    }
 
-// Start server - binding to 0.0.0.0 is critical for Railway
-const server = app.listen(parseInt(PORT), '0.0.0.0', () => {
-    console.log(`✅ Server is running on http://0.0.0.0:${PORT}`);
-    console.log(`📍 Health check available at: http://0.0.0.0:${PORT}/health`);
-});
+    // Serve static files
+    app.use(express.static(distPath));
 
-server.on('error', (err) => {
-    console.error('❌ Server error:', err);
+    // SPA fallback
+    app.get('*', (req, res) => {
+        const indexPath = path.join(distPath, 'index.html');
+        if (fs.existsSync(indexPath)) {
+            res.sendFile(indexPath);
+        } else {
+            res.status(404).send('index.html not found');
+        }
+    });
+
+    // Start server
+    app.listen(parseInt(PORT), '0.0.0.0', () => {
+        console.log(`✅ Server running on http://0.0.0.0:${PORT}`);
+        console.log(`✅ Health: http://0.0.0.0:${PORT}/health`);
+    }).on('error', (err) => {
+        console.error('Server listen error:', err);
+        process.exit(1);
+    });
+
+} catch (err) {
+    console.error('FATAL ERROR:', err);
     process.exit(1);
-});
+}
