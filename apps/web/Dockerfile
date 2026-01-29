@@ -16,8 +16,11 @@ COPY apps/web ./apps/web
 WORKDIR /app/apps/web
 RUN npm run build
 
-# Expose port
+# Set environment variable for production
+ENV NODE_ENV=production
+
+# Expose port (Railway will set PORT env var)
 EXPOSE 8080
 
-# Start server
-CMD ["node", "server.js"]
+# Start server with explicit port binding
+CMD ["sh", "-c", "PORT=${PORT:-8080} node server.js"]
