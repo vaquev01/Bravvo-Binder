@@ -1,0 +1,5 @@
+[phases.build]
+cmds = ["npm ci", "npm run build --workspace=@bravvo/web"]
+
+[start]
+cmd = "cd apps/web && node server.js"
