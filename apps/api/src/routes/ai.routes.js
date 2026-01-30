@@ -115,12 +115,17 @@ router.post('/command-center/generate', async (req, res) => {
 
         const orchestrator = getOrchestrator();
 
-        // Se vaults foram enviados, processa-os primeiro
+        // Se vaults foram enviados, processa apenas V1, V2, V3 (essenciais)
         if (vaults && Object.keys(vaults).length > 0) {
-            console.log('📦 Processing inline vaults:', Object.keys(vaults));
-            for (const [vaultId, content] of Object.entries(vaults)) {
+            const essentialVaults = ['V1', 'V2', 'V3'];
+            const vaultsToProcess = essentialVaults.filter(v => vaults[v]);
+            console.log('📦 Processing essential vaults:', vaultsToProcess);
+
+            for (const vaultId of vaultsToProcess) {
+                const content = vaults[vaultId];
                 if (content && Object.keys(content).length > 0) {
                     try {
+                        console.log(`⏳ Analyzing ${vaultId}...`);
                         const vaultEvent = {
                             event_id: `inline-${vaultId}-${Date.now()}`,
                             event_type: 'vault_completed',
@@ -128,11 +133,13 @@ router.post('/command-center/generate', async (req, res) => {
                             metadata: { correlation_id: req.correlationId, user_id: req.userId }
                         };
                         await orchestrator.handleVaultCompleted(vaultEvent);
+                        console.log(`✅ ${vaultId} analyzed`);
                     } catch (vaultError) {
-                        console.error(`Error processing ${vaultId}:`, vaultError.message);
+                        console.error(`❌ Error processing ${vaultId}:`, vaultError.message);
                     }
                 }
             }
+            console.log('📦 Vault processing complete, generating Command Center...');
         }
 
         const event = await eventBus.emit(EventTypes.GENERATE_COMMAND_CENTER, {
