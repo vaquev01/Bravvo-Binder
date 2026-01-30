@@ -67,6 +67,9 @@ export function useVaultForm(vaultId) {
             saleFormat: s2.strategy?.format || 'presencial',
             baitProduct: s2.bait?.product || '',
             baitPrice: s2.bait?.price || '',
+            competitor1: s2.competitor1 || '',
+            competitor2: s2.competitor2 || '',
+            competitor3: s2.competitor3 || '',
 
             // V3: Funnel
             channels: s3.channels || [],
@@ -183,6 +186,9 @@ export function useVaultForm(vaultId) {
                     ...(vaults.S2 || {}),
                     bait: { ...(vaults.S2?.bait || {}), [key]: value }
                 };
+            }
+            else if (['competitor1', 'competitor2', 'competitor3'].includes(field)) {
+                vaults.S2 = { ...(vaults.S2 || {}), [field]: value };
             }
             // V3 fields
             else if (field === 'channels') {
