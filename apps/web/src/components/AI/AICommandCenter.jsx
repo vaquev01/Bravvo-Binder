@@ -82,6 +82,11 @@ export function AICommandCenter({ appData, onCommandCenterGenerated }) {
       const vaults = prepareVaultsForApi();
       const vaultCount = vaults ? Object.keys(vaults).length : 0;
       
+      // Debug: log vault data
+      console.log('🔍 appData.vaults:', appData?.vaults);
+      console.log('🔍 Prepared vaults for API:', vaults);
+      console.log('🔍 Vault count:', vaultCount);
+      
       if (vaultCount === 0) {
         addToast({
           title: 'Nenhum Vault preenchido',
