@@ -41,6 +41,7 @@ import { useToast } from '../../contexts/ToastContext';
 import { getFeatureFlag } from '../../utils/featureFlags';
 import { useUndo } from '../../hooks/useUndo';
 import { generateNextGovernanceWindow } from '../../services/governanceService';
+import { AICommandCenter } from '../AI/AICommandCenter';
 import { storageService } from '../../services/storageService';
 import {
     listChannels,
@@ -2094,6 +2095,20 @@ export function OnePageDashboard({
                         />
                     </div>
                 )}
+
+                {/* AI COMMAND CENTER - Orquestração Inteligente */}
+                <div className="mb-6">
+                    <AICommandCenter 
+                        appData={appData}
+                        onCommandCenterGenerated={(result) => {
+                            addToast({
+                                title: 'Centro de Comando Gerado',
+                                description: 'KPIs e Roadmap prontos para revisão',
+                                type: 'success'
+                            });
+                        }}
+                    />
+                </div>
 
 
 
