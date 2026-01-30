@@ -28,7 +28,7 @@ export function useVaultForm(vaultId) {
 
     // Get current vault data
     const vaultData = appData?.vaults?.[storageKey] || {};
-    
+
     // Get flattened form data for easier access (same structure as old formData)
     const getFormData = useCallback(() => {
         const v = appData?.vaults || {};
@@ -41,7 +41,7 @@ export function useVaultForm(vaultId) {
         return {
             // Global
             clientName: appData?.clientName || '',
-            
+
             // V1: Brand
             niche: s1.niche || 'gastronomia',
             tagline: s1.tagline || '',
@@ -55,7 +55,9 @@ export function useVaultForm(vaultId) {
             archetype: s1.archetype || 'O Cara Comum',
             tone: s1.tone || 'casual',
             bio: s1.bio || '',
-            
+            scope: s1.scope || 'local',
+            location: s1.location || '',
+
             // V2: Commerce
             products: s2.products || [],
             currentTicket: s2.metrics?.currentTicket || '',
@@ -65,7 +67,7 @@ export function useVaultForm(vaultId) {
             saleFormat: s2.strategy?.format || 'presencial',
             baitProduct: s2.bait?.product || '',
             baitPrice: s2.bait?.price || '',
-            
+
             // V3: Funnel
             channels: s3.channels || [],
             conversionLink: s3.steps?.find(s => s.step === 'Desejo')?.goal || '',
@@ -80,7 +82,7 @@ export function useVaultForm(vaultId) {
             currentConversion: s3.metrics?.currentConversion || '',
             targetConversion: s3.metrics?.targetConversion || '',
             cpl: s3.metrics?.cpl || '',
-            
+
             // V4: Ops
             approverName: s4.matrix?.find(m => m.role === 'Aprovador Final')?.who || '',
             teamStructure: s4.matrix?.find(m => m.role === 'Time')?.who || 'Enxuta',
@@ -96,7 +98,7 @@ export function useVaultForm(vaultId) {
             cycleDuration: s4.schedule?.cycleDuration || '30',
             stakeholders: s4.stakeholders || [],
             competitors: s4.competitors || [],
-            
+
             // V5: Ideas
             ideas: s5.ideas || [],
             references: s5.references || [],
@@ -115,7 +117,7 @@ export function useVaultForm(vaultId) {
                 photoStyle: '',
                 typographyNotes: ''
             },
-            
+
             // Governance
             governanceHistory: appData?.governanceHistory || [],
             customThemeEnabled: appData?.customThemeEnabled || false
@@ -127,7 +129,7 @@ export function useVaultForm(vaultId) {
     // Update a single field with debounced sync
     const updateField = useCallback((field, value) => {
         setIsSynced(false);
-        
+
         // Clear existing debounce
         if (debounceRef.current) {
             clearTimeout(debounceRef.current);
@@ -146,8 +148,9 @@ export function useVaultForm(vaultId) {
                 updated.customThemeEnabled = value;
             }
             // V1 fields
-            else if (['niche', 'tagline', 'promise', 'enemy', 'brandValues', 'audienceAge', 
-                      'audienceGender', 'audienceClass', 'audiencePain', 'archetype', 'tone', 'bio'].includes(field)) {
+            else if (['niche', 'tagline', 'promise', 'enemy', 'brandValues', 'audienceAge',
+                'audienceGender', 'audienceClass', 'audiencePain', 'archetype', 'tone', 'bio',
+                'scope', 'location'].includes(field)) {
                 vaults.S1 = {
                     ...(vaults.S1 || {}),
                     fields: {
@@ -226,14 +229,14 @@ export function useVaultForm(vaultId) {
             // V4 fields
             else if (field === 'approverName') {
                 const matrix = vaults.S4?.matrix || [];
-                const newMatrix = matrix.length 
+                const newMatrix = matrix.length
                     ? matrix.map(m => m.role === 'Aprovador Final' ? { ...m, who: value } : m)
                     : [{ role: 'Aprovador Final', who: value }, { role: 'Estrategista', who: 'Bravvo Agent' }, { role: 'Time', who: 'Enxuta' }];
                 vaults.S4 = { ...(vaults.S4 || {}), matrix: newMatrix };
             }
             else if (field === 'teamStructure') {
                 const matrix = vaults.S4?.matrix || [];
-                const newMatrix = matrix.length 
+                const newMatrix = matrix.length
                     ? matrix.map(m => m.role === 'Time' ? { ...m, who: value } : m)
                     : [{ role: 'Aprovador Final', who: '' }, { role: 'Estrategista', who: 'Bravvo Agent' }, { role: 'Time', who: value }];
                 vaults.S4 = { ...(vaults.S4 || {}), matrix: newMatrix };
@@ -327,14 +330,14 @@ export function useVaultForm(vaultId) {
         }
         setIsSynced(true);
         setLastSaveTime(Date.now());
-        
+
         addToast({
             title: `${vaultLabel} Salvo`,
             description: 'Dados sincronizados com sucesso.',
             type: 'success',
             duration: 2000
         });
-        
+
         if (onNext) {
             onNext();
         }
