@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import { useOrchestration } from '../../hooks/useOrchestration';
 import { useToast } from '../../contexts/ToastContext';
+import { orchestrationService } from '../../services/orchestrationService';
 
 export function AICommandCenter({ appData, onCommandCenterGenerated }) {
   const { addToast } = useToast();
@@ -51,9 +52,66 @@ export function AICommandCenter({ appData, onCommandCenterGenerated }) {
     }
   }, [weights]);
 
+  // Sync vaults to API before generating
+  const syncVaultsToApi = async () => {
+    if (!appData?.vaults) return { synced: 0, errors: [] };
+    
+    const vaultMapping = { S1: 'V1', S2: 'V2', S3: 'V3', S4: 'V4', S5: 'V5' };
+    const errors = [];
+    let synced = 0;
+
+    for (const [storageKey, vaultId] of Object.entries(vaultMapping)) {
+      const vaultData = appData.vaults[storageKey];
+      if (vaultData && Object.keys(vaultData).length > 0) {
+        try {
+          await orchestrationService.completeVault(vaultId, {
+            raw_data: vaultData.fields || vaultData,
+            metadata: {
+              filled_at: new Date().toISOString(),
+              client_name: appData.clientName || 'Cliente'
+            }
+          });
+          synced++;
+        } catch (err) {
+          console.error(`Error syncing ${vaultId}:`, err);
+          errors.push({ vault: vaultId, error: err.message });
+        }
+      }
+    }
+
+    return { synced, errors };
+  };
+
   // Handlers
   const handleGenerate = async () => {
     try {
+      // First sync all vaults to API
+      addToast({
+        title: 'Sincronizando Vaults...',
+        description: 'Enviando dados para a IA',
+        type: 'info'
+      });
+
+      const syncResult = await syncVaultsToApi();
+      
+      if (syncResult.synced === 0) {
+        addToast({
+          title: 'Nenhum Vault preenchido',
+          description: 'Preencha pelo menos V1, V2, V3 primeiro',
+          type: 'error'
+        });
+        return;
+      }
+
+      if (syncResult.synced < 3) {
+        addToast({
+          title: 'Vaults insuficientes',
+          description: `Apenas ${syncResult.synced} vault(s) sincronizado(s). Complete V1, V2, V3.`,
+          type: 'warning'
+        });
+      }
+
+      // Now generate command center
       const result = await generateCommandCenter({
         mode: generationMode,
         weights: localWeights
