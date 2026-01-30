@@ -72,6 +72,7 @@ export function useVaultForm(vaultId) {
             competitor3: s2.competitor3 || '',
 
             // V3: Funnel
+            businessType: s3.businessType || '',
             channels: s3.channels || [],
             conversionLink: s3.steps?.find(s => s.step === 'Desejo')?.goal || '',
             instagramHandle: s3.social?.instagram || '',
@@ -191,6 +192,9 @@ export function useVaultForm(vaultId) {
                 vaults.S2 = { ...(vaults.S2 || {}), [field]: value };
             }
             // V3 fields
+            else if (field === 'businessType') {
+                vaults.S3 = { ...(vaults.S3 || {}), businessType: value };
+            }
             else if (field === 'channels') {
                 vaults.S3 = { ...(vaults.S3 || {}), channels: value };
             }
