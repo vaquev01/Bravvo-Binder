@@ -86,6 +86,7 @@ export function useVaultForm(vaultId) {
             currentConversion: s3.metrics?.currentConversion || '',
             targetConversion: s3.metrics?.targetConversion || '',
             cpl: s3.metrics?.cpl || '',
+            customMetrics: s3.customMetrics || [],
 
             // V4: Ops
             approverName: s4.matrix?.find(m => m.role === 'Aprovador Final')?.who || '',
@@ -235,6 +236,9 @@ export function useVaultForm(vaultId) {
                     ...(vaults.S3 || {}),
                     metrics: { ...(vaults.S3?.metrics || {}), [field]: value }
                 };
+            }
+            else if (field === 'customMetrics') {
+                vaults.S3 = { ...(vaults.S3 || {}), customMetrics: value };
             }
             // V4 fields
             else if (field === 'approverName') {
