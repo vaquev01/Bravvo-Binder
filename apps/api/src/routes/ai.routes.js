@@ -687,6 +687,119 @@ Retorne APENAS um JSON válido:
 });
 
 /**
+ * POST /ai/inspire-vault
+ * Gera conteúdo inspirado para preencher campos de um Vault
+ */
+router.post('/inspire-vault', async (req, res) => {
+    try {
+        const { vaultId, currentData, mode = 'all' } = req.body;
+
+        if (!vaultId) {
+            return res.status(400).json({ error: 'vaultId é obrigatório' });
+        }
+
+        console.log(`✨ Inspiring vault ${vaultId} (mode: ${mode})...`);
+
+        // Schema de campos por Vault
+        const SCHEMAS = {
+            s1: {
+                fields: ['clientName', 'niche', 'tagline', 'scope', 'location', 'promise', 'enemy', 'brandValues', 'audienceAge', 'audienceClass', 'audiencePain', 'archetype', 'tone', 'mood', 'bio'],
+                context: "Identidade da Marca, Nicho e Público"
+            },
+            s2: {
+                fields: ['products', 'heroProduct', 'heroPrice', 'currentTicket', 'targetTicket', 'currentRevenue', 'competitor1', 'competitor2', 'competitor3'],
+                context: "Oferta, Produtos e Financeiro"
+            },
+            s3: {
+                fields: ['businessType', 'channels', 'trafficSource', 'trafficVolume', 'conversionRate', 'cpl', 'ctas'],
+                context: "Funil de Vendas e Tráfego"
+            },
+            s4: {
+                fields: ['postingFrequency', 'bestDays', 'bestTimes', 'cycleDuration', 'stakeholders', 'teamMembers'],
+                context: "Operação, Time e Rotina"
+            },
+            s5: {
+                fields: ['ideas', 'notepad', 'inspirations'],
+                context: "Banco de Ideias e Anotações"
+            }
+        };
+
+        const vaultName = vaultId.toLowerCase();
+        const schema = SCHEMAS[vaultName];
+        if (!schema) {
+            return res.status(400).json({ error: `Vault ${vaultId} desconhecido` });
+        }
+
+        // Determinar campos a preencher
+        let fieldsToFill = schema.fields;
+        if (mode === 'empty') {
+            fieldsToFill = schema.fields.filter(f => {
+                const val = currentData?.[f];
+                return val === null || val === undefined || val === '' || (Array.isArray(val) && val.length === 0);
+            });
+            if (fieldsToFill.length === 0) {
+                return res.json({ success: true, suggestions: {} });
+            }
+        }
+
+        const OpenAI = (await import('openai')).default;
+        const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
+        const completion = await openai.chat.completions.create({
+            model: process.env.AI_MODEL || 'gpt-4o',
+            temperature: 0.7,
+            response_format: { type: "json_object" },
+            messages: [
+                {
+                    role: 'system',
+                    content: `Você é um especialista em Branding e Negócios. Gere conteúdo criativo e profissional em português brasileiro.`
+                },
+                {
+                    role: 'user',
+                    content: `Preencha os campos do formulário "${schema.context}" (Vault ${vaultId.toUpperCase()}).
+
+MODO: ${mode === 'all' ? 'CRIATIVO (Sugerir conceito completo)' : 'COMPLETAR (Preencher lacunas mantendo coerência)'}
+
+DADOS ATUAIS:
+${JSON.stringify(currentData || {}, null, 2)}
+
+CAMPOS A PREENCHER:
+${fieldsToFill.join(', ')}
+
+DIRETRIZES:
+1. Mantenha coerência total com os dados já existentes
+2. Se 'clientName' estiver vazio, invente um nome criativo de negócio
+3. Para campos de lista (arrays), retorne um array JSON
+4. Seja criativo mas realista
+
+Responda APENAS com um JSON válido contendo os campos solicitados.`
+                }
+            ]
+        });
+
+        const responseText = completion.choices[0]?.message?.content || '{}';
+
+        let suggestions;
+        try {
+            suggestions = JSON.parse(responseText);
+        } catch {
+            suggestions = {};
+        }
+
+        console.log(`✅ Generated ${Object.keys(suggestions).length} suggestions for ${vaultId}`);
+
+        res.json({
+            success: true,
+            suggestions
+        });
+
+    } catch (error) {
+        console.error('❌ Error inspiring vault:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+/**
  * POST /ai/generate-governance-conclusion
  * Gera conclusão executiva pós-governança
  */

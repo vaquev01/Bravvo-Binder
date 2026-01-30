@@ -4,7 +4,7 @@ import { Lightbulb, Link2, FileText, Plus, Trash2, ExternalLink, Sparkles, Check
 import { useVaultForm } from '../../hooks/useVaultForm';
 // import { useVaults } from '../../contexts/VaultContext';
 import { useToast } from '../../contexts/ToastContext';
-import { aiService } from '../../services/aiService';
+import { orchestrationService } from '../../services/orchestrationService';
 
 const IDEA_TAGS = [
     'Conteúdo', 'Promoção', 'Lançamento', 'Sazonal', 'Tendência', 'Reels', 'Stories', 'Carrossel', 'Collab'
@@ -38,7 +38,8 @@ export function PageIdeas({ formData: externalFormData, setFormData: externalSet
     const handleInspire = async (mode) => {
         setInspiring(true);
         try {
-            const suggestions = await aiService.generateVaultContent('s5', formData, mode);
+            const response = await orchestrationService.inspireVault('s5', formData, mode);
+            const suggestions = response.suggestions || {};
 
             if (updateFields) {
                 updateFields(suggestions);

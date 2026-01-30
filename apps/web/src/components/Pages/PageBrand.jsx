@@ -10,6 +10,7 @@ import { AssetUploader } from '../ui/AssetUploader';
 import { useVaultForm } from '../../hooks/useVaultForm';
 // import { useVaults } from '../../contexts/VaultContext';
 import { useToast } from '../../contexts/ToastContext';
+import { orchestrationService } from '../../services/orchestrationService';
 
 const ARCHETYPES = [
     { value: 'O Criador', emoji: '🎨', label: 'O Criador', description: 'Inovação e originalidade' },
@@ -128,26 +129,13 @@ export function PageBrand({ formData: externalFormData, setFormData: externalSet
     const handleInspire = async (mode) => {
         setInspiring(true);
         try {
-            const suggestions = await aiService.generateVaultContent('s1', formData, mode);
-
-            // Tratamento especial para arrays/objetos aninhados se necessário, 
-            // mas o updateFields deve lidar com merge shallow.
-            // Para s1, alguns campos estão dentro de brandIdentity. A IA retorna flat ou nested?
-            // O schema AI service espera nome do campo direto. Ex: 'tone'.
-            // Mas no form S1, 'tone' vive dentro de 'formData.tone' direto?
-            // Verificando PageBrand: `value={formData.tone}`. Sim, é direto.
-            // Mas brandIdentity.fontFamily, brandIdentity.keyElements.
-
-            // A IA service S1 schema pede 'tone', 'mood', etc.
-            // Se a IA retornar campos que são nested (ex: keyElements?), preciso mapear.
-            // O schema atual não pede keyElements explicitamente no topo, espera.
-            // Schema s1 fields: clientName, niche, tagline... tone, mood, bio.
-            // Não inclui keyElements. Ok.
+            // Use backend API instead of frontend aiService
+            const response = await orchestrationService.inspireVault('s1', formData, mode);
+            const suggestions = response.suggestions || {};
 
             if (updateFields) {
                 updateFields(suggestions);
             } else {
-                // Fallback manual prop
                 Object.entries(suggestions).forEach(([k, v]) => updateField(k, v));
             }
 

@@ -5,7 +5,7 @@ import { ProductList } from '../ui/ProductList';
 import { useVaultForm } from '../../hooks/useVaultForm';
 // import { useVaults } from '../../contexts/VaultContext';
 import { useToast } from '../../contexts/ToastContext';
-import { aiService } from '../../services/aiService';
+import { orchestrationService } from '../../services/orchestrationService';
 
 const UPSELL_STRATEGIES = [
     { value: 'none', label: 'Nenhuma estratégia definida' },
@@ -36,7 +36,8 @@ export function PageOffer({ formData: externalFormData, setFormData: externalSet
     const handleInspire = async (mode) => {
         setInspiring(true);
         try {
-            const suggestions = await aiService.generateVaultContent('s2', formData, mode);
+            const response = await orchestrationService.inspireVault('s2', formData, mode);
+            const suggestions = response.suggestions || {};
 
             if (updateFields) {
                 updateFields(suggestions);

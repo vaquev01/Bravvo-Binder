@@ -5,7 +5,7 @@ import { ChannelGrid } from '../ui/ChannelGrid';
 import { useVaultForm } from '../../hooks/useVaultForm';
 // import { useVaults } from '../../contexts/VaultContext';
 import { useToast } from '../../contexts/ToastContext';
-import { aiService } from '../../services/aiService';
+import { orchestrationService } from '../../services/orchestrationService';
 
 const CTA_OPTIONS = [
     { value: 'whatsapp', label: '💬 Falar no WhatsApp' },
@@ -42,7 +42,8 @@ export function PageFunnel({ formData: externalFormData, setFormData: externalSe
     const handleInspire = async (mode) => {
         setInspiring(true);
         try {
-            const suggestions = await aiService.generateVaultContent('s3', formData, mode);
+            const response = await orchestrationService.inspireVault('s3', formData, mode);
+            const suggestions = response.suggestions || {};
 
             if (updateFields) {
                 updateFields(suggestions);

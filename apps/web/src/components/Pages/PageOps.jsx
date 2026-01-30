@@ -6,7 +6,7 @@ import { CompetitorList } from '../ui/CompetitorList';
 import { useVaultForm } from '../../hooks/useVaultForm';
 // import { useVaults } from '../../contexts/VaultContext';
 import { useToast } from '../../contexts/ToastContext';
-import { aiService } from '../../services/aiService';
+import { orchestrationService } from '../../services/orchestrationService';
 
 const POSTING_FREQUENCIES = [
     { value: 'diario', label: '📆 Diário (1 post/dia)', posts: 30 },
@@ -49,7 +49,8 @@ export function PageOps({ formData: externalFormData, setFormData: externalSetFo
     const handleInspire = async (mode) => {
         setInspiring(true);
         try {
-            const suggestions = await aiService.generateVaultContent('s4', formData, mode);
+            const response = await orchestrationService.inspireVault('s4', formData, mode);
+            const suggestions = response.suggestions || {};
 
             if (updateFields) {
                 updateFields(suggestions);

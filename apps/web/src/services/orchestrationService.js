@@ -306,6 +306,16 @@ class OrchestrationService {
             body: JSON.stringify({ ata })
         });
     }
+
+    /**
+     * Inspira/gera conteúdo para um Vault via backend
+     */
+    async inspireVault(vaultId, currentData, mode = 'all') {
+        return this.request('/inspire-vault', {
+            method: 'POST',
+            body: JSON.stringify({ vaultId, currentData, mode })
+        });
+    }
 }
 
 export const orchestrationService = new OrchestrationService();
