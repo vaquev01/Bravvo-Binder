@@ -18,6 +18,7 @@ import {
     Bot
 } from 'lucide-react';
 import { aiService } from '../../services/aiService';
+import { orchestrationService } from '../../services/orchestrationService';
 import { formatHumanDate } from './DaySummary';
 import { OnboardingChecklist } from '../ui/OnboardingChecklist';
 import { InsightCards } from '../ui/InsightCards';
@@ -1542,8 +1543,20 @@ export function OnePageDashboard({
     const handleGeneratePlan = async () => {
         setIsGeneratingPlan(true);
         try {
-            const vaults = appData.vaults;
-            const result = await aiService.generatePlanWithAI(vaults, latestAta);
+            // Prepare vaults for backend API
+            const vaultMapping = { S1: 'V1', S2: 'V2', S3: 'V3', S4: 'V4', S5: 'V5' };
+            const vaultsForApi = {};
+            for (const [storageKey, vaultId] of Object.entries(vaultMapping)) {
+                const vaultData = appData?.vaults?.[storageKey];
+                if (vaultData && Object.keys(vaultData).length > 0) {
+                    vaultsForApi[vaultId] = {
+                        raw_data: vaultData.fields || vaultData
+                    };
+                }
+            }
+            
+            // Use backend API instead of frontend aiService
+            const result = await orchestrationService.generatePlan(vaultsForApi, latestAta);
 
             // 1. Convert Tasks to Roadmap Items
             const newTasks = (result.tasks || []).map((task, idx) => {

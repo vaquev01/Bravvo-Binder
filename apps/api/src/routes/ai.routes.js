@@ -534,4 +534,215 @@ router.get('/context', (req, res) => {
     res.json(state.calendar_context);
 });
 
+// ============================================
+// PLAN/ROADMAP GENERATION ENDPOINT
+// ============================================
+
+/**
+ * POST /ai/generate-plan
+ * Gera plano/roadmap com IA baseado nos vaults
+ */
+router.post('/generate-plan', async (req, res) => {
+    try {
+        const { vaults, kpis, weights } = req.body;
+
+        if (!vaults || Object.keys(vaults).length === 0) {
+            return res.status(400).json({ error: 'Vaults são obrigatórios' });
+        }
+
+        console.log('🗓️ Generating plan/roadmap with AI...');
+
+        const orchestrator = getOrchestrator();
+
+        // Build context from vaults
+        const vaultContext = Object.entries(vaults).map(([key, value]) => {
+            const data = value?.raw_data || value?.fields || value;
+            return `${key}: ${JSON.stringify(data)}`;
+        }).join('\n');
+
+        // Use OpenAI directly for plan generation
+        const OpenAI = (await import('openai')).default;
+        const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
+        const completion = await openai.chat.completions.create({
+            model: process.env.AI_MODEL || 'gpt-4o',
+            temperature: 0.7,
+            messages: [
+                {
+                    role: 'system',
+                    content: `Você é um estrategista de marketing digital. Gere um plano tático de 7 dias baseado nos dados do cliente.
+                    
+Retorne APENAS um JSON válido com esta estrutura:
+{
+    "tasks": [
+        {
+            "title": "Título da tarefa",
+            "description": "Descrição curta",
+            "channel": "instagram|youtube|email|whatsapp|blog",
+            "responsible": "Time",
+            "priority": "high|medium|low"
+        }
+    ],
+    "recommendation": "Uma recomendação estratégica geral"
+}`
+                },
+                {
+                    role: 'user',
+                    content: `Dados do cliente:\n${vaultContext}\n\nGere um plano de 5-7 tarefas para a próxima semana.`
+                }
+            ]
+        });
+
+        const responseText = completion.choices[0]?.message?.content || '';
+
+        // Parse JSON from response
+        let result;
+        try {
+            const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+            result = jsonMatch ? JSON.parse(jsonMatch[0]) : { tasks: [], recommendation: '' };
+        } catch (parseError) {
+            console.error('Error parsing AI response:', parseError);
+            result = { tasks: [], recommendation: responseText };
+        }
+
+        console.log(`✅ Generated ${result.tasks?.length || 0} tasks`);
+
+        res.json({
+            success: true,
+            tasks: result.tasks || [],
+            recommendation: result.recommendation || '',
+            generated_at: new Date().toISOString()
+        });
+
+    } catch (error) {
+        console.error('❌ Error generating plan:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+/**
+ * POST /ai/generate-creative-brief
+ * Gera brief criativo para um item do roadmap
+ */
+router.post('/generate-creative-brief', async (req, res) => {
+    try {
+        const { item, vaults } = req.body;
+
+        if (!item || !vaults) {
+            return res.status(400).json({ error: 'item e vaults são obrigatórios' });
+        }
+
+        console.log('✨ Generating creative brief...');
+
+        const OpenAI = (await import('openai')).default;
+        const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
+        const vaultContext = Object.entries(vaults).map(([key, value]) => {
+            const data = value?.raw_data || value?.fields || value;
+            return `${key}: ${JSON.stringify(data)}`;
+        }).join('\n');
+
+        const completion = await openai.chat.completions.create({
+            model: process.env.AI_MODEL || 'gpt-4o',
+            temperature: 0.8,
+            messages: [
+                {
+                    role: 'system',
+                    content: `Você é um copywriter criativo. Gere um brief para criação de conteúdo.
+                    
+Retorne APENAS um JSON válido:
+{
+    "aiPrompt": "Prompt detalhado para a IA gerar o conteúdo",
+    "humanGuide": "Guia para o humano criar/revisar",
+    "hooks": ["Hook 1", "Hook 2", "Hook 3"],
+    "cta": "Call to action sugerido"
+}`
+                },
+                {
+                    role: 'user',
+                    content: `Item: ${JSON.stringify(item)}\n\nContexto do cliente:\n${vaultContext}`
+                }
+            ]
+        });
+
+        const responseText = completion.choices[0]?.message?.content || '';
+
+        let result;
+        try {
+            const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+            result = jsonMatch ? JSON.parse(jsonMatch[0]) : {};
+        } catch {
+            result = { aiPrompt: responseText, humanGuide: '', hooks: [], cta: '' };
+        }
+
+        res.json({
+            success: true,
+            data: result
+        });
+
+    } catch (error) {
+        console.error('❌ Error generating creative brief:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+/**
+ * POST /ai/generate-governance-conclusion
+ * Gera conclusão executiva pós-governança
+ */
+router.post('/generate-governance-conclusion', async (req, res) => {
+    try {
+        const { ata } = req.body;
+
+        if (!ata) {
+            return res.status(400).json({ error: 'ata é obrigatória' });
+        }
+
+        console.log('📊 Generating governance conclusion...');
+
+        const OpenAI = (await import('openai')).default;
+        const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
+        const completion = await openai.chat.completions.create({
+            model: process.env.AI_MODEL || 'gpt-4o',
+            temperature: 0.5,
+            messages: [
+                {
+                    role: 'system',
+                    content: `Você é um consultor executivo analisando uma ata de governança.
+                    
+Retorne APENAS JSON:
+{
+    "conclusion_summary": "Conclusão em 2-3 frases",
+    "next_steps": ["Passo 1", "Passo 2", "Passo 3"]
+}`
+                },
+                {
+                    role: 'user',
+                    content: `Ata da reunião:\n${JSON.stringify(ata)}`
+                }
+            ]
+        });
+
+        const responseText = completion.choices[0]?.message?.content || '';
+
+        let result;
+        try {
+            const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+            result = jsonMatch ? JSON.parse(jsonMatch[0]) : {};
+        } catch {
+            result = { conclusion_summary: responseText, next_steps: [] };
+        }
+
+        res.json({
+            success: true,
+            ...result
+        });
+
+    } catch (error) {
+        console.error('❌ Error generating governance conclusion:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
 export default router;

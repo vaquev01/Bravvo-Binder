@@ -272,6 +272,40 @@ class OrchestrationService {
             return false;
         }
     }
+
+    // ============================================
+    // AI GENERATION ENDPOINTS (ALL BACKEND)
+    // ============================================
+
+    /**
+     * Gera plano/roadmap com IA via backend
+     */
+    async generatePlan(vaults, kpis = [], weights = null) {
+        return this.request('/generate-plan', {
+            method: 'POST',
+            body: JSON.stringify({ vaults, kpis, weights })
+        });
+    }
+
+    /**
+     * Gera brief criativo via backend
+     */
+    async generateCreativeBrief(item, vaults) {
+        return this.request('/generate-creative-brief', {
+            method: 'POST',
+            body: JSON.stringify({ item, vaults })
+        });
+    }
+
+    /**
+     * Gera conclusão de governança via backend
+     */
+    async generateGovernanceConclusion(ata) {
+        return this.request('/generate-governance-conclusion', {
+            method: 'POST',
+            body: JSON.stringify({ ata })
+        });
+    }
 }
 
 export const orchestrationService = new OrchestrationService();
