@@ -11,23 +11,16 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-app.use(helmet());
-const allowedOrigins = process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',') : [];
+app.use(helmet({
+    crossOriginResourcePolicy: { policy: "cross-origin" }
+}));
+
+// CORS - Allow all origins in production for now
 app.use(cors({
-    origin: (origin, callback) => {
-        // Allow requests with no origin (mobile apps, Postman, etc.)
-        if (!origin) {
-            return callback(null, true);
-        }
-
-        // In production, allow Railway domains
-        if (origin.includes('railway.app') || allowedOrigins.includes(origin)) {
-            return callback(null, true);
-        }
-
-        callback(new Error('Not allowed by CORS'));
-    },
-    credentials: true
+    origin: true,
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-User-Id', 'X-Correlation-Id']
 }));
 app.use(express.json({ limit: '10mb' })); // Increased for large vault data
 
