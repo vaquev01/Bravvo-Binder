@@ -111,7 +111,29 @@ router.get('/vaults/:vaultId/analysis', async (req, res) => {
  */
 router.post('/command-center/generate', async (req, res) => {
     try {
-        const { weights, mode = 'initial' } = req.body;
+        const { weights, mode = 'initial', vaults } = req.body;
+
+        const orchestrator = getOrchestrator();
+
+        // Se vaults foram enviados, processa-os primeiro
+        if (vaults && Object.keys(vaults).length > 0) {
+            console.log('📦 Processing inline vaults:', Object.keys(vaults));
+            for (const [vaultId, content] of Object.entries(vaults)) {
+                if (content && Object.keys(content).length > 0) {
+                    try {
+                        const vaultEvent = {
+                            event_id: `inline-${vaultId}-${Date.now()}`,
+                            event_type: 'vault_completed',
+                            payload: { vault_id: vaultId, content, user_id: req.userId },
+                            metadata: { correlation_id: req.correlationId, user_id: req.userId }
+                        };
+                        await orchestrator.handleVaultCompleted(vaultEvent);
+                    } catch (vaultError) {
+                        console.error(`Error processing ${vaultId}:`, vaultError.message);
+                    }
+                }
+            }
+        }
 
         const event = await eventBus.emit(EventTypes.GENERATE_COMMAND_CENTER, {
             user_id: req.userId,
@@ -122,7 +144,6 @@ router.post('/command-center/generate', async (req, res) => {
             user_id: req.userId
         });
 
-        const orchestrator = getOrchestrator();
         const result = await orchestrator.handleGenerateCommandCenter(event);
 
         if (!result.success) {

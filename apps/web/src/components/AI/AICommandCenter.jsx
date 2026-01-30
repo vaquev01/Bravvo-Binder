@@ -52,49 +52,37 @@ export function AICommandCenter({ appData, onCommandCenterGenerated }) {
     }
   }, [weights]);
 
-  // Sync vaults to API before generating
-  const syncVaultsToApi = async () => {
-    if (!appData?.vaults) return { synced: 0, errors: [] };
+  // Prepare vaults for API
+  const prepareVaultsForApi = () => {
+    if (!appData?.vaults) return null;
     
     const vaultMapping = { S1: 'V1', S2: 'V2', S3: 'V3', S4: 'V4', S5: 'V5' };
-    const errors = [];
-    let synced = 0;
+    const vaults = {};
 
     for (const [storageKey, vaultId] of Object.entries(vaultMapping)) {
       const vaultData = appData.vaults[storageKey];
       if (vaultData && Object.keys(vaultData).length > 0) {
-        try {
-          await orchestrationService.completeVault(vaultId, {
-            raw_data: vaultData.fields || vaultData,
-            metadata: {
-              filled_at: new Date().toISOString(),
-              client_name: appData.clientName || 'Cliente'
-            }
-          });
-          synced++;
-        } catch (err) {
-          console.error(`Error syncing ${vaultId}:`, err);
-          errors.push({ vault: vaultId, error: err.message });
-        }
+        vaults[vaultId] = {
+          raw_data: vaultData.fields || vaultData,
+          metadata: {
+            filled_at: new Date().toISOString(),
+            client_name: appData.clientName || 'Cliente'
+          }
+        };
       }
     }
 
-    return { synced, errors };
+    return vaults;
   };
 
   // Handlers
   const handleGenerate = async () => {
     try {
-      // First sync all vaults to API
-      addToast({
-        title: 'Sincronizando Vaults...',
-        description: 'Enviando dados para a IA',
-        type: 'info'
-      });
-
-      const syncResult = await syncVaultsToApi();
+      // Prepare vault data to send with request
+      const vaults = prepareVaultsForApi();
+      const vaultCount = vaults ? Object.keys(vaults).length : 0;
       
-      if (syncResult.synced === 0) {
+      if (vaultCount === 0) {
         addToast({
           title: 'Nenhum Vault preenchido',
           description: 'Preencha pelo menos V1, V2, V3 primeiro',
@@ -103,18 +91,17 @@ export function AICommandCenter({ appData, onCommandCenterGenerated }) {
         return;
       }
 
-      if (syncResult.synced < 3) {
-        addToast({
-          title: 'Vaults insuficientes',
-          description: `Apenas ${syncResult.synced} vault(s) sincronizado(s). Complete V1, V2, V3.`,
-          type: 'warning'
-        });
-      }
+      addToast({
+        title: 'Gerando Centro de Comando...',
+        description: `Processando ${vaultCount} vault(s) com IA`,
+        type: 'info'
+      });
 
-      // Now generate command center
+      // Send vaults inline with generate request
       const result = await generateCommandCenter({
         mode: generationMode,
-        weights: localWeights
+        weights: localWeights,
+        vaults
       });
 
       if (result.success) {

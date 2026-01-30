@@ -77,14 +77,15 @@ class OrchestrationService {
 
     /**
      * Gera Centro de Comando com IA
-     * @param {object} options - { weights, mode }
+     * @param {object} options - { weights, mode, vaults }
      */
     async generateCommandCenter(options = {}) {
         return this.request('/command-center/generate', {
             method: 'POST',
             body: JSON.stringify({
                 mode: options.mode || 'initial',
-                weights: options.weights || null
+                weights: options.weights || null,
+                vaults: options.vaults || null
             })
         });
     }
