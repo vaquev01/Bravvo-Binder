@@ -800,6 +800,100 @@ Responda APENAS com um JSON válido contendo os campos solicitados.`
 });
 
 /**
+ * POST /ai/generate-brand-theme
+ * Gera tema visual baseado no DNA da marca
+ */
+router.post('/generate-brand-theme', async (req, res) => {
+    try {
+        const { vaults } = req.body;
+
+        if (!vaults) {
+            return res.status(400).json({ error: 'vaults é obrigatório' });
+        }
+
+        console.log('🎨 Generating brand theme...');
+
+        // Extract brand data
+        const s1 = vaults.S1 || vaults.s1 || {};
+        const brandData = s1.fields || s1.raw_data || s1;
+
+        const locationContext = brandData.scope?.toLowerCase() !== 'global' && brandData.location
+            ? `\nContexto Local:\nEsta é uma marca ${brandData.scope} em ${brandData.location}. Considere a estética local se relevante.`
+            : '';
+
+        const OpenAI = (await import('openai')).default;
+        const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
+        const completion = await openai.chat.completions.create({
+            model: process.env.AI_MODEL || 'gpt-4o',
+            temperature: 0.7,
+            response_format: { type: "json_object" },
+            messages: [
+                {
+                    role: 'system',
+                    content: 'Você é um Diretor de Arte Sênior e Especialista em Branding.'
+                },
+                {
+                    role: 'user',
+                    content: `Analise o DNA desta marca e crie uma identidade visual digital coesa para o sistema operacional da empresa.
+
+## DNA da Marca
+- Nome: ${brandData.clientName || brandData.name || 'Empresa desconhecida'}
+- Nicho: ${brandData.niche || 'Geral'}
+- Tom de Voz: ${Array.isArray(brandData.tone) ? brandData.tone.join(', ') : brandData.tone || 'Neutro'}
+- Arquétipo: ${brandData.archetype || 'Profissional'}
+- Valores: ${Array.isArray(brandData.brandValues) ? brandData.brandValues.join(', ') : 'Qualidade'}
+${locationContext}
+
+## Sua Tarefa
+Gere um JSON com as cores e tipografia ideais para o Dashboard dessa marca.
+As opções de fonte são ESTRITAMENTE: 'Inter', 'Roboto', 'Open Sans', 'Lato', 'Montserrat', 'Playfair Display', 'Courier Prime'.
+
+Responda APENAS com este JSON exato:
+{
+  "primaryColor": "#HEXCODE (Cor principal para textos, fundos escuros e headers)",
+  "accentColor": "#HEXCODE (Cor vibrante para botões, destaques e call-to-actions)",
+  "fontFamily": "Nome Da Fonte (escolha da lista acima)",
+  "reasoning": "Uma frase curta explicando a escolha estética."
+}`
+                }
+            ]
+        });
+
+        const responseText = completion.choices[0]?.message?.content || '{}';
+
+        let theme;
+        try {
+            theme = JSON.parse(responseText);
+
+            // Validate font
+            const validFonts = ['Inter', 'Roboto', 'Open Sans', 'Lato', 'Montserrat', 'Playfair Display', 'Courier Prime'];
+            if (!validFonts.includes(theme.fontFamily)) {
+                theme.fontFamily = 'Inter';
+            }
+        } catch {
+            theme = {
+                primaryColor: '#1a1a2e',
+                accentColor: '#6366f1',
+                fontFamily: 'Inter',
+                reasoning: 'Tema padrão aplicado'
+            };
+        }
+
+        console.log(`✅ Generated brand theme: ${theme.fontFamily}, ${theme.primaryColor}`);
+
+        res.json({
+            success: true,
+            theme
+        });
+
+    } catch (error) {
+        console.error('❌ Error generating brand theme:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+/**
  * POST /ai/generate-governance-conclusion
  * Gera conclusão executiva pós-governança
  */

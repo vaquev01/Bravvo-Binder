@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Download, Settings, X, Palette, Bot, Loader2 } from 'lucide-react';
 import { useToast } from '../../contexts/ToastContext';
 import { storageService } from '../../services/storageService';
-import { aiService } from '../../services/aiService';
+import { orchestrationService } from '../../services/orchestrationService';
 
 export function WorkspaceToolsModal({ open, onClose, clientId, appData, setAppData, currentUser, initialTab = 'brand' }) {
     const { addToast } = useToast();
@@ -130,7 +130,8 @@ export function WorkspaceToolsModal({ open, onClose, clientId, appData, setAppDa
         setIsGeneratingTheme(true);
         try {
             const vaults = appData.vaults || {};
-            const theme = await aiService.generateBrandTheme(vaults);
+            const result = await orchestrationService.generateBrandTheme(vaults);
+            const theme = result.theme;
 
             // Apply theme
             const newTheme = {

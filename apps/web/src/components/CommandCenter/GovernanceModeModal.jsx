@@ -22,7 +22,7 @@ import {
     ROADMAP_STATUS,
     formatATAForDisplay
 } from '../../services/governanceService';
-import { aiService } from '../../services/aiService';
+import { orchestrationService } from '../../services/orchestrationService';
 
 const GOVERNANCE_STEPS = [
     { id: 'period_summary', label: 'Resumo do Período', icon: BarChart3 },
@@ -325,17 +325,12 @@ export function GovernanceModeModal({
 
     // Handle AI Plan Generation
     const handleGenerateWithAI = async () => {
-        if (!aiService.isAIConfigured()) {
-            setAiError('API de IA não configurada. Vá em Configurações → IA para configurar sua API Key.');
-            return;
-        }
-
         setIsAIGenerating(true);
         setAiError(null);
 
         try {
-            const result = await aiService.generatePlanWithAI(vaults, lastGovernance);
-            setAiGeneratedPlan(result);
+            const result = await orchestrationService.generatePlan(vaults, lastGovernance);
+            setAiGeneratedPlan(result.data);
 
             // Auto-fill priorities from AI recommendation if list is empty
             //Removed generic auto-fill to prioritize manual selection via applyAiTaskToPriority
@@ -351,11 +346,6 @@ export function GovernanceModeModal({
 
     // Complete Governance
     const aiConclusionPrompt = async () => {
-        const config = aiService.getAIConfig();
-        if (!config || !config.apiKey) {
-            addToast({ title: 'Configure a API Key primeiro', description: 'Vá em Ferramentas > IA', type: 'error' });
-            return;
-        }
         setIsGeneratingConclusion(true);
         try {
             // Build ATA snapshot from current form state
@@ -368,7 +358,7 @@ export function GovernanceModeModal({
                 },
                 decisions: decisions.filter(d => d.trim().length > 0)
             };
-            const result = await aiService.generateGovernanceConclusion(ataSnapshot);
+            const result = await orchestrationService.generateGovernanceConclusion(ataSnapshot);
             if (result) {
                 setAiConclusion(result);
                 addToast({ title: 'Conclusão Gerada', type: 'success' });

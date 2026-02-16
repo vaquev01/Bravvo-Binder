@@ -1694,25 +1694,24 @@ export function OnePageDashboard({
     };
 
     // AI Strategy Weights Display
-    const aiStrategyWeights = aiService.getAIConfig()?.weights || { strategy: 50, lastGov: 30, history: 20 };
+    const aiStrategyWeights = { strategy: 50, lastGov: 30, history: 20 };
 
     const handleGenerateStrategy = async (overrideVaults = null, overrideKpis = null, overrideAta = null, overrideHistory = null) => {
         setIsGeneratingPlan(true);
         try {
-            const config = aiService.getAIConfig();
-
-            // 1. Generate Plan with Weights
-            const result = await aiService.generatePlanWithAI(
+            // 1. Generate Plan with Weights via backend
+            const result = await orchestrationService.generatePlan(
                 overrideVaults || appData.vaults,
                 overrideKpis || kpis,
                 overrideAta || latestAta,
-                overrideHistory || appData.measurementContract?.auditLog || [],
-                config?.weights
+                aiStrategyWeights
             );
+            
+            const planData = result.data;
 
             // 2. Process Results into D2 Items
-            if (result.tasks && Array.isArray(result.tasks)) {
-                const newItems = result.tasks.map((t, idx) => ({
+            if (planData.tasks && Array.isArray(planData.tasks)) {
+                const newItems = planData.tasks.map((t, idx) => ({
                     id: `AI-STRAT-${Date.now()}-${idx}`,
                     date: new Date().toISOString().split('T')[0],
                     initiative: t.title,

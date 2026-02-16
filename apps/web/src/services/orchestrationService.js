@@ -316,6 +316,16 @@ class OrchestrationService {
             body: JSON.stringify({ vaultId, currentData, mode })
         });
     }
+
+    /**
+     * Gera tema visual da marca via backend
+     */
+    async generateBrandTheme(vaults) {
+        return this.request('/generate-brand-theme', {
+            method: 'POST',
+            body: JSON.stringify({ vaults })
+        });
+    }
 }
 
 export const orchestrationService = new OrchestrationService();

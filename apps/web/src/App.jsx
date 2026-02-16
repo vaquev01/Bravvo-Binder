@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect, Suspense, lazy } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation, useParams } from 'react-router-dom';
-import { aiService } from './services/aiService';
+import { orchestrationService } from './services/orchestrationService';
 
 // IMPORTS FOR IMPROVEMENTS
 import { useLocalStorage } from './hooks/useLocalStorage';
@@ -333,7 +333,7 @@ function ClientWorkspaceContent({ onBackToAgency, isAgencyView: _isAgencyView, c
     const handleGeneratePrompt = useCallback(async (item) => {
         setIsGenerating(true);
         try {
-            const result = await aiService.generateCreativeBrief(item, appData.vaults);
+            const result = await orchestrationService.generateCreativeBrief(item, appData.vaults);
             if (!result?.success) {
                 throw new Error(result?.error || 'Falha ao gerar o prompt.');
             }
