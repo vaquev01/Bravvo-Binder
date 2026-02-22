@@ -531,18 +531,24 @@ class StorageService {
     }
 
     /**
-     * Salva os dados do cliente
+     * Salva os dados do cliente localmente e no backend (Cloud)
      */
     saveClientData(data) {
         const normalized = this.normalizeClientData(data);
         this.markSaveStart();
+
+        // Local save (optimistic)
         const ok = this.save(STORAGE_KEYS.APP_DATA, normalized);
         this.lastSaveOk = Boolean(ok);
         this.lastSaveError = ok ? '' : 'Save failed';
+
         if (normalized?.id) {
             this.save(`${STORAGE_KEYS.APP_DATA}:${normalized.id}`, normalized);
             this.save(`${STORAGE_KEYS.APP_DATA_BACKUP}:${normalized.id}`, normalized);
             this.appendSnapshot(normalized.id, normalized);
+
+            // Cloud Sync
+            this._syncToCloud(normalized.id, normalized);
         }
 
         // Legacy/global backup as last resort
@@ -550,6 +556,22 @@ class StorageService {
         this.enqueueSaveCompletion();
         this.updateDebugState();
         return ok;
+    }
+
+    async _syncToCloud(clientId, data) {
+        try {
+            const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+            const response = await fetch(`${apiUrl}/api/workspaces/${clientId}/save`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            if (!response.ok) {
+                console.warn('Cloud sync failed with status:', response.status);
+            }
+        } catch (error) {
+            console.error('Cloud sync error (will retry next time or rely on local):', error);
+        }
     }
 
     /**

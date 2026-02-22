@@ -37,8 +37,12 @@ app.get('/health', (req, res) => {
     res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// AI Orchestration Routes
+import authRoutes from './routes/auth.routes.js';
+import workspacesRoutes from './routes/workspaces.routes.js';
+
 app.use('/ai', aiRoutes);
+app.use('/api/auth', authRoutes);
+app.use('/api/workspaces', workspacesRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
@@ -53,3 +57,4 @@ app.listen(PORT, () => {
     console.log(`✅ API running on port ${PORT}`);
     console.log(`🤖 AI Orchestration endpoints available at /ai`);
 });
+

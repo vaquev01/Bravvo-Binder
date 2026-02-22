@@ -898,7 +898,7 @@ function AppContent() {
         }
     }, [addToast, navigate, location.pathname]);
 
-    const handleLogin = (role, credentials) => {
+    const handleLogin = async (role, credentials) => {
         // SAVING SESSION
         if (credentials) {
             const sessionPayload = {
@@ -925,8 +925,23 @@ function AppContent() {
             // Client login - check if it's a registered client with clientId
             const clientId = credentials?.clientId || 'C1';
             const clientName = credentials?.clientName || 'Direct Client';
-            const data = storageService.loadClientData(clientId);
             setIsClientLoading(true);
+
+            try {
+                const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+                const response = await fetch(`${apiUrl}/api/workspaces/${clientId}/load`);
+                if (response.ok) {
+                    const result = await response.json();
+                    if (result.status === 'ok' && result.data) {
+                        // Persist to local cache silently
+                        localStorage.setItem(`bravvo_app_data:${clientId}`, JSON.stringify(result.data));
+                    }
+                }
+            } catch (err) {
+                console.warn("Could not load from cloud API, using local fallback");
+            }
+
+            const data = storageService.loadClientData(clientId);
             setClientData(data);
             setCurrentUser({ role: 'client', client: { id: clientId, name: clientName } });
             navigate('/app/dashboard');
@@ -942,9 +957,24 @@ function AppContent() {
         });
     };
 
-    const handleSelectClient = (client) => {
-        const data = storageService.loadClientData(client.id);
+    const handleSelectClient = async (client) => {
         setIsClientLoading(true);
+
+        try {
+            const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+            const response = await fetch(`${apiUrl}/api/workspaces/${client.id}/load`);
+            if (response.ok) {
+                const result = await response.json();
+                if (result.status === 'ok' && result.data) {
+                    // Persist to local cache silently
+                    localStorage.setItem(`bravvo_app_data:${client.id}`, JSON.stringify(result.data));
+                }
+            }
+        } catch (err) {
+            console.warn("Could not load from cloud API, using local fallback");
+        }
+
+        const data = storageService.loadClientData(client.id);
         setClientData(data);
         setCurrentUser(prev => ({ ...(prev || {}), client: client }));
         navigate('/app/dashboard');
