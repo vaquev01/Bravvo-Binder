@@ -13,6 +13,10 @@
         "docker:build": "docker-compose build",
         "docker:up": "docker-compose up"
     },
+    "engines": {
+        "node": ">=22.12.0",
+        "npm": ">=10.0.0"
+    },
     "devDependencies": {
         "concurrently": "^8.2.2"
     }
