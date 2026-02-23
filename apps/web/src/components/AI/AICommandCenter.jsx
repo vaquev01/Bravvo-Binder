@@ -110,6 +110,7 @@ export function AICommandCenter({ appData, onCommandCenterGenerated }) {
       });
 
       if (result.success) {
+        setShowGaps(false);
         addToast({
           title: 'Centro de Comando Gerado!',
           description: `${result.command_center.kpis_count} KPIs, ${result.command_center.roadmap_phases} fases no roadmap`,
@@ -120,6 +121,9 @@ export function AICommandCenter({ appData, onCommandCenterGenerated }) {
           onCommandCenterGenerated(result);
         }
       } else {
+        if (result.gaps) {
+            setShowGaps(true);
+        }
         addToast({
           title: 'Erro na Geração',
           description: result.error || 'Verifique os gaps identificados',

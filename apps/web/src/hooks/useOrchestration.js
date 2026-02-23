@@ -95,6 +95,10 @@ export function useOrchestration() {
                 // Carrega o CC completo
                 const cc = await orchestrationService.getCommandCenter();
                 setCommandCenter(cc);
+                setGaps(null); // Clear previous gaps
+            } else if (result.gaps) {
+                // Save gaps so they can be shown to user
+                setGaps(result);
             }
 
             return result;
