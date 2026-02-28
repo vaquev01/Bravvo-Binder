@@ -5,7 +5,14 @@
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
-import dotenv from 'dotenv';
+import pinoHttp from 'pino-http';
+
+// Boot validation & Configs
+import { validateEnv, getEnv } from './config/env.js';
+import { logger } from './config/logger.js';
+
+// Define variáveis globais verificadas
+validateEnv();
 
 // Routes
 import aiRoutes from './routes/ai.routes.js';
@@ -13,21 +20,35 @@ import authRoutes from './routes/auth.routes.js';
 import workspacesRoutes from './routes/workspaces.routes.js';
 
 // Middleware
-import { errorHandler } from './middleware/index.js';
-
-dotenv.config();
+import { errorHandler, globalRateLimit } from './middleware/index.js';
 
 const app = express();
-const PORT = process.env.PORT || 3001;
+const env = getEnv();
+const PORT = env.PORT || 3001;
 
-// Security
+// Security & Basic Middleware
 app.use(helmet({
     crossOriginResourcePolicy: { policy: "cross-origin" }
 }));
 
+// HTTP Logging using Pino
+app.use(pinoHttp({ logger }));
+
+// Global Rate Limiting
+app.use(globalRateLimit);
+
 // CORS
+const allowedOrigins = env.ALLOWED_ORIGINS.split(',').map(o => o.trim());
 app.use(cors({
-    origin: true,
+    origin: (origin, callback) => {
+        // Permitir requests sem origin (ex: Postman ou server-to-server)
+        if (!origin) return callback(null, true);
+
+        if (allowedOrigins.includes(origin) || allowedOrigins.includes('*')) {
+            return callback(null, true);
+        }
+        callback(new Error('Not allowed by CORS'));
+    },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'X-User-Id', 'X-Correlation-Id']
@@ -51,15 +72,15 @@ app.get('/health', (req, res) => {
 });
 
 // Routes
-app.use('/ai', aiRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/workspaces', workspacesRoutes);
+app.use('/ai', aiRoutes);
 
 // Error handling
 app.use(errorHandler);
 
 app.listen(PORT, () => {
-    console.log(`✅ API running on port ${PORT}`);
-    console.log(`🤖 AI Orchestration endpoints available at /ai`);
-    console.log(`🏗️ Architecture: Controller → Service → Repository`);
+    logger.info(`✅ API running on port ${PORT}`);
+    logger.info(`🤖 AI Orchestration endpoints available at /ai`);
+    logger.info(`🏗️ Architecture: Controller → Service → Repository`);
 });

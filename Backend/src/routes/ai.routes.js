@@ -16,12 +16,13 @@ import {
     getWeightsManager,
     WEIGHT_PRESETS
 } from '../ai/index.js';
-import { addMetadata } from '../middleware/index.js';
+import { addMetadata, requireAuth, aiRateLimit } from '../middleware/index.js';
 import { aiController } from '../controllers/ai.controller.js';
 
 const router = Router();
 
 router.use(addMetadata);
+router.use(requireAuth);
 
 // ============================================
 // VAULT ENDPOINTS (Orchestração)
@@ -406,10 +407,10 @@ router.get('/context', (req, res) => {
 // AI GENERATION ENDPOINTS (Delegated to Controller)
 // ============================================
 
-router.post('/generate-plan', aiController.generatePlan);
-router.post('/generate-creative-brief', aiController.generateCreativeBrief);
-router.post('/inspire-vault', aiController.inspireVault);
-router.post('/generate-brand-theme', aiController.generateBrandTheme);
-router.post('/generate-governance-conclusion', aiController.generateGovernanceConclusion);
+router.post('/generate-plan', aiRateLimit, aiController.generatePlan);
+router.post('/generate-creative-brief', aiRateLimit, aiController.generateCreativeBrief);
+router.post('/inspire-vault', aiRateLimit, aiController.inspireVault);
+router.post('/generate-brand-theme', aiRateLimit, aiController.generateBrandTheme);
+router.post('/generate-governance-conclusion', aiRateLimit, aiController.generateGovernanceConclusion);
 
 export default router;

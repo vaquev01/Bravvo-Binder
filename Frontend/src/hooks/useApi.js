@@ -27,16 +27,28 @@ export const queryKeys = {
 // UTILITY FETCH
 // ============================================
 async function apiFetch(path, options = {}) {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('bravvo_api_token') : null;
+
+    const headers = {
+        'Content-Type': 'application/json',
+        ...options.headers,
+    };
+
+    if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+    }
+
     const res = await fetch(`${API_URL}${path}`, {
-        headers: {
-            'Content-Type': 'application/json',
-            ...options.headers,
-        },
+        headers,
         ...options,
     });
     if (!res.ok) {
-        const error = await res.json().catch(() => ({ error: res.statusText }));
-        throw new Error(error.error || `API Error: ${res.status}`);
+        let errorMsg = `API Error: ${res.status}`;
+        try {
+            const errorBody = await res.json();
+            errorMsg = errorBody.error || errorMsg;
+        } catch { }
+        throw new Error(errorMsg);
     }
     return res.json();
 }

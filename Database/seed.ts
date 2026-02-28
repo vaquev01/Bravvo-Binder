@@ -17,7 +17,7 @@ async function main() {
         update: {},
         create: {
             username: 'admin',
-            password: '$2b$10$placeholder_hash_admin', // Em produção, hash real com bcrypt
+            password: '$2b$10$0QG6h7GsNdKwU9dLjqDsqOuOrdtz.ha.tpvLj31JQPD7G2QyrYUBS', // admin
             role: 'admin',
         },
     });
@@ -27,7 +27,7 @@ async function main() {
         update: {},
         create: {
             username: 'bravvo_agency',
-            password: '$2b$10$placeholder_hash_agency',
+            password: '$2b$10$UT8OmftD4HN5gIX22dLkjOftIBU1976qavK1bjEiYbqzaQHR1ET9i', // 1@Wardogs
             role: 'agency',
         },
     });
@@ -37,7 +37,7 @@ async function main() {
         update: {},
         create: {
             username: 'cliente_demo',
-            password: '$2b$10$placeholder_hash_client',
+            password: '$2b$10$fFisE2SF2gW3s.4mN.gyzuaivlwP4ScHGj2jthVN96E2/VldaBuLa', // demo
             role: 'client',
         },
     });

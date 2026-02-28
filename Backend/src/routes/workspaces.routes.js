@@ -1,13 +1,13 @@
 /**
- * Workspace Routes - /api/workspaces
- * Controller → Service → Repository
+ * Workspace Routes - /api/workspaces (autenticado)
  */
 import { Router } from 'express';
 import { workspaceController } from '../controllers/workspace.controller.js';
+import { requireAuth } from '../middleware/index.js';
 
 const router = Router();
 
-router.get('/:clientId/load', workspaceController.load);
-router.post('/:clientId/save', workspaceController.save);
+router.get('/:clientId/load', requireAuth, workspaceController.load);
+router.post('/:clientId/save', requireAuth, workspaceController.save);
 
 export default router;
