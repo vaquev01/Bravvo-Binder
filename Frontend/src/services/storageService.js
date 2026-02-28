@@ -560,8 +560,8 @@ class StorageService {
 
     async _syncToCloud(clientId, data) {
         try {
-            const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
-            const response = await fetch(`${apiUrl}/api/workspaces/${clientId}/save`, {
+            const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001/api/v1';
+            const response = await fetch(`${apiUrl}/workspaces/${clientId}/save`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(data)

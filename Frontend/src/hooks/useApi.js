@@ -213,7 +213,7 @@ export function useUpdateWeights() {
 export function useLogin() {
     return useMutation({
         mutationFn: (credentials) =>
-            apiFetch('/api/auth/login', {
+            apiFetch('/auth/login', {
                 method: 'POST',
                 body: JSON.stringify(credentials),
             }),
@@ -224,7 +224,7 @@ export function useLogin() {
 export function useLoadWorkspace(clientId) {
     return useQuery({
         queryKey: ['workspace', clientId],
-        queryFn: () => apiFetch(`/api/workspaces/${clientId}/load`),
+        queryFn: () => apiFetch(`/workspaces/${clientId}/load`),
         enabled: !!clientId,
         staleTime: 60_000,
     });
@@ -235,7 +235,7 @@ export function useSaveWorkspace() {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: ({ clientId, data }) =>
-            apiFetch(`/api/workspaces/${clientId}/save`, {
+            apiFetch(`/workspaces/${clientId}/save`, {
                 method: 'POST',
                 body: JSON.stringify(data),
             }),

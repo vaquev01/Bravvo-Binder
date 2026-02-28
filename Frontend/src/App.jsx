@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect, Suspense, lazy } from 'react';
-import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation, useParams } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import { orchestrationService } from './services/orchestrationService';
 
 // IMPORTS FOR IMPROVEMENTS
@@ -769,7 +769,7 @@ function ClientWorkspaceContent({ onBackToAgency, isAgencyView: _isAgencyView, c
             {(selectedPrompt || isGenerating) && (
                 <div data-testid="prompt-overlay" className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-fadeIn">
                     <div className="bg-[#111] border border-white/10 rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh] min-h-[400px]">
-                        
+
                         {isGenerating ? (
                             <div className="flex-1 flex flex-col items-center justify-center space-y-4">
                                 <Wand2 className="text-purple-500 animate-pulse" size={48} />
@@ -928,8 +928,8 @@ function AppContent() {
             setIsClientLoading(true);
 
             try {
-                const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
-                const response = await fetch(`${apiUrl}/api/workspaces/${clientId}/load`);
+                const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001/api/v1';
+                const response = await fetch(`${apiUrl}/workspaces/${clientId}/load`);
                 if (response.ok) {
                     const result = await response.json();
                     if (result.status === 'ok' && result.data) {
@@ -949,11 +949,11 @@ function AppContent() {
     };
 
     const handleRegisterSuccess = (clientId, clientInfo) => {
-        handleLogin('client', { 
-            username: clientInfo.username, 
-            clientId, 
+        handleLogin('client', {
+            username: clientInfo.username,
+            clientId,
             clientName: clientInfo.clientName,
-            remember: true 
+            remember: true
         });
     };
 
@@ -961,8 +961,8 @@ function AppContent() {
         setIsClientLoading(true);
 
         try {
-            const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
-            const response = await fetch(`${apiUrl}/api/workspaces/${client.id}/load`);
+            const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001/api/v1';
+            const response = await fetch(`${apiUrl}/workspaces/${client.id}/load`);
             if (response.ok) {
                 const result = await response.json();
                 if (result.status === 'ok' && result.data) {
@@ -986,7 +986,7 @@ function AppContent() {
         setIsClientLoading(false);
     }, [location.pathname, isClientLoading]);
 
-    const handleSaveClientData = () => {};
+    const handleSaveClientData = () => { };
 
     const handleLogout = () => {
         localStorage.removeItem('bravvo_session');
@@ -1010,26 +1010,26 @@ function AppContent() {
             <Route path="/" element={<LandingPage onLogin={() => navigate('/login')} />} />
             <Route path="/login" element={<LoginScreen onLogin={handleLogin} onRegister={() => navigate('/register')} />} />
             <Route path="/register" element={<RegisterScreen onRegisterSuccess={handleRegisterSuccess} onBackToLogin={() => navigate('/login')} />} />
-            <Route 
-                path="/agency" 
+            <Route
+                path="/agency"
                 element={
                     <AgencyDashboard
                         onSelectClient={handleSelectClient}
                         onLogout={handleLogout}
                     />
-                } 
+                }
             />
-            <Route 
-                path="/master" 
+            <Route
+                path="/master"
                 element={
                     <MasterDashboard
                         onSelectClient={handleSelectClient}
                         onLogout={handleLogout}
                     />
-                } 
+                }
             />
-            <Route 
-                path="/app/*" 
+            <Route
+                path="/app/*"
                 element={
                     <ClientWorkspaceRouter
                         onBackToAgency={currentUser?.role !== 'client' ? handleBackToAgency : undefined}
@@ -1039,7 +1039,7 @@ function AppContent() {
                         currentUser={currentUser}
                         isWorkspaceLoading={isClientLoading}
                     />
-                } 
+                }
             />
             <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
@@ -1052,7 +1052,7 @@ function AppContent() {
 function ClientWorkspaceRouter(props) {
     const navigate = useNavigate();
     const location = useLocation();
-    
+
     // Map URL path to binderTab
     const getTabFromPath = () => {
         const path = location.pathname;
@@ -1079,8 +1079,8 @@ function ClientWorkspaceRouter(props) {
     };
 
     return (
-        <ClientWorkspace 
-            {...props} 
+        <ClientWorkspace
+            {...props}
             initialTab={getTabFromPath()}
             onTabChange={handleSetActiveTab}
         />
