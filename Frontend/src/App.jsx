@@ -988,8 +988,25 @@ function AppContent() {
 
     const handleSaveClientData = () => { };
 
-    const handleLogout = () => {
+    const handleLogout = async () => {
+        // Call backend to blacklist JWT token
+        const token = localStorage.getItem('bravvo_api_token');
+        if (token) {
+            try {
+                const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001/api/v1';
+                await fetch(`${apiUrl}/auth/logout`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+            } catch {
+                // Logout locally even if backend call fails
+            }
+        }
+
+        // Clear all auth + user data from localStorage
         localStorage.removeItem('bravvo_session');
+        localStorage.removeItem('bravvo_api_token');
+        localStorage.removeItem('bravvo_user_data');
         sessionStorage.removeItem('bravvo_session');
         setCurrentUser(null);
         setClientData(null);
