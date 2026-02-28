@@ -2,8 +2,9 @@
     "name": "bravvo-os-monorepo",
     "private": true,
     "workspaces": [
-        "apps/*",
-        "packages/*"
+        "Frontend",
+        "Backend",
+        "Database"
     ],
     "scripts": {
         "dev": "npm run dev --workspaces --if-present",
@@ -12,7 +13,11 @@
         "test": "npm run test:e2e --workspaces --if-present",
         "test:e2e": "npm run test:e2e --workspaces --if-present",
         "docker:build": "docker-compose build",
-        "docker:up": "docker-compose up"
+        "docker:up": "docker-compose up",
+        "db:generate": "cd Database && npx prisma generate",
+        "db:migrate": "cd Database && npx prisma migrate dev",
+        "db:seed": "cd Database && npx tsx seed.ts",
+        "db:push": "cd Database && npx prisma db push"
     },
     "devDependencies": {
         "concurrently": "^8.2.2"

@@ -7,7 +7,7 @@ console.log('Node version:', process.version);
 console.log('PORT from env:', process.env.PORT);
 
 const PORT = process.env.PORT || 3000;
-const distPath = path.join(__dirname, 'apps', 'web', 'dist');
+const distPath = path.join(__dirname, 'Frontend', 'dist');
 
 const mimeTypes = {
     '.html': 'text/html; charset=utf-8',
