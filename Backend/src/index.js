@@ -68,9 +68,56 @@ app.get('/', (req, res) => {
     });
 });
 
-app.get('/health', (req, res) => {
-    res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
+/**
+ * Enhanced health check — reports service dependencies status.
+ * Consumed by Railway health checks and external uptime monitors (e.g., UptimeRobot).
+ */
+app.get('/health', async (req, res) => {
+    const start = Date.now();
+
+    // Check DB connectivity
+    let dbStatus = 'ok';
+    try {
+        const { prisma } = await import('./prisma.js');
+        await prisma.$queryRaw`SELECT 1`;
+    } catch {
+        dbStatus = 'error';
+    }
+
+    // Check Redis connectivity
+    let redisStatus = 'ok';
+    try {
+        const { getRedisClient } = await import('./config/redis.js');
+        const client = getRedisClient();
+        if (!client) {
+            redisStatus = 'not_configured';
+        } else {
+            await client.ping();
+        }
+    } catch {
+        redisStatus = 'error';
+    }
+
+    const uptimeSeconds = Math.floor(process.uptime());
+    const memMb = (process.memoryUsage().heapUsed / 1024 / 1024).toFixed(1);
+    const latencyMs = Date.now() - start;
+
+    const allGood = dbStatus === 'ok' && (redisStatus === 'ok' || redisStatus === 'not_configured');
+    const httpStatus = allGood ? 200 : 503;
+
+    res.status(httpStatus).json({
+        status: allGood ? 'ok' : 'degraded',
+        timestamp: new Date().toISOString(),
+        uptime_seconds: uptimeSeconds,
+        memory_mb: parseFloat(memMb),
+        latency_ms: latencyMs,
+        services: {
+            database: dbStatus,
+            redis: redisStatus
+        }
+    });
 });
+
 
 // Setup Swagger UI Documentation
 setupSwagger(app);
