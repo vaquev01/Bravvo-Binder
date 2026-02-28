@@ -5,4 +5,4 @@ nixPkgs = ["nodejs_18", "npm-9_x"]
 cmds = ["npm install"]
 
 [start]
-cmd = "cd ../Database && npx prisma generate && npx prisma db push --accept-data-loss && npx tsx seed.ts && cd ../Backend && node src/index.js"
+cmd = "cd Database && npx prisma generate && npx prisma db push --accept-data-loss && npx tsx seed.ts && cd ../Backend && node src/index.js"
