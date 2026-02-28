@@ -31,5 +31,19 @@ export const workspaceController = {
             console.error('Save workspace error:', error);
             res.status(500).json({ error: 'Failed to save workspace data' });
         }
+    },
+
+    async list(req, res) {
+        try {
+            const page = parseInt(req.query.page) || 1;
+            const limit = parseInt(req.query.limit) || 10;
+            const { agencyId } = req.query; // opcional para filtro
+
+            const result = await workspaceService.list(agencyId, page, limit);
+            res.json({ status: 'ok', ...result });
+        } catch (error) {
+            console.error('List workspaces error:', error);
+            res.status(500).json({ error: 'Failed to list workspaces' });
+        }
     }
 };

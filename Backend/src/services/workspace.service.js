@@ -22,5 +22,12 @@ export const workspaceService = {
     async save(clientId, payload) {
         await workspaceRepository.upsert(clientId, payload);
         return { success: true, message: 'Workspace saved successfully' };
+    },
+
+    /**
+     * Lista workspaces (com paginação)
+     */
+    async list(agencyId, page = 1, limit = 10) {
+        return await workspaceRepository.list(agencyId, page, limit);
     }
 };

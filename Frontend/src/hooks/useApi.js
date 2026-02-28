@@ -5,9 +5,8 @@
  * Substitui chamadas manuais de fetch/orchestrationService por hooks declarativos.
  */
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { orchestrationService } from '../services/orchestrationService';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api/v1';
 
 // ============================================
 // QUERY KEYS (centralizados para invalidação)
@@ -47,7 +46,9 @@ async function apiFetch(path, options = {}) {
         try {
             const errorBody = await res.json();
             errorMsg = errorBody.error || errorMsg;
-        } catch { }
+        } catch {
+            // Error parser fallback: ignore parsing error and keep the HTTP status string
+        }
         throw new Error(errorMsg);
     }
     return res.json();

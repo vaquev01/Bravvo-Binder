@@ -1,25 +1,36 @@
 {
-    "name": "bravvo-os-monorepo",
-    "private": true,
-    "workspaces": [
-        "Frontend",
-        "Backend",
-        "Database"
+  "name": "bravvo-os-monorepo",
+  "private": true,
+  "workspaces": [
+    "Frontend",
+    "Backend",
+    "Database"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspaces --if-present",
+    "build": "npm run build --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present",
+    "test": "npm run test:e2e --workspaces --if-present",
+    "test:e2e": "npm run test:e2e --workspaces --if-present",
+    "docker:build": "docker-compose build",
+    "docker:up": "docker-compose up",
+    "db:generate": "cd Database && npx prisma generate",
+    "db:migrate": "cd Database && npx prisma migrate dev",
+    "db:seed": "cd Database && npx tsx seed.ts",
+    "db:push": "cd Database && npx prisma db push",
+    "prepare": "husky"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.3.0"
+  },
+  "lint-staged": {
+    "Frontend/**/*.{js,jsx,ts,tsx}": [
+      "eslint --fix"
     ],
-    "scripts": {
-        "dev": "npm run dev --workspaces --if-present",
-        "build": "npm run build --workspaces --if-present",
-        "lint": "npm run lint --workspaces --if-present",
-        "test": "npm run test:e2e --workspaces --if-present",
-        "test:e2e": "npm run test:e2e --workspaces --if-present",
-        "docker:build": "docker-compose build",
-        "docker:up": "docker-compose up",
-        "db:generate": "cd Database && npx prisma generate",
-        "db:migrate": "cd Database && npx prisma migrate dev",
-        "db:seed": "cd Database && npx tsx seed.ts",
-        "db:push": "cd Database && npx prisma db push"
-    },
-    "devDependencies": {
-        "concurrently": "^8.2.2"
-    }
+    "Backend/**/*.{js,ts}": [
+      "eslint --fix"
+    ]
+  }
 }

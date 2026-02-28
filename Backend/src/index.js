@@ -10,6 +10,7 @@ import pinoHttp from 'pino-http';
 // Boot validation & Configs
 import { validateEnv, getEnv } from './config/env.js';
 import { logger } from './config/logger.js';
+import { setupSwagger } from './config/swagger.js';
 
 // Define variáveis globais verificadas
 validateEnv();
@@ -71,10 +72,13 @@ app.get('/health', (req, res) => {
     res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
+// Setup Swagger UI Documentation
+setupSwagger(app);
+
 // Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/workspaces', workspacesRoutes);
-app.use('/ai', aiRoutes);
+app.use('/api/v1/auth', authRoutes);
+app.use('/api/v1/workspaces', workspacesRoutes);
+app.use('/api/v1/ai', aiRoutes);
 
 // Error handling
 app.use(errorHandler);
