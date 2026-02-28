@@ -212,23 +212,23 @@ export function LoginScreen({ onLogin, onRegister }) {
                             const remember = e.target.remember.checked;
 
                             try {
-                                const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
-                                const response = await fetch(`${apiUrl}/api/auth/login`, {
+                                const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001/api/v1';
+                                const response = await fetch(`${apiUrl}/auth/login`, {
                                     method: 'POST',
                                     headers: { 'Content-Type': 'application/json' },
                                     body: JSON.stringify({ username: user, password: pass, remember })
                                 });
-                                
+
                                 const result = await response.json();
 
                                 if (response.ok && result.status === 'ok') {
                                     // Successfully logged in via Backend
                                     localStorage.setItem('bravvo_api_token', result.token);
-                                    handleLogin(result.role, { 
-                                        username: user, 
-                                        remember, 
-                                        clientId: result.user?.id, 
-                                        clientName: result.user?.username 
+                                    handleLogin(result.role, {
+                                        username: user,
+                                        remember,
+                                        clientId: result.user?.id,
+                                        clientName: result.user?.username
                                     });
                                 } else {
                                     alert(result.error || 'Credenciais inválidas. Tente novamente.');
