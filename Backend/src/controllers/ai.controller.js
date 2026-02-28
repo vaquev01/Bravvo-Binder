@@ -6,16 +6,33 @@
  */
 import { aiGenerationService } from '../services/ai-generation.service.js';
 import NodeCache from 'node-cache';
+import { redisCache } from '../config/redis.js';
 import crypto from 'crypto';
 
-// Cache em memória (TTL: 2 horas — otimização de custo OpenAI)
-const aiCache = new NodeCache({ stdTTL: 7200 });
+// In-memory fallback cache (used when Redis is unavailable)
+const localCache = new NodeCache({ stdTTL: 7200 });
+
+const AI_CACHE_TTL = 7200; // 2 hours
+
+// Unified cache interface: Redis first, NodeCache fallback
+const cache = {
+    async get(key) {
+        const rVal = await redisCache.get(key);
+        if (rVal !== null) return rVal;
+        return localCache.get(key) ?? null;
+    },
+    async set(key, value) {
+        const stored = await redisCache.set(key, value, AI_CACHE_TTL);
+        if (!stored) localCache.set(key, value); // fallback
+    }
+};
 
 // Helper para gerar cache key baseada no body
 const generateCacheKey = (prefix, body) => {
     const hash = crypto.createHash('sha256').update(JSON.stringify(body)).digest('hex');
-    return `${prefix}_${hash}`;
+    return `ai:${prefix}_${hash}`;
 };
+
 
 export const aiController = {
     async generatePlan(req, res) {
@@ -27,7 +44,7 @@ export const aiController = {
             }
 
             const cacheKey = generateCacheKey('plan', { vaults, kpis, weights });
-            const cachedResponse = aiCache.get(cacheKey);
+            const cachedResponse = await cache.get(cacheKey);
 
             if (cachedResponse) {
                 console.log('⚡ Returning cached AI plan');
@@ -46,8 +63,7 @@ export const aiController = {
                 cached: true
             };
 
-            // Guarda no cache
-            aiCache.set(cacheKey, responsePayload);
+            await cache.set(cacheKey, responsePayload);
 
             res.json({ ...responsePayload, cached: false });
         } catch (error) {
@@ -65,7 +81,7 @@ export const aiController = {
             }
 
             const cacheKey = generateCacheKey('brief', { item, vaults });
-            const cachedResponse = aiCache.get(cacheKey);
+            const cachedResponse = await cache.get(cacheKey);
             if (cachedResponse) {
                 console.log('⚡ Returning cached Creative Brief');
                 return res.json({ success: true, data: cachedResponse, cached: true });
@@ -74,7 +90,7 @@ export const aiController = {
             console.log('✨ Generating creative brief...');
             const result = await aiGenerationService.generateCreativeBrief(item, vaults);
 
-            aiCache.set(cacheKey, result);
+            await cache.set(cacheKey, result);
             res.json({ success: true, data: result, cached: false });
         } catch (error) {
             console.error('❌ Error generating creative brief:', error);
@@ -91,7 +107,7 @@ export const aiController = {
             }
 
             const cacheKey = generateCacheKey('inspire', { vaultId, currentData, mode });
-            const cachedResponse = aiCache.get(cacheKey);
+            const cachedResponse = await cache.get(cacheKey);
             if (cachedResponse) {
                 console.log(`⚡ Returning cached inspiration for ${vaultId}`);
                 return res.json({ success: true, suggestions: cachedResponse, cached: true });
@@ -101,7 +117,7 @@ export const aiController = {
             const suggestions = await aiGenerationService.inspireVault(vaultId, currentData, mode);
             console.log(`✅ Generated ${Object.keys(suggestions).length} suggestions for ${vaultId}`);
 
-            aiCache.set(cacheKey, suggestions);
+            await cache.set(cacheKey, suggestions);
             res.json({ success: true, suggestions, cached: false });
         } catch (error) {
             if (error.message?.includes('desconhecido')) {
@@ -121,7 +137,7 @@ export const aiController = {
             }
 
             const cacheKey = generateCacheKey('theme', { vaults });
-            const cachedResponse = aiCache.get(cacheKey);
+            const cachedResponse = await cache.get(cacheKey);
             if (cachedResponse) {
                 console.log('⚡ Returning cached Brand Theme');
                 return res.json({ success: true, theme: cachedResponse, cached: true });
@@ -131,7 +147,7 @@ export const aiController = {
             const theme = await aiGenerationService.generateBrandTheme(vaults);
             console.log(`✅ Generated brand theme: ${theme.fontFamily}, ${theme.primaryColor}`);
 
-            aiCache.set(cacheKey, theme);
+            await cache.set(cacheKey, theme);
             res.json({ success: true, theme, cached: false });
         } catch (error) {
             console.error('❌ Error generating brand theme:', error);
@@ -148,7 +164,7 @@ export const aiController = {
             }
 
             const cacheKey = generateCacheKey('gov_conclusion', { ata });
-            const cachedResponse = aiCache.get(cacheKey);
+            const cachedResponse = await cache.get(cacheKey);
             if (cachedResponse) {
                 console.log('⚡ Returning cached Governance Conclusion');
                 return res.json({ success: true, ...cachedResponse, cached: true });
@@ -157,7 +173,7 @@ export const aiController = {
             console.log('📊 Generating governance conclusion...');
             const result = await aiGenerationService.generateGovernanceConclusion(ata);
 
-            aiCache.set(cacheKey, result);
+            await cache.set(cacheKey, result);
             res.json({ success: true, ...result, cached: false });
         } catch (error) {
             console.error('❌ Error generating governance conclusion:', error);

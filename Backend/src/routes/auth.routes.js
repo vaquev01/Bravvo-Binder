@@ -4,6 +4,7 @@
 import { Router } from 'express';
 import { authController } from '../controllers/auth.controller.js';
 import { requireAuth, authRateLimit, revokeToken } from '../middleware/index.js';
+import { jwtService } from '../services/jwt.service.js';
 
 const router = Router();
 
@@ -105,6 +106,46 @@ router.get('/me', requireAuth, authController.me);
 router.post('/logout', requireAuth, (req, res) => {
     revokeToken(req.authToken);
     res.json({ status: 'ok', message: 'Sess\u00e3o encerrada com sucesso.' });
+});
+
+/**
+ * @swagger
+ * /api/auth/refresh:
+ *   post:
+ *     summary: Renova o access token usando um refresh token válido
+ *     tags: [Authentication]
+ *     security: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [refreshToken]
+ *             properties:
+ *               refreshToken:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Novo access token gerado com sucesso
+ *       401:
+ *         description: Refresh token inválido ou expirado
+ */
+router.post('/refresh', authRateLimit, (req, res) => {
+    const { refreshToken } = req.body;
+    if (!refreshToken) {
+        return res.status(401).json({ error: 'Refresh token obrigatório.' });
+    }
+    const payload = jwtService.verifyRefreshToken(refreshToken);
+    if (!payload) {
+        return res.status(401).json({ error: 'Refresh token inválido ou expirado.' });
+    }
+    const newAccessToken = jwtService.sign({
+        sub: payload.sub,
+        username: payload.username,
+        role: payload.role
+    });
+    res.json({ status: 'ok', token: newAccessToken });
 });
 
 export default router;

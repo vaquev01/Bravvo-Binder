@@ -898,6 +898,40 @@ function AppContent() {
         }
     }, [addToast, navigate, location.pathname]);
 
+    // AUTO REFRESH TOKEN — silently renews access token every 6 days
+    useEffect(() => {
+        const SIX_DAYS_MS = 6 * 24 * 60 * 60 * 1000;
+
+        async function silentRefresh() {
+            const refreshToken = localStorage.getItem('bravvo_refresh_token');
+            if (!refreshToken) return;
+            try {
+                const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001/api/v1';
+                const res = await fetch(`${apiUrl}/auth/refresh`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ refreshToken })
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.token) {
+                        localStorage.setItem('bravvo_api_token', data.token);
+                        console.info('🔄 Access token renovado silenciosamente');
+                    }
+                }
+            } catch {
+                // Silently ignore - user will get 401 on next request
+            }
+        }
+
+        // Refresh now in case token is close to expiry
+        silentRefresh();
+
+        // Then refresh every 6 days
+        const interval = setInterval(silentRefresh, SIX_DAYS_MS);
+        return () => clearInterval(interval);
+    }, []);
+
     const handleLogin = async (role, credentials) => {
         // SAVING SESSION
         if (credentials) {
@@ -1006,6 +1040,7 @@ function AppContent() {
         // Clear all auth + user data from localStorage
         localStorage.removeItem('bravvo_session');
         localStorage.removeItem('bravvo_api_token');
+        localStorage.removeItem('bravvo_refresh_token');
         localStorage.removeItem('bravvo_user_data');
         sessionStorage.removeItem('bravvo_session');
         setCurrentUser(null);

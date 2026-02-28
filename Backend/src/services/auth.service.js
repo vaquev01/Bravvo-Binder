@@ -26,11 +26,13 @@ export const authService = {
 
         const payload = { sub: user.id, username: user.username, role: user.role };
         const token = jwtService.sign(payload);
+        const refreshToken = jwtService.signRefreshToken(payload);
 
         return {
             success: true,
             user: { id: user.id, username: user.username, role: user.role },
-            token
+            token,
+            refreshToken
         };
     },
 
@@ -48,11 +50,13 @@ export const authService = {
 
         const payload = { sub: user.id, username: user.username, role: user.role };
         const token = jwtService.sign(payload);
+        const refreshToken = jwtService.signRefreshToken(payload);
 
         return {
             success: true,
             user: { id: user.id, username: user.username, role: user.role },
-            token
+            token,
+            refreshToken
         };
     }
 };
