@@ -86,6 +86,8 @@ class StorageService {
         this.lastSaveError = '';
         this.saveQueue = Promise.resolve();
         this.testMode = resolveTestMode();
+        // Debounce timer for cloud sync (prevents hammering the API on rapid edits)
+        this._syncDebounceTimer = null;
         if (this.testMode && typeof window !== 'undefined') {
             window.__PENDING_SAVES__ = this.pendingSaves;
             window.__LAST_SAVE_AT__ = this.lastSaveAt;
@@ -559,19 +561,30 @@ class StorageService {
     }
 
     async _syncToCloud(clientId, data) {
-        try {
-            const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001/api/v1';
-            const response = await fetch(`${apiUrl}/workspaces/${clientId}/save`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
-            });
-            if (!response.ok) {
-                console.warn('Cloud sync failed with status:', response.status);
-            }
-        } catch (error) {
-            console.error('Cloud sync error (will retry next time or rely on local):', error);
+        // Debounce: cancel previous pending sync to avoid flooding API on rapid saves
+        if (this._syncDebounceTimer) {
+            clearTimeout(this._syncDebounceTimer);
         }
+
+        this._syncDebounceTimer = setTimeout(async () => {
+            try {
+                const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001/api/v1';
+                const token = typeof localStorage !== 'undefined' ? localStorage.getItem('bravvo_api_token') : null;
+                const headers = { 'Content-Type': 'application/json' };
+                if (token) headers['Authorization'] = `Bearer ${token}`;
+
+                const response = await fetch(`${apiUrl}/workspaces/${clientId}/save`, {
+                    method: 'POST',
+                    headers,
+                    body: JSON.stringify(data)
+                });
+                if (!response.ok) {
+                    console.warn('Cloud sync failed with status:', response.status);
+                }
+            } catch (error) {
+                console.error('Cloud sync error (will retry next time or rely on local):', error);
+            }
+        }, 500); // 500ms debounce
     }
 
     /**

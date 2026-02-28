@@ -6,6 +6,10 @@ import rateLimit from 'express-rate-limit';
 import { jwtService } from '../services/jwt.service.js';
 import { logger } from '../config/logger.js';
 
+// In-memory JWT blacklist for logout revocation (cleared on restart)
+// For persistence across restarts, migrate to Redis or DB
+const tokenBlacklist = new Set();
+
 /**
  * Adiciona correlationId ao request
  */
@@ -25,14 +29,27 @@ export function requireAuth(req, res, next) {
         return res.status(401).json({ error: 'Token de autenticação obrigatório' });
     }
 
+    // Check blacklist (logout)
+    if (tokenBlacklist.has(token)) {
+        return res.status(401).json({ error: 'Sess\u00e3o encerrada. Fa\u00e7a login novamente.' });
+    }
+
     const payload = jwtService.verify(token);
     if (!payload) {
-        return res.status(401).json({ error: 'Token inválido ou expirado' });
+        return res.status(401).json({ error: 'Token inv\u00e1lido ou expirado' });
     }
 
     req.user = payload;
     req.userId = payload.sub;
+    req.authToken = token; // Store for potential logout
     next();
+}
+
+/**
+ * Revoga um token (logout) adicionando à blacklist
+ */
+export function revokeToken(token) {
+    if (token) tokenBlacklist.add(token);
 }
 
 /**
@@ -63,6 +80,7 @@ export const globalRateLimit = rateLimit({
 
 /**
  * Rate limiter para endpoints de IA (mais restritivo — custoso e caro)
+ * Usa o ID do usuário autenticado para quota por conta, não por IP
  */
 export const aiRateLimit = rateLimit({
     windowMs: 60 * 1000, // 1 min
@@ -70,7 +88,7 @@ export const aiRateLimit = rateLimit({
     standardHeaders: true,
     legacyHeaders: false,
     message: { error: 'Limite de geração de IA atingido. Aguarde 1 minuto.' },
-    keyGenerator: (req) => req.userId || req.ip,
+    keyGenerator: (req) => req.user?.sub || req.userId || req.ip,
 });
 
 /**

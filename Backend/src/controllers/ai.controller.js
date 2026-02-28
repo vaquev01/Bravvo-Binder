@@ -8,8 +8,8 @@ import { aiGenerationService } from '../services/ai-generation.service.js';
 import NodeCache from 'node-cache';
 import crypto from 'crypto';
 
-// Cache em memória (TTL: 1 hora)
-const aiCache = new NodeCache({ stdTTL: 3600 });
+// Cache em memória (TTL: 2 horas — otimização de custo OpenAI)
+const aiCache = new NodeCache({ stdTTL: 7200 });
 
 // Helper para gerar cache key baseada no body
 const generateCacheKey = (prefix, body) => {

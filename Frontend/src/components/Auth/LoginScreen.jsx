@@ -224,6 +224,8 @@ export function LoginScreen({ onLogin, onRegister }) {
                                 if (response.ok && result.status === 'ok') {
                                     // Successfully logged in via Backend
                                     localStorage.setItem('bravvo_api_token', result.token);
+                                    // Persist user identity for AI rate limiting and correlation
+                                    localStorage.setItem('bravvo_user_data', JSON.stringify(result.user || {}));
                                     handleLogin(result.role, {
                                         username: user,
                                         remember,

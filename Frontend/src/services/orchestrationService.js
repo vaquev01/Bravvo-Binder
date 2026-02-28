@@ -15,11 +15,13 @@ class OrchestrationService {
      */
     async request(endpoint, options = {}) {
         const url = `${this.baseUrl}${endpoint}`;
+        const token = localStorage.getItem('bravvo_api_token') || '';
         const config = {
             headers: {
                 'Content-Type': 'application/json',
                 'X-User-Id': this.getUserId(),
                 'X-Correlation-Id': this.generateCorrelationId(),
+                ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
                 ...options.headers
             },
             ...options
@@ -41,7 +43,18 @@ class OrchestrationService {
     }
 
     getUserId() {
-        return localStorage.getItem('bravvo_user_id') || 'anonymous';
+        // Prefer authenticated user ID from login session
+        try {
+            const session = localStorage.getItem('bravvo_api_token');
+            const stored = localStorage.getItem('bravvo_user_data');
+            if (stored) {
+                const parsed = JSON.parse(stored);
+                return parsed?.id || parsed?.username || 'anonymous';
+            }
+            return session ? 'authenticated' : 'anonymous';
+        } catch {
+            return localStorage.getItem('bravvo_user_id') || 'anonymous';
+        }
     }
 
     generateCorrelationId() {

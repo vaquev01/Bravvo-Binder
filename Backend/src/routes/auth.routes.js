@@ -3,7 +3,7 @@
  */
 import { Router } from 'express';
 import { authController } from '../controllers/auth.controller.js';
-import { requireAuth, authRateLimit } from '../middleware/index.js';
+import { requireAuth, authRateLimit, revokeToken } from '../middleware/index.js';
 
 const router = Router();
 
@@ -87,5 +87,24 @@ router.post('/register', authRateLimit, authController.register);
  *         description: Invalid or missing token
  */
 router.get('/me', requireAuth, authController.me);
+
+/**
+ * @swagger
+ * /api/auth/logout:
+ *   post:
+ *     summary: Log out and revoke the current JWT token
+ *     tags: [Authentication]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Logged out successfully
+ *       401:
+ *         description: Token missing or already revoked
+ */
+router.post('/logout', requireAuth, (req, res) => {
+    revokeToken(req.authToken);
+    res.json({ status: 'ok', message: 'Sess\u00e3o encerrada com sucesso.' });
+});
 
 export default router;
