@@ -13,11 +13,11 @@ async function main() {
 
     // --- Users ---
     const admin = await prisma.user.upsert({
-        where: { username: 'admin' },
+        where: { username: 'admin@wardogs.com' },
         update: {},
         create: {
-            username: 'admin',
-            password: '$2b$10$0QG6h7GsNdKwU9dLjqDsqOuOrdtz.ha.tpvLj31JQPD7G2QyrYUBS', // admin
+            username: 'admin@wardogs.com',
+            password: '$2b$10$.UWfJrE0czj4E7JoAMbP2ebkRf7cphi4VTqu1FDVSjrtdvhS12Wj6', // wardogs
             role: 'admin',
         },
     });
