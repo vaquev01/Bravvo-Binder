@@ -150,7 +150,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "/Users/viniciusg./BINDER/Bravvo-Binder/apps/api/prisma/generated/client",
+      "value": "/Users/victorcastellovaqueiro/BINDER/Bravvo-Binder/apps/api/prisma/generated/client",
       "fromEnvVar": null
     },
     "config": {
@@ -166,12 +166,11 @@ const config = {
     "previewFeatures": [
       "driverAdapters"
     ],
-    "sourceFilePath": "/Users/viniciusg./BINDER/Bravvo-Binder/apps/api/prisma/schema.prisma",
+    "sourceFilePath": "/Users/victorcastellovaqueiro/BINDER/Bravvo-Binder/apps/api/prisma/schema.prisma",
     "isCustomOutput": true
   },
   "relativeEnvPaths": {
-    "rootEnvPath": "../../../.env",
-    "schemaEnvPath": "../../../.env"
+    "rootEnvPath": null
   },
   "relativePath": "../..",
   "clientVersion": "5.22.0",
@@ -180,7 +179,7 @@ const config = {
     "db"
   ],
   "activeProvider": "postgresql",
-  "postinstall": false,
+  "postinstall": true,
   "inlineDatasources": {
     "db": {
       "url": {
@@ -199,8 +198,8 @@ const fs = require('fs')
 config.dirname = __dirname
 if (!fs.existsSync(path.join(__dirname, 'schema.prisma'))) {
   const alternativePaths = [
-    "prisma/generated/client",
-    "generated/client",
+    "apps/api/prisma/generated/client",
+    "api/prisma/generated/client",
   ]
   
   const alternativePath = alternativePaths.find((altPath) => {
@@ -229,7 +228,7 @@ Object.assign(exports, Prisma)
 
 // file annotations for bundling tools to include these files
 path.join(__dirname, "libquery_engine-darwin-arm64.dylib.node");
-path.join(process.cwd(), "prisma/generated/client/libquery_engine-darwin-arm64.dylib.node")
+path.join(process.cwd(), "apps/api/prisma/generated/client/libquery_engine-darwin-arm64.dylib.node")
 // file annotations for bundling tools to include these files
 path.join(__dirname, "schema.prisma");
-path.join(process.cwd(), "prisma/generated/client/schema.prisma")
+path.join(process.cwd(), "apps/api/prisma/generated/client/schema.prisma")

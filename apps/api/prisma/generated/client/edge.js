@@ -149,7 +149,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "/Users/viniciusg./BINDER/Bravvo-Binder/apps/api/prisma/generated/client",
+      "value": "/Users/victorcastellovaqueiro/BINDER/Bravvo-Binder/apps/api/prisma/generated/client",
       "fromEnvVar": null
     },
     "config": {
@@ -165,12 +165,11 @@ const config = {
     "previewFeatures": [
       "driverAdapters"
     ],
-    "sourceFilePath": "/Users/viniciusg./BINDER/Bravvo-Binder/apps/api/prisma/schema.prisma",
+    "sourceFilePath": "/Users/victorcastellovaqueiro/BINDER/Bravvo-Binder/apps/api/prisma/schema.prisma",
     "isCustomOutput": true
   },
   "relativeEnvPaths": {
-    "rootEnvPath": "../../../.env",
-    "schemaEnvPath": "../../../.env"
+    "rootEnvPath": null
   },
   "relativePath": "../..",
   "clientVersion": "5.22.0",
@@ -179,7 +178,7 @@ const config = {
     "db"
   ],
   "activeProvider": "postgresql",
-  "postinstall": false,
+  "postinstall": true,
   "inlineDatasources": {
     "db": {
       "url": {
