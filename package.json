@@ -2,9 +2,9 @@
   "name": "bravvo-os-monorepo",
   "private": true,
   "workspaces": [
-    "apps/web",
-    "apps/api",
-    "apps/database"
+    "Frontend",
+    "Backend",
+    "Database"
   ],
   "scripts": {
     "dev": "npm run dev --workspaces --if-present",
@@ -14,10 +14,10 @@
     "test:e2e": "npm run test:e2e --workspaces --if-present",
     "docker:build": "docker-compose build",
     "docker:up": "docker-compose up",
-    "db:generate": "cd apps/database && npx prisma generate",
-    "db:migrate": "cd apps/database && npx prisma migrate dev",
-    "db:seed": "cd apps/database && npx tsx seed.ts",
-    "db:push": "cd apps/database && npx prisma db push",
+    "db:generate": "cd Database && npx prisma generate",
+    "db:migrate": "cd Database && npx prisma migrate dev",
+    "db:seed": "cd Database && npx tsx seed.ts",
+    "db:push": "cd Database && npx prisma db push",
     "prepare": "husky"
   },
   "devDependencies": {
@@ -26,10 +26,10 @@
     "lint-staged": "^16.3.0"
   },
   "lint-staged": {
-    "apps/web/**/*.{js,jsx,ts,tsx}": [
+    "Frontend/**/*.{js,jsx,ts,tsx}": [
       "eslint --fix"
     ],
-    "apps/api/**/*.{js,ts}": [
+    "Backend/**/*.{js,ts}": [
       "eslint --fix"
     ]
   }
