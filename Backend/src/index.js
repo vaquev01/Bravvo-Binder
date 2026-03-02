@@ -79,7 +79,7 @@ app.get('/health', async (req, res) => {
     // Check DB connectivity
     let dbStatus = 'ok';
     try {
-        const { prisma } = await import('./prisma.js');
+        const { default: prisma } = await import('./prisma.js');
         await prisma.$queryRaw`SELECT 1`;
     } catch {
         dbStatus = 'error';
