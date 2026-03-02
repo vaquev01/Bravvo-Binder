@@ -75,8 +75,8 @@ export const globalRateLimit = rateLimit({
     max: 200,
     standardHeaders: true,
     legacyHeaders: false,
+    validate: false,
     message: { error: 'Muitas requisições. Tente novamente em alguns minutos.' },
-    keyGenerator: (req) => req.ip || req.headers['x-forwarded-for'] || 'unknown-ip',
 });
 
 /**
@@ -88,8 +88,9 @@ export const aiRateLimit = rateLimit({
     max: 10,
     standardHeaders: true,
     legacyHeaders: false,
+    validate: false,
     message: { error: 'Limite de geração de IA atingido. Aguarde 1 minuto.' },
-    keyGenerator: (req) => req.user?.sub || req.userId || req.ip || req.headers['x-forwarded-for'] || 'unknown-ip',
+    keyGenerator: (req) => req.user?.sub || req.userId || req.ip || 'unknown',
 });
 
 /**
