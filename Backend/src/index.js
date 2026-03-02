@@ -8,6 +8,7 @@ import helmet from 'helmet';
 import pinoHttp from 'pino-http';
 
 // Boot validation & Configs
+import 'dotenv/config';
 import { validateEnv, getEnv } from './config/env.js';
 import { logger } from './config/logger.js';
 import { setupSwagger } from './config/swagger.js';
