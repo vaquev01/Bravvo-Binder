@@ -75,7 +75,7 @@ export const globalRateLimit = rateLimit({
     max: 200,
     standardHeaders: true,
     legacyHeaders: false,
-    validate: false,
+    validate: { ipAddress: false },
     message: { error: 'Muitas requisições. Tente novamente em alguns minutos.' },
 });
 
@@ -88,9 +88,9 @@ export const aiRateLimit = rateLimit({
     max: 10,
     standardHeaders: true,
     legacyHeaders: false,
-    validate: false,
+    validate: { ipAddress: false },
     message: { error: 'Limite de geração de IA atingido. Aguarde 1 minuto.' },
-    keyGenerator: (req) => req.user?.sub || req.userId || req.ip || 'unknown',
+    keyGenerator: (req) => req.user?.sub || req.userId || 'unknown',
 });
 
 /**
@@ -99,6 +99,7 @@ export const aiRateLimit = rateLimit({
 export const authRateLimit = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 min
     max: 10,
+    validate: { ipAddress: false },
     message: { error: 'Muitas tentativas de login. Tente novamente em 15 minutos.' },
 });
 
